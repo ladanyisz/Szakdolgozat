@@ -20,6 +20,9 @@ EdgeGraphics::EdgeGraphics(NodeGraphics* from, NodeGraphics* to) :
     toNode->addEdge(this);
 
     weightSelected = false;
+    isDirected = true;
+    hasWeight = true;
+
     setFlag(QGraphicsItem::ItemSendsGeometryChanges);
 }
 
@@ -40,6 +43,16 @@ void EdgeGraphics::setWeight(int w) {
 
 void EdgeGraphics::setSelected(bool s) {
     weightSelected = s;
+    update();
+}
+
+void EdgeGraphics::setDirected(bool d) {
+    isDirected = d;
+    update();
+}
+
+void EdgeGraphics::setHasWeight(bool w) {
+    hasWeight = w;
     update();
 }
 
@@ -107,55 +120,73 @@ void EdgeGraphics::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
     pen.setWidth(2);
     painter->setPen(pen);
 
+
     // él íve
     QPainterPath myPath;
     myPath.moveTo(fromPoint);
     myPath.quadTo(controlPoint, ghostLine.p2());
-    painter->drawPath(myPath);
 
+    if (isDirected) {
 
-    // nyíl vonalai
-    qreal alpha = ghostLine.angle();
-    painter->save();
+        painter->drawPath(myPath);
 
-    painter->translate(toPoint.x(), toPoint.y());
-    painter->rotate(180 - alpha + 30);
-    QLine line1;
-    line1 = QLine(0,0,10,0);
-    painter->drawLine(line1);
-    painter->restore();
-    painter->save();
+        // nyíl vonalai
+        qreal alpha = ghostLine.angle();
+        painter->save();
 
-    painter->translate(toPoint.x(), toPoint.y());
-    painter->rotate(180 - alpha - 30);
-    QLine line2 = QLine(0,0,10,0);
-    painter->drawLine(line2);
-    painter->restore();
+        painter->translate(toPoint.x(), toPoint.y());
+        painter->rotate(180 - alpha + 30);
+        QLine line1;
+        line1 = QLine(0,0,10,0);
+        painter->drawLine(line1);
+        painter->restore();
+        painter->save();
 
-    // súly
-    if (weightSelected) pen.setColor(Qt::red);
-    painter->setPen(pen);
-    painter->setBrush(QColor(222, 222, 222));
-    painter->translate(myPath.pointAtPercent(0.5));
-    painter->drawEllipse(QPoint(0,0), 14,14);
-    pen.setColor(Qt::black);
-    painter->setPen(pen);
-    QFont font;
-    font.setBold(true);
-    font.setPointSize(12);
-    painter->setFont(font);
-    if (weight < 10 && weight > -1) {
-        painter->drawText(- 5 ,6, QString::number(weight));
-    } else if ((weight >= 10 && weight < 100) || (weight < 0 && weight > -10)) {
-       painter->drawText( - 9 , 6, QString::number(weight));
+        painter->translate(toPoint.x(), toPoint.y());
+        painter->rotate(180 - alpha - 30);
+        QLine line2 = QLine(0,0,10,0);
+        painter->drawLine(line2);
+        painter->restore();
     } else {
-        painter->drawText( - 15 , 6, QString::number(weight));
+        painter->drawLine(line());
+    }
+
+
+    if (hasWeight) {
+
+        // súly
+        if (weightSelected) pen.setColor(Qt::red);
+        painter->setPen(pen);
+        painter->setBrush(QColor(222, 222, 222));
+        if (isDirected) painter->translate(myPath.pointAtPercent(0.5));
+        else painter->translate(line().center());
+        painter->drawEllipse(QPoint(0,0), 14,14);
+        pen.setColor(Qt::black);
+        painter->setPen(pen);
+        QFont font;
+        font.setBold(true);
+        font.setPointSize(12);
+        painter->setFont(font);
+        if (weight < 10 && weight > -1) {
+            painter->drawText(- 5 ,6, QString::number(weight));
+        } else if ((weight >= 10 && weight < 100) || (weight < 0 && weight > -10)) {
+           painter->drawText( - 9 , 6, QString::number(weight));
+        } else {
+            painter->drawText( - 15 , 6, QString::number(weight));
+        }
     }
 }
 
 QRectF EdgeGraphics::boundingRect() const
 {
-    qreal extra = 60;
+    qreal extra;
+    if (isDirected) {
+        extra = 60;
+        return QRectF(line().p1(),
+                     QSize(line().p2().x()-line().p1().x(), line().p2().y()-line().p1().y())).normalized().adjusted(-extra,-extra, extra, extra);
+    }
+    if (abs(toPoint.x() - fromPoint.x()) < 24 || abs(toPoint.y() - fromPoint.y())< 24) extra = 12;
+    else extra = 4;
     return QRectF(line().p1(),
                  QSize(line().p2().x()-line().p1().x(), line().p2().y()-line().p1().y())).normalized().adjusted(-extra,-extra, extra, extra);
 
@@ -164,23 +195,42 @@ QRectF EdgeGraphics::boundingRect() const
 QPainterPath EdgeGraphics::shape() const
 {
     QPainterPath path;
+    if (isDirected) {
+        QLineF normal = line().normalVector();
+        normal.setLength(14);
 
-    QLineF normal = line().normalVector();
-    normal.setLength(14);
+        QMatrix matrix;
+        matrix.translate(normal.dx(), normal.dy());
+        QMatrix matrix2;
+        matrix2.translate(-normal.dx(), -normal.dy());
 
-    QMatrix matrix;
-    matrix.translate(normal.dx(), normal.dy());
-    QMatrix matrix2;
-    matrix2.translate(-normal.dx(), -normal.dy());
+        QPainterPath myPath;
+        myPath.moveTo(fromPoint);
+        myPath.quadTo(controlPoint, ghostLine.p2());
 
-    QPainterPath myPath;
-    myPath.moveTo(fromPoint);
-    myPath.quadTo(controlPoint, ghostLine.p2());
+        path.addPath(matrix.map(myPath));
+        path.lineTo(matrix2.map(toPoint));
+        path.moveTo(matrix.map(fromPoint));
+        path.lineTo(matrix2.map(fromPoint));
+        path.addPath(matrix2.map(myPath));
+    } else {
 
-    path.addPath(matrix.map(myPath));
-    path.lineTo(matrix2.map(toPoint));
-    path.moveTo(matrix.map(fromPoint));
-    path.lineTo(matrix2.map(fromPoint));
-    path.addPath(matrix2.map(myPath));
+        qreal adjust = 14;
+        qreal alpha = line().angle();
+        qreal line_length = line().length();
+        QPoint p1 = QPoint(-(line_length/2),-adjust);
+        QPoint p2 = QPoint(line_length/2, -adjust);
+        QPoint p3 = QPoint(line_length/2, adjust);
+        QPoint p4 = QPoint(-(line_length/2),adjust);
+
+        QVector<QPoint> points = { p1, p2, p3, p4,};
+        QPolygon pol = (QPolygon(points));
+
+        QMatrix matrix;
+        matrix.translate(line().center().x(), line().center().y()).rotate(360-alpha);
+        pol = matrix.map(pol);
+        path.addPolygon(pol);
+    }
+
     return path;
 }

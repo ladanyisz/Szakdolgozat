@@ -1,6 +1,6 @@
 #include "adjnode.h"
 
-AdjNode::AdjNode(Node *n, int w, QObject *parent): node(n), weight(w)
+AdjNode::AdjNode(Node *n, int w, QObject *): node(n), weight(w)
 {
 }
 

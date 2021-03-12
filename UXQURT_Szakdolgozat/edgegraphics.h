@@ -10,6 +10,8 @@
 class NodeGraphics;
 class EdgeGraphics : public QGraphicsLineItem
 {
+//    Q_OBJECT
+
 public:
     EdgeGraphics(NodeGraphics* from, NodeGraphics* to);
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
@@ -22,10 +24,14 @@ public:
     void setWeight(int w);
     void setSelected(bool s);
 
+
     void deleteEdgeWithNode(NodeGraphics* node);        // ha valamelyik csúcsot töröltük, a másik listájából töröljük csak (a törölt csűcs törli magának)
     void deleteEdgeFromNodes();                         // ha az élet töröltük mindkét csúcs listájából ki kell szedni
     void calculate();                                   // pozíciók kiszámítása, from és to összekötő egyenesét beállítja
 
+//public slots:
+    void setDirected(bool d);
+    void setHasWeight(bool w);
 
 private:
     NodeGraphics* fromNode;
@@ -36,6 +42,8 @@ private:
     QLineF ghostLine;
     int weight;
     bool weightSelected;            // ha igaz, akkor pirossal rajzolja a súly körét
+    bool isDirected;                // irányított-e
+    bool hasWeight;                 // vannak-e súlyai (ha nincs, akkor egyet kell beállítani
 
 };
 

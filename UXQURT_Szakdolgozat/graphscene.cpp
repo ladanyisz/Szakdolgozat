@@ -5,7 +5,7 @@
 #include <QGraphicsView>
 #include <QMatrix>
 
-GraphScene::GraphScene(Graph* graph, QObject *parent)
+GraphScene::GraphScene(Graph* graph, QObject *)
 {
     mode = GraphMode::Move;
     this->graph = graph;
@@ -54,6 +54,10 @@ void GraphScene::setWeight(int w)
     graph->setEdge(currEdge->getFromNodeId(), currEdge->getToNodeId(), w);
     resetCurrEdge();
 }
+
+void GraphScene::setDirected(bool d) { emit graphDirectedChanged(d); }
+
+void GraphScene::setHasWeight(bool w) { emit graphHasWeightChanged(w); }
 
 
 // Slots
@@ -131,9 +135,7 @@ void GraphScene::addNewEdge(QString fromName, QString toName, int w)
         }
     }
     if (fromNode != nullptr && toNode != nullptr) {
-        EdgeGraphics* edge = new EdgeGraphics(fromNode, toNode);
-        edge->setWeight(w);
-        addItem(edge);
+        addEdge(fromNode, toNode, w);
     }
 }
 
@@ -208,9 +210,7 @@ void GraphScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             } else {
                 if (currFrom != node) {
                     if (graph->setEdge(currFrom->getId(), node->getId())) {
-                        EdgeGraphics* newEdge = new EdgeGraphics(currFrom, node);
-                        newEdge->setWeight(graph->getWeight(currFrom->getId(), node->getId()));
-                        addItem(newEdge);
+                        addEdge(currFrom, node, graph->getWeight(currFrom->getId(), node->getId()));
                     }
                 }
                 resetCurrFrom();
@@ -298,4 +298,13 @@ void GraphScene::deleteNode(NodeGraphics *node)
         delete edge;
     }
     delete node;
+}
+
+void GraphScene::addEdge(NodeGraphics *from, NodeGraphics *to, int weight)
+{
+    EdgeGraphics* edge = new EdgeGraphics(from, to);
+    edge->setWeight(weight);
+//    connect(this, &GraphScene::graphDirectedChanged, edge, &EdgeGraphics::setDirected);
+//    connect(this, &GraphScene::graphHasWeightChanged, edge, &EdgeGraphics::setWeight);
+    addItem(edge);
 }

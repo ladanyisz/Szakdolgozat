@@ -20,8 +20,6 @@ public:
     void setWeight(int w);
 
 
-signals:
-
 
 private:
 
