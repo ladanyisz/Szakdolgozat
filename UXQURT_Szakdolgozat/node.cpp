@@ -56,6 +56,13 @@ bool Node::setEdge(Node *to, int w)
     return true;
 }
 
+void Node::setReversedEdge()
+{
+    foreach(AdjNode* adjNode, adjNodes) {
+        adjNode->node->setEdge(this, adjNode->getWeight());
+    }
+}
+
 void Node::setName(QChar name) { this->name = name; }
 
 

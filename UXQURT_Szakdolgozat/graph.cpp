@@ -173,6 +173,11 @@ void Graph::serializeGraph()
 
 void Graph::changeDirected(bool d)
 {
+    if (isDirected && !d) {
+        foreach(Node* node, nodes) {
+            node->setReversedEdge();
+        }
+    }
     isDirected = d;
     emit directedChanged(d);
 }
