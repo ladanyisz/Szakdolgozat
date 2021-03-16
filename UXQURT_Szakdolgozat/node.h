@@ -28,6 +28,9 @@ public:
     void setName(QChar name);
     bool hasEdge(Node* to);
 
+signals:
+    void edgeChanged(int fromId, int toId, int w, int new_edge);
+
 
 private:
     static int node_ids;

@@ -59,7 +59,8 @@ bool Node::setEdge(Node *to, int w)
 void Node::setReversedEdge()
 {
     foreach(AdjNode* adjNode, adjNodes) {
-        adjNode->node->setEdge(this, adjNode->getWeight());
+        bool is_new = adjNode->node->setEdge(this, adjNode->getWeight());
+        emit edgeChanged(adjNode->node->getId(), id, adjNode->getWeight(), is_new);
     }
 }
 

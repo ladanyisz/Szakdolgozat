@@ -121,11 +121,12 @@ void GraphViewer::initEditToolbar()
     editToolbar->addWidget(weightedCheckBox);
     connect(weightedCheckBox, &QCheckBox::toggled, graph, &Graph::changeWeighted);
     connect(weightedCheckBox, &QCheckBox::toggled, this, [=](bool d) {
-        if (d) weightButton->setEnabled(true);
+        if (d && !graphTextEditor->isVisible()) weightButton->setEnabled(true);
         else {
             weightButton->setEnabled(false);
             weightLineEdit->setText("");
             weightGroupBox->setVisible(false);
+            if (weightButton->isChecked()) pointerButton->click();
         }
     });
 }
@@ -256,7 +257,7 @@ void GraphViewer::hideGraphTextEditor()
     graphTextEditor->setHidden(true);
     nodeButton->setEnabled(true);
     edgeButton->setEnabled(true);
-    weightButton->setEnabled(true);
+    if (graph->getWeighted()) weightButton->setEnabled(true);
     deleteButton->setEnabled(true);
     playButton->setEnabled(true);
     pauseButton->setEnabled(true);

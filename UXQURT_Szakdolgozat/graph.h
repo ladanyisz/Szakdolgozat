@@ -44,6 +44,7 @@ signals:
     void nodesFull();                               // a csúcsok száma elérte a maxNodeNum-ot
     void directedChanged(bool d);
     void weightedChanged(bool w);
+    void edgeChanged(int fromId, int toId, int w, bool is_new);
 
 private:
     static const int maxNodeNum = 15;

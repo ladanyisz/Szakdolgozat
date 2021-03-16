@@ -87,6 +87,7 @@ int Graph::addNode()
         QChar n = QChar(ind + a.unicode());
         names[ind] = false;
         newNode->setName(n);
+        connect(newNode, &Node::edgeChanged, this, [=](int f, int t, int w, bool n) { emit edgeChanged(f,t,w, n); });
         return newNode->getId();
     }
     emit nodesFull();

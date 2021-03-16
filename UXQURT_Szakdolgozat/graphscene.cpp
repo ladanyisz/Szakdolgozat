@@ -14,6 +14,7 @@ GraphScene::GraphScene(Graph* graph, QObject *)
 
     connect(graph, &Graph::directedChanged, this, &GraphScene::setDirected);
     connect(graph, &Graph::weightedChanged, this, &GraphScene::setWeighted);
+    connect(graph, &Graph::edgeChanged, this, &GraphScene::findEdgeNodes);
 }
 
 
@@ -123,6 +124,36 @@ void GraphScene::updateNodes()
         }
     }
     updateNodePositions(nodes);
+}
+
+void GraphScene::findEdgeNodes(int from, int to, int w, bool is_new)
+{
+    qDebug() << "Adatok: " << QString::number(from) << QString::number(to) << QString::number(w);
+    NodeGraphics* fromNode = nullptr;
+    NodeGraphics* toNode = nullptr;
+    QList<QGraphicsItem*> scene_items = items();
+    foreach(QGraphicsItem* item, scene_items) {
+        NodeGraphics* node = qgraphicsitem_cast<NodeGraphics*>(item);
+        if (is_new) {
+            if (node) {
+                qDebug() << "nodegraphics id: " << node->getId();
+                if (node->getId() == from) fromNode = node;
+                else if (node->getId() == to) toNode = node;
+            }
+        } else {
+            EdgeGraphics* _edge = qgraphicsitem_cast<EdgeGraphics*>(item);
+            if (_edge) {
+                if (_edge->getFromNodeId() == from && _edge->getToNodeId() == to) {
+                    _edge->setWeight(w);
+                }
+            }
+        }
+
+    }
+    if (fromNode != nullptr && toNode != nullptr) {
+        qDebug() << "beállítva";
+        addEdge(fromNode, toNode, w);
+    }
 }
 
 void GraphScene::addNewEdge(QString fromName, QString toName, int w)
