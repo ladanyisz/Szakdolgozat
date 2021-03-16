@@ -50,24 +50,16 @@ void GraphTextEditor::initEditor()
 {
     graph->serializeGraph();
     nodeSpinBox->setValue(graph->getSize());
-    qDebug() << "1";
     updateNames();
-    qDebug() << "2";
 
     foreach(GraphTextLine* line, edgeLines) {
         delete line;
     }
-    qDebug() << "3";
     edgeLines.clear();
-    qDebug() << "4";
 
     for(int i=0; i<graph->getSize(); i++) {
-        qDebug() << "tt";
         int id = graph->getId(i);
-        qDebug() << "from: " << graph->getName(id);
         for(int j=0; j<graph->getAdjNum(i); j++) {
-            qDebug() << "i: " << QString::number(i) << " j: " << QString::number(j);
-            qDebug() << "to: " << graph->getAdjName(i,j);
             GraphTextLine* line = addNewLine();
             updateNames();
             line->fromComboBox->setCurrentText(graph->getName(id));
@@ -76,7 +68,6 @@ void GraphTextEditor::initEditor()
             line->setDisabled();
         }
     }
-    qDebug() << "5";
 }
 
 void GraphTextEditor::addNewEdge()

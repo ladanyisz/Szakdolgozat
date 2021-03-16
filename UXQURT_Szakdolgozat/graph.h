@@ -13,6 +13,8 @@ public:
     explicit Graph(QObject *parent = nullptr);
     ~Graph();
 
+    bool getDirected();
+    bool getWeighted();
     int getSize();                                  // csúcsok száma
     QChar getName(int id);                          // Node id-ja alapján
     int getMaxNodeNum();
@@ -23,6 +25,8 @@ public:
     int getAdjWeight(int ind_this, int ind_ajd);    // él súlya szomszédhoz - index és index alapján
     QStringList getNames();                         // használt nevek
 
+    void changeDirected(bool d);
+    void changeWeighted(bool w);
     int addNode();
     void addNodes(int n);                           // n új csúcs létrehozása
     bool setEdge(int fromId, int toId, int w = 1);  // ha új él, akkor igazzal, ha nem, akkor hamissal tér vissza
@@ -41,6 +45,8 @@ private:
     static const int maxNodeNum = 15;
     QVector<Node*> nodes;
     QVector<bool> names;
+    bool isDirected;
+    bool hasWeights;
 
 
     Node* findById(int id);

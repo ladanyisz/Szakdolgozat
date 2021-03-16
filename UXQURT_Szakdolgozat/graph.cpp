@@ -2,6 +2,8 @@
 
 Graph::Graph(QObject *parent) : QObject(parent)
 {
+    isDirected = true;
+    hasWeights = true;
     for(int i=0; i<maxNodeNum; i++) {
         names.append(true);
     }
@@ -16,6 +18,10 @@ Graph::~Graph()
 
 
 // Getters
+
+bool Graph::getDirected() { return isDirected; }
+
+bool Graph::getWeighted() { return hasWeights; }
 
 int Graph::getSize() { return nodes.size(); }
 
@@ -47,8 +53,18 @@ QStringList Graph::getNames()
     return names;
 }
 
+// Other public functions
 
-// Setters
+void Graph::changeDirected(bool d)
+{
+    isDirected = d;
+
+}
+
+void Graph::changeWeighted(bool w)
+{
+    hasWeights = w;
+}
 
 bool Graph::setEdge(int fromId, int toId, int w)
 {
@@ -70,8 +86,6 @@ bool Graph::setEdge(QString fromName, QString toName, int w)
     return false;
 
 }
-
-// Other public functions
 
 int Graph::addNode()
 {
