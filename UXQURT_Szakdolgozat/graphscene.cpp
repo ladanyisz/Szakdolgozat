@@ -58,9 +58,9 @@ void GraphScene::setWeight(int w)
     resetCurrEdge();
 }
 
-void GraphScene::setDirected(bool d) { emit graphDirectedChanged(d); qDebug() << "directed changed: " << d; }
+void GraphScene::setDirected(bool d) { emit graphDirectedChanged(d); }
 
-void GraphScene::setWeighted(bool w) { emit graphWeightedChanged(w); qDebug() << "weighted changed"; }
+void GraphScene::setWeighted(bool w) { emit graphWeightedChanged(w); }
 
 
 // Slots
@@ -161,7 +161,7 @@ void GraphScene::deleteEdge(QString fromName, QString toName)
     }
 }
 
-void GraphScene::setEdge(QString fromName, QString toName, int w)
+void GraphScene::setEdgeWeight(QString fromName, QString toName, int w)
 {
     EdgeGraphics* edge = nullptr;
     QList<QGraphicsItem*> scene_items = items();
@@ -307,7 +307,9 @@ void GraphScene::addEdge(NodeGraphics *from, NodeGraphics *to, int weight)
 {
     EdgeGraphics* edge = new EdgeGraphics(from, to);
     edge->setWeight(weight);
-//    connect(this, &GraphScene::graphDirectedChanged, edge, &EdgeGraphics::setDirected);
-//    connect(this, &GraphScene::graphHasWeightChanged, edge, &EdgeGraphics::setWeight);
+    edge->setDirected(graph->getDirected());
+    edge->setWeighted(graph->getWeighted());
+    connect(this, &GraphScene::graphDirectedChanged, edge, &EdgeGraphics::setDirected);
+    connect(this, &GraphScene::graphWeightedChanged, edge, &EdgeGraphics::setWeighted);
     addItem(edge);
 }

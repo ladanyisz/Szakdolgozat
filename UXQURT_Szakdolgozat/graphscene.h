@@ -28,7 +28,7 @@ public slots:
     void updateNodes();                                             // a graph csúcsinak száma szerint létrehoz vagy töröl csúcsokat
     void addNewEdge(QString fromName, QString toName, int w);       // két megadott csúcs között létrehoz egy új élt
     void deleteEdge(QString fromName, QString toName);
-    void setEdge(QString fromName, QString toName, int w);          // meglévő él súlyát állítja be (a csúcsok alapján keres)
+    void setEdgeWeight(QString fromName, QString toName, int w);          // meglévő él súlyát állítja be (a csúcsok alapján keres)
     void setDirected(bool d);
     void setWeighted(bool w);
 

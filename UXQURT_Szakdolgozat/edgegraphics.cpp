@@ -51,7 +51,7 @@ void EdgeGraphics::setDirected(bool d) {
     update();
 }
 
-void EdgeGraphics::setHasWeight(bool w) {
+void EdgeGraphics::setWeighted(bool w) {
     hasWeight = w;
     update();
 }

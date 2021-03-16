@@ -8,9 +8,9 @@
 #include "nodegraphics.h"
 
 class NodeGraphics;
-class EdgeGraphics : public QGraphicsLineItem
+class EdgeGraphics : public QObject, public QGraphicsLineItem   // QObject - események miatt
 {
-//    Q_OBJECT
+    Q_OBJECT
 
 public:
     EdgeGraphics(NodeGraphics* from, NodeGraphics* to);
@@ -29,9 +29,9 @@ public:
     void deleteEdgeFromNodes();                         // ha az élet töröltük mindkét csúcs listájából ki kell szedni
     void calculate();                                   // pozíciók kiszámítása, from és to összekötő egyenesét beállítja
 
-//public slots:
+public slots:
     void setDirected(bool d);
-    void setHasWeight(bool w);
+    void setWeighted(bool w);
 
 private:
     NodeGraphics* fromNode;

@@ -182,7 +182,7 @@ void GraphViewer::initViews()
 
     connect(graphTextEditor, &GraphTextEditor::nodesChanged, scene, &GraphScene::updateNodes);
     connect(graphTextEditor, &GraphTextEditor::newEdge, scene, &GraphScene::addNewEdge);
-    connect(graphTextEditor, &GraphTextEditor::edgeSet, scene, &GraphScene::setEdge);
+    connect(graphTextEditor, &GraphTextEditor::edgeSet, scene, &GraphScene::setEdgeWeight);
     connect(graphTextEditor, &GraphTextEditor::edgeDeleted, scene, &GraphScene::deleteEdge);
     connect(graphTextEditor, &GraphTextEditor::graphReady, this, &GraphViewer::hideGraphTextEditor);
 
