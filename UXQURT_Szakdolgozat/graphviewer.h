@@ -14,6 +14,7 @@
 #include <QGraphicsView>
 #include <QLineEdit>
 #include <QGroupBox>
+#include <QCheckBox>
 
 #include "graph.h"
 #include "graphscene.h"
@@ -54,6 +55,9 @@ private:
     QToolButton* edgeButton;
     QToolButton* weightButton;
     QToolButton* deleteButton;
+
+    QCheckBox* directedCheckBox;
+    QCheckBox* weightedCheckBox;
 
     QComboBox* nodeSelector;
     QComboBox* algorithmSelector;

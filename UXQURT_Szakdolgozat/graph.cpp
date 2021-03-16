@@ -53,18 +53,8 @@ QStringList Graph::getNames()
     return names;
 }
 
+
 // Other public functions
-
-void Graph::changeDirected(bool d)
-{
-    isDirected = d;
-
-}
-
-void Graph::changeWeighted(bool w)
-{
-    hasWeights = w;
-}
 
 bool Graph::setEdge(int fromId, int toId, int w)
 {
@@ -176,6 +166,21 @@ void Graph::serializeGraph()
         qDebug() << msg;
     }
 
+}
+
+
+// Public slots
+
+void Graph::changeDirected(bool d)
+{
+    isDirected = d;
+    emit directedChanged(d);
+}
+
+void Graph::changeWeighted(bool w)
+{
+    hasWeights = w;
+    emit weightedChanged(w);
 }
 
 

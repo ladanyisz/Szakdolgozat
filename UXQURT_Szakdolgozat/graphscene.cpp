@@ -11,6 +11,9 @@ GraphScene::GraphScene(Graph* graph, QObject *)
     this->graph = graph;
     currFrom = nullptr;
     currEdge = nullptr;
+
+    connect(graph, &Graph::directedChanged, this, &GraphScene::setDirected);
+    connect(graph, &Graph::weightedChanged, this, &GraphScene::setWeighted);
 }
 
 
@@ -55,9 +58,9 @@ void GraphScene::setWeight(int w)
     resetCurrEdge();
 }
 
-void GraphScene::setDirected(bool d) { emit graphDirectedChanged(d); }
+void GraphScene::setDirected(bool d) { emit graphDirectedChanged(d); qDebug() << "directed changed: " << d; }
 
-void GraphScene::setHasWeight(bool w) { emit graphHasWeightChanged(w); }
+void GraphScene::setWeighted(bool w) { emit graphWeightedChanged(w); qDebug() << "weighted changed"; }
 
 
 // Slots

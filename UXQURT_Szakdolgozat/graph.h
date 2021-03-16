@@ -25,8 +25,6 @@ public:
     int getAdjWeight(int ind_this, int ind_ajd);    // él súlya szomszédhoz - index és index alapján
     QStringList getNames();                         // használt nevek
 
-    void changeDirected(bool d);
-    void changeWeighted(bool w);
     int addNode();
     void addNodes(int n);                           // n új csúcs létrehozása
     bool setEdge(int fromId, int toId, int w = 1);  // ha új él, akkor igazzal, ha nem, akkor hamissal tér vissza
@@ -38,8 +36,14 @@ public:
     void deleteAll();                               // összes csúcs törlése
     void serializeGraph();
 
+public slots:
+    void changeDirected(bool d);
+    void changeWeighted(bool w);
+
 signals:
     void nodesFull();                               // a csúcsok száma elérte a maxNodeNum-ot
+    void directedChanged(bool d);
+    void weightedChanged(bool w);
 
 private:
     static const int maxNodeNum = 15;

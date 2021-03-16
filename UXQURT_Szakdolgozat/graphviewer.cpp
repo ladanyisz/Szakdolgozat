@@ -7,6 +7,7 @@
 #include <QMatrix>
 #include <QGraphicsItem>
 #include<QMenuBar>
+#include <QCheckBox>
 
 GraphViewer::GraphViewer(QWidget *parent)
     : QMainWindow(parent) 
@@ -27,9 +28,8 @@ GraphViewer::GraphViewer(QWidget *parent)
 
 
 
-    connect(graph, SIGNAL(nodesFull()),this, SLOT(nodesFull()));
-
-    connect(scene, SIGNAL(edgeSelected()), this, SLOT(showWeightGroup()));
+    connect(graph, &Graph::nodesFull,this, &GraphViewer::nodesFull);
+    connect(scene, &GraphScene::edgeSelected, this, &GraphViewer::showWeightGroup);
 
 
 
@@ -69,7 +69,6 @@ void GraphViewer::initMenu()
     resetLayout = new QAction(tr("Rendezés"));
     menuBar()->addAction(resetLayout);
     connect(resetLayout, SIGNAL(triggered()), scene, SLOT(updateNodes()));
-
 }
 
 void GraphViewer::initEditToolbar()
@@ -112,6 +111,16 @@ void GraphViewer::initEditToolbar()
     connect(weightButton, &QToolButton::clicked, scene, [=]() {scene->setMode(GraphScene::GraphMode::SetWeight);});
     connect(deleteButton, &QToolButton::clicked, scene, [=]() {scene->setMode(GraphScene::GraphMode::Delete);});
     connect(editButtonGroup, QOverload<QAbstractButton *>::of(&QButtonGroup::buttonClicked), this, [=](){ weightGroupBox->setHidden(true); });
+
+    directedCheckBox = new QCheckBox(tr("Irányíott"));
+    directedCheckBox->setChecked(true);
+    editToolbar->addWidget(directedCheckBox);
+    connect(directedCheckBox, &QCheckBox::toggled, graph, &Graph::changeDirected);
+
+    weightedCheckBox = new QCheckBox(tr("Súlyozott"));
+    weightedCheckBox->setChecked(true);
+    editToolbar->addWidget(weightedCheckBox);
+    connect(weightedCheckBox, &QCheckBox::toggled, graph, &Graph::changeWeighted);
 }
 
 void GraphViewer::initAlgorithmToolbar()
@@ -175,7 +184,7 @@ void GraphViewer::initViews()
     connect(graphTextEditor, &GraphTextEditor::newEdge, scene, &GraphScene::addNewEdge);
     connect(graphTextEditor, &GraphTextEditor::edgeSet, scene, &GraphScene::setEdge);
     connect(graphTextEditor, &GraphTextEditor::edgeDeleted, scene, &GraphScene::deleteEdge);
-    connect(graphTextEditor, SIGNAL(graphReady()), this, SLOT(hideGraphTextEditor()));
+    connect(graphTextEditor, &GraphTextEditor::graphReady, this, &GraphViewer::hideGraphTextEditor);
 
 }
 

@@ -20,8 +20,7 @@ public:
     void updatePositions(QList<QPointF> positions, float w_scale, float h_scale);   // scene elemeinek pozícióját frissíti
     void updateEdges();                                                             // a csúcsok (grafikus elemek) éleinek pozícióit újraszámolja
     void setWeight(int w);
-    void setDirected(bool d);
-    void setHasWeight(bool w);
+
 
 
 public slots:
@@ -30,12 +29,14 @@ public slots:
     void addNewEdge(QString fromName, QString toName, int w);       // két megadott csúcs között létrehoz egy új élt
     void deleteEdge(QString fromName, QString toName);
     void setEdge(QString fromName, QString toName, int w);          // meglévő él súlyát állítja be (a csúcsok alapján keres)
+    void setDirected(bool d);
+    void setWeighted(bool w);
 
 
 signals:
     void edgeSelected();
     void graphDirectedChanged(bool d);
-    void graphHasWeightChanged(bool w);
+    void graphWeightedChanged(bool w);
 
 
 protected:
