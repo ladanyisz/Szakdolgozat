@@ -26,8 +26,6 @@ GraphViewer::GraphViewer(QWidget *parent)
     initWeightGroup();
 
 
-
-
     connect(graph, &Graph::nodesFull,this, &GraphViewer::nodesFull);
     connect(scene, &GraphScene::edgeSelected, this, &GraphViewer::showWeightGroup);
 
@@ -117,10 +115,19 @@ void GraphViewer::initEditToolbar()
     editToolbar->addWidget(directedCheckBox);
     connect(directedCheckBox, &QCheckBox::toggled, graph, &Graph::changeDirected);
 
+
     weightedCheckBox = new QCheckBox(tr("Súlyozott"));
     weightedCheckBox->setChecked(true);
     editToolbar->addWidget(weightedCheckBox);
     connect(weightedCheckBox, &QCheckBox::toggled, graph, &Graph::changeWeighted);
+    connect(weightedCheckBox, &QCheckBox::toggled, this, [=](bool d) {
+        if (d) weightButton->setEnabled(true);
+        else {
+            weightButton->setEnabled(false);
+            weightLineEdit->setText("");
+            weightGroupBox->setVisible(false);
+        }
+    });
 }
 
 void GraphViewer::initAlgorithmToolbar()
@@ -264,7 +271,6 @@ void GraphViewer::showWeightGroup()
     weightLineEdit->setFocus();
     weightGroupBox->setVisible(true);
 }
-
 
 void GraphViewer::showWarningLabel()
 {
