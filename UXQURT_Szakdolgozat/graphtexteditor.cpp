@@ -60,12 +60,14 @@ void GraphTextEditor::initEditor()
     for(int i=0; i<graph->getSize(); i++) {
         int id = graph->getId(i);
         for(int j=0; j<graph->getAdjNum(i); j++) {
-            GraphTextLine* line = addNewLine();
-            updateNames();
-            line->fromComboBox->setCurrentText(graph->getName(id));
-            line->toComboBox->setCurrentText(graph->getAdjName(i,j));
-            line->weightLineEdit->setText(QString::number(graph->getAdjWeight(i,j)));
-            line->setDisabled();
+            if ((!graph->getDirected() && (graph->getName(i) < graph->getAdjName(i,j))) ||  graph->getDirected()) {
+                GraphTextLine* line = addNewLine();
+                updateNames();
+                line->fromComboBox->setCurrentText(graph->getName(id));
+                line->toComboBox->setCurrentText(graph->getAdjName(i,j));
+                line->weightLineEdit->setText(QString::number(graph->getAdjWeight(i,j)));
+                line->setDisabled();
+            }
         }
     }
 }
@@ -129,8 +131,11 @@ void GraphTextEditor::fromNodeChanged(QString fromText)
     else {
         names2.removeAll(fromText);
         foreach(GraphTextLine* line2, edgeLines) {
-            if (line2 != line && line2->fromComboBox->currentText() == fromText) {
+            if (line2 != line && line2->fromComboBox->currentText() == fromText) {      // vegye ki azokat a csúcsokat, amikbe már megy innen él
                 names2.removeAll(line2->toComboBox->currentText());
+            }
+            if(line2 != line && !graph->getDirected() && line2->toComboBox->currentText() == fromText) { // ha irányítatlan, vegye ki azokat a csúcsokat, amikből megy ebbe él
+                names2.removeAll(line2->fromComboBox->currentText());
             }
         }
 
@@ -153,9 +158,9 @@ GraphTextLine* GraphTextEditor::addNewLine()
     line->weightLineEdit->setText("1");
     if (names.size() > 1) line->fromComboBox->addItems(names);
 
-    connect(line, SIGNAL(deleteSignal()), this, SLOT(deleteEdgeLine()));
-    connect(line, SIGNAL(readyToSetWeight()), this, SLOT(setEdge()));
-    connect(line->fromComboBox, SIGNAL(currentTextChanged(QString)), this, SLOT(fromNodeChanged(QString)));
+    connect(line, &GraphTextLine::deleteSignal, this, &GraphTextEditor::deleteEdgeLine);
+    connect(line, &GraphTextLine::readyToSetWeight, this, &GraphTextEditor::setEdge);
+    connect(line->fromComboBox, &QComboBox::currentTextChanged, this, &GraphTextEditor::fromNodeChanged);
 
     return line;
 
@@ -166,18 +171,18 @@ void GraphTextEditor::updateNames()
     names.clear();
     names = graph->getNames();
     names.prepend(QString());
-    foreach(GraphTextLine* line, edgeLines) {
-        QString fromText = line->fromComboBox->currentText();
-        QString toText = line->toComboBox->currentText();
-        line->fromComboBox->clear();
-        line->toComboBox->clear();
-        if (names.size() > 1) {
-            line->fromComboBox->addItems(names);
-            line->fromComboBox->setCurrentText(fromText);
-            if (toText != "") {
-                line->toComboBox->setCurrentText(toText);
-            }
-        }
+//    foreach(GraphTextLine* line, edgeLines) {
+//        QString fromText = line->fromComboBox->currentText();
+//        QString toText = line->toComboBox->currentText();
+//        line->fromComboBox->clear();
+//        line->toComboBox->clear();
+//        if (names.size() > 1) {
+//            line->fromComboBox->addItems(names);
+//            line->fromComboBox->setCurrentText(fromText);
+//            if (toText != "") {
+//                line->toComboBox->setCurrentText(toText);
+//            }
+//        }
 
-    }
+//    }
 }
