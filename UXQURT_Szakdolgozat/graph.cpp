@@ -98,18 +98,14 @@ void Graph::deleteEdge(int fromId, int toId)
 {
     Node* fromNode = findById(fromId);
     Node* toNode = findById(toId);
-    if (fromNode != nullptr && toNode != nullptr) {
-        fromNode->deleteEdge(toNode);
-    }
+    deleteEdge(fromNode, toNode);
 }
 
 void Graph::deleteEdge(QString fromName, QString toName)
 {
     Node* fromNode = findByName(fromName);
     Node* toNode = findByName(toName);
-    if (fromNode != nullptr && toNode != nullptr) {
-        fromNode->deleteEdge(toNode);
-    }
+    deleteEdge(fromNode, toNode);
 }
 
 void Graph::deleteNode(int id)
@@ -212,4 +208,12 @@ bool Graph::setEdge(Node *from, Node *to, int w)
         return from->setEdge(to, w);
     }
     return false;
+}
+
+void Graph::deleteEdge(Node *from, Node *to)
+{
+    if (from != nullptr && to != nullptr) {
+        from->deleteEdge(to);
+        if (!isDirected) from->deleteReversed(to);
+    }
 }

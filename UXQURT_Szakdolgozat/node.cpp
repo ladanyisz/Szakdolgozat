@@ -60,8 +60,6 @@ void Node::setReversedEdge()
 {
     foreach(AdjNode* adjNode, adjNodes) {
         setReversedEdge(adjNode->node, adjNode->getWeight());
-//        bool is_new = adjNode->node->setEdge(this, adjNode->getWeight());
-//        emit edgeChanged(adjNode->node->getId(), id, adjNode->getWeight(), is_new);
     }
 }
 
@@ -82,6 +80,12 @@ void Node::deleteEdge(Node *to)
     AdjNode* adjNode = adjNodes[pos];
     adjNodes.remove(pos);
     delete adjNode;
+}
+
+void Node::deleteReversed(Node *from)
+{
+    from->deleteEdge(this);
+    emit edgeDeleted(from->getId(), id);
 }
 
 bool Node::hasEdge(Node *to)

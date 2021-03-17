@@ -26,11 +26,13 @@ public:
     void setReversedEdge();             // ha valamelyik csúcsba megy ebből él, akkor a csúcsból ebbe is beállít egy élt (irányított -> irányítatlan váltás)
     void setReversedEdge(Node* from, int weight);
     void deleteEdge(Node* to);
+    void deleteReversed(Node* from);
     void setName(QChar name);
     bool hasEdge(Node* to);
 
 signals:
-    void edgeChanged(int fromId, int toId, int w, int new_edge);
+    void edgeChanged(int fromId, int toId, int w, int new_edge);    // létrejött új vagy módosult a súly
+    void edgeDeleted(int fromId, int toId);
 
 
 private:
