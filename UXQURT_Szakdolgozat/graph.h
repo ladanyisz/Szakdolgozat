@@ -56,7 +56,7 @@ private:
 
     Node* findById(int id);
     Node* findByName(QString name);
-
+    bool setEdge(Node* from, Node* to, int w);
 
 };
 

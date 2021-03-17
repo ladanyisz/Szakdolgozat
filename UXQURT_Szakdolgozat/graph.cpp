@@ -60,22 +60,14 @@ bool Graph::setEdge(int fromId, int toId, int w)
 {
     Node* fromNode = findById(fromId);
     Node* toNode = findById(toId);
-    if (fromNode != nullptr && toNode != nullptr) {
-        if (!isDirected) fromNode->setReversedEdge(toNode, w);
-        return fromNode->setEdge(toNode, w);
-    }
-    return false;
+    setEdge(fromNode, toNode, w);
 }
 
 bool Graph::setEdge(QString fromName, QString toName, int w)
 {
     Node* fromNode = findByName(fromName);
     Node* toNode = findByName(toName);
-    if (fromNode != nullptr && toNode != nullptr) {
-        return fromNode->setEdge(toNode, w);
-    }
-    return false;
-
+    setEdge(fromNode, toNode, w);
 }
 
 int Graph::addNode()
@@ -211,4 +203,13 @@ Node *Graph::findByName(QString name)
         }
     }
     return nullptr;
+}
+
+bool Graph::setEdge(Node *from, Node *to, int w)
+{
+    if (from != nullptr && to != nullptr) {
+        if (!isDirected) from->setReversedEdge(to, w);
+        return from->setEdge(to, w);
+    }
+    return false;
 }
