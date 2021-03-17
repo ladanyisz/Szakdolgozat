@@ -250,6 +250,10 @@ void GraphViewer::showGraphTextEditor()
     previousButton->setEnabled(false);
     nextButton->setEnabled(false);
     setupGraphAction->setEnabled(false);
+
+    weightLineEdit->setText("");
+    weightGroupBox->setVisible(false);
+    pointerButton->click();
 }
 
 void GraphViewer::hideGraphTextEditor()
