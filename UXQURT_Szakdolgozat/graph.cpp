@@ -61,6 +61,7 @@ bool Graph::setEdge(int fromId, int toId, int w)
     Node* fromNode = findById(fromId);
     Node* toNode = findById(toId);
     if (fromNode != nullptr && toNode != nullptr) {
+        if (!isDirected) fromNode->setReversedEdge(toNode, w);
         return fromNode->setEdge(toNode, w);
     }
     return false;

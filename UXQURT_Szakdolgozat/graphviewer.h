@@ -25,6 +25,7 @@ class GraphViewer : public QMainWindow
 {
     Q_OBJECT
 
+
 public:
     GraphViewer(QWidget *parent = nullptr);
 

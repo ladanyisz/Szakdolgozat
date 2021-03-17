@@ -24,6 +24,7 @@ public:
 
     bool setEdge(Node *to, int w);      // ha új él, akkor igazzal, ha nem, akkor hamissal tér vissza
     void setReversedEdge();             // ha valamelyik csúcsba megy ebből él, akkor a csúcsból ebbe is beállít egy élt (irányított -> irányítatlan váltás)
+    void setReversedEdge(Node* from, int weight);
     void deleteEdge(Node* to);
     void setName(QChar name);
     bool hasEdge(Node* to);

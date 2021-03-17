@@ -59,9 +59,16 @@ bool Node::setEdge(Node *to, int w)
 void Node::setReversedEdge()
 {
     foreach(AdjNode* adjNode, adjNodes) {
-        bool is_new = adjNode->node->setEdge(this, adjNode->getWeight());
-        emit edgeChanged(adjNode->node->getId(), id, adjNode->getWeight(), is_new);
+        setReversedEdge(adjNode->node, adjNode->getWeight());
+//        bool is_new = adjNode->node->setEdge(this, adjNode->getWeight());
+//        emit edgeChanged(adjNode->node->getId(), id, adjNode->getWeight(), is_new);
     }
+}
+
+void Node::setReversedEdge(Node *from, int weight)
+{
+    bool is_new = from->setEdge(this, weight);
+    emit edgeChanged(from->getId(), id, weight, is_new);
 }
 
 void Node::setName(QChar name) { this->name = name; }

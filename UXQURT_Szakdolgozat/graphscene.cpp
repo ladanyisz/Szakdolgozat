@@ -278,7 +278,7 @@ void GraphScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             }
         }
     }
-
+    graph->serializeGraph();
 }
 
 
