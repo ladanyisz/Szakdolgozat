@@ -15,6 +15,7 @@ GraphScene::GraphScene(Graph* graph, QObject *)
     connect(graph, &Graph::directedChanged, this, &GraphScene::setDirected);
     connect(graph, &Graph::weightedChanged, this, &GraphScene::setWeighted);
     connect(graph, &Graph::edgeChanged, this, &GraphScene::findEdgeNodes);
+    connect(graph, &Graph::edgeDeleted, this, &GraphScene::deleteReversed);
 }
 
 
@@ -128,7 +129,6 @@ void GraphScene::updateNodes()
 
 void GraphScene::findEdgeNodes(int from, int to, int w, bool is_new)
 {
-    qDebug() << "Adatok: " << QString::number(from) << QString::number(to) << QString::number(w);
     NodeGraphics* fromNode = nullptr;
     NodeGraphics* toNode = nullptr;
     QList<QGraphicsItem*> scene_items = items();
@@ -136,7 +136,6 @@ void GraphScene::findEdgeNodes(int from, int to, int w, bool is_new)
         NodeGraphics* node = qgraphicsitem_cast<NodeGraphics*>(item);
         if (is_new) {
             if (node) {
-                qDebug() << "nodegraphics id: " << node->getId();
                 if (node->getId() == from) fromNode = node;
                 else if (node->getId() == to) toNode = node;
             }
@@ -151,9 +150,23 @@ void GraphScene::findEdgeNodes(int from, int to, int w, bool is_new)
 
     }
     if (fromNode != nullptr && toNode != nullptr) {
-        qDebug() << "beállítva";
         addEdge(fromNode, toNode, w);
     }
+}
+
+void GraphScene::deleteReversed(int from, int to)
+{
+    EdgeGraphics* edge = nullptr;
+    QList<QGraphicsItem*> scene_items = items();
+    foreach(QGraphicsItem* item, scene_items) {
+        EdgeGraphics* _edge = qgraphicsitem_cast<EdgeGraphics*>(item);
+        if (_edge) {
+            if (_edge->getFromNodeId() == from && _edge->getToNodeId() == to) {
+                edge = _edge;
+            }
+        }
+    }
+   deleteEdgeGraphics(edge);
 }
 
 void GraphScene::addNewEdge(QString fromName, QString toName, int w)
@@ -185,11 +198,7 @@ void GraphScene::deleteEdge(QString fromName, QString toName)
             }
         }
     }
-    if (edge != nullptr) {
-        edge->deleteEdgeFromNodes();
-        removeItem(edge);
-        delete edge;
-    }
+    deleteEdgeGraphics(edge);
 }
 
 void GraphScene::setEdgeWeight(QString fromName, QString toName, int w)
@@ -343,4 +352,13 @@ void GraphScene::addEdge(NodeGraphics *from, NodeGraphics *to, int weight)
     connect(this, &GraphScene::graphDirectedChanged, edge, &EdgeGraphics::setDirected);
     connect(this, &GraphScene::graphWeightedChanged, edge, &EdgeGraphics::setWeighted);
     addItem(edge);
+}
+
+void GraphScene::deleteEdgeGraphics(EdgeGraphics *edge)
+{
+    if (edge != nullptr) {
+        edge->deleteEdgeFromNodes();
+        removeItem(edge);
+        delete edge;
+    }
 }

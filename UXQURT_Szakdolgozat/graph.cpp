@@ -81,6 +81,7 @@ int Graph::addNode()
         names[ind] = false;
         newNode->setName(n);
         connect(newNode, &Node::edgeChanged, this, [=](int f, int t, int w, bool n) { emit edgeChanged(f,t,w, n); });
+        connect(newNode, &Node::edgeDeleted, this, [=](int f, int t) { emit edgeDeleted(f,t); });
         return newNode->getId();
     }
     emit nodesFull();

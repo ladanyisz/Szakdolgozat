@@ -45,6 +45,7 @@ signals:
     void directedChanged(bool d);
     void weightedChanged(bool w);
     void edgeChanged(int fromId, int toId, int w, bool is_new);
+    void edgeDeleted(int fromId, int toId);
 
 private:
     static const int maxNodeNum = 15;
