@@ -41,9 +41,11 @@ GraphTextEditor::GraphTextEditor(Graph* graph, QWidget *parent) : QWidget(parent
     graphTextLayout->addLayout(buttonLayout);
 
 
-    connect(newEdgeButton, SIGNAL(clicked()), this, SLOT(addNewEdge()));
-    connect(nodeSpinBox, SIGNAL(editingFinished()), this, SLOT(refreshGraphSize()));
+    connect(newEdgeButton, &QAbstractButton::clicked, this, &GraphTextEditor::addNewEdge);
+    connect(nodeSpinBox, &QAbstractSpinBox::editingFinished, this, &GraphTextEditor::refreshGraphSize);
     connect(okButton, &QPushButton::clicked, this, [=](){emit graphReady();});
+    connect(graph, &Graph::directedChanged, this, &GraphTextEditor::initEditor);
+    connect(graph, &Graph::graphDeleted, this, &GraphTextEditor::initEditor);
 }
 
 void GraphTextEditor::initEditor()
@@ -74,15 +76,25 @@ void GraphTextEditor::initEditor()
 
 void GraphTextEditor::addNewEdge()
 {
-    if (edgeLines.size() != 0) {
-        GraphTextLine* lastLine = edgeLines.at(edgeLines.size()-1);
-        if (!lastLine->fromComboBox->isEnabled() && !lastLine->toComboBox->isEnabled()) {
+    bool availableEdges = false;
+    int i = 0;
+    int nodes_num = graph->getSize();
+    while (i < nodes_num && !availableEdges) {
+        availableEdges = graph->getAdjNum(i) < nodes_num - 1;
+        i++;
+    }
+    if (availableEdges) {
+        if (edgeLines.size() != 0) {
+            GraphTextLine* lastLine = edgeLines.at(edgeLines.size()-1);
+            if (!lastLine->fromComboBox->isEnabled() && !lastLine->toComboBox->isEnabled()) {
+                addNewLine();
+            }
+        } else {
             addNewLine();
         }
     } else {
-        addNewLine();
+        emit edgesFull();
     }
-
 }
 
 void GraphTextEditor::refreshGraphSize()
@@ -150,7 +162,7 @@ void GraphTextEditor::fromNodeChanged(QString fromText)
 
 GraphTextLine* GraphTextEditor::addNewLine()
 {
-    GraphTextLine* line = new GraphTextLine();
+    GraphTextLine* line = new GraphTextLine(graph->getWeighted());
     edgeLines.append(line);
     edgeLayout->addWidget(line);
     QValidator *validator = new QIntValidator(this);
@@ -161,6 +173,7 @@ GraphTextLine* GraphTextEditor::addNewLine()
     connect(line, &GraphTextLine::deleteSignal, this, &GraphTextEditor::deleteEdgeLine);
     connect(line, &GraphTextLine::readyToSetWeight, this, &GraphTextEditor::setEdge);
     connect(line->fromComboBox, &QComboBox::currentTextChanged, this, &GraphTextEditor::fromNodeChanged);
+    connect(graph, &Graph::weightedChanged, line, &GraphTextLine::setWeighted);
 
     return line;
 
@@ -171,18 +184,23 @@ void GraphTextEditor::updateNames()
     names.clear();
     names = graph->getNames();
     names.prepend(QString());
-//    foreach(GraphTextLine* line, edgeLines) {
-//        QString fromText = line->fromComboBox->currentText();
-//        QString toText = line->toComboBox->currentText();
-//        line->fromComboBox->clear();
-//        line->toComboBox->clear();
-//        if (names.size() > 1) {
-//            line->fromComboBox->addItems(names);
-//            line->fromComboBox->setCurrentText(fromText);
-//            if (toText != "") {
-//                line->toComboBox->setCurrentText(toText);
-//            }
-//        }
-
-//    }
+    int nodes_num = graph->getSize();
+    for(int i=0; i<nodes_num; i++) {
+        if (graph->getAdjNum(i) == nodes_num-1) {
+            names.removeAll(graph->getName(graph->getId(i)));
+        }
+    }
+    foreach(GraphTextLine* line, edgeLines) {                           // ha módosult a gráf mérete miközben egy él még nem lett "leokézva", a neveket is frissíti a legördülőben
+        QString fromText = line->fromComboBox->currentText();
+        QString toText = line->toComboBox->currentText();
+        line->fromComboBox->clear();
+        line->toComboBox->clear();
+        if (names.size() > 1) {
+            line->fromComboBox->addItems(names);
+            line->fromComboBox->setCurrentText(fromText);
+            if (toText != "") {
+                line->toComboBox->setCurrentText(toText);
+            }
+        }
+    }
 }

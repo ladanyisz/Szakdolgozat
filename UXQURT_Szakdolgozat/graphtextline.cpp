@@ -1,6 +1,6 @@
 #include "graphtextline.h"
 
-GraphTextLine::GraphTextLine(QWidget *parent) : QWidget(parent)
+GraphTextLine::GraphTextLine(bool weighted, QWidget *parent) : QWidget(parent)
 {
 
     fromComboBox = new QComboBox(this);
@@ -38,20 +38,40 @@ GraphTextLine::GraphTextLine(QWidget *parent) : QWidget(parent)
     edgeLayout->setAlignment(Qt::AlignJustify);
     edgeLayout->setContentsMargins(0,3,0,3);
 
+    setWeighted(weighted);
+
     connect(deleteButton, &QPushButton::clicked, this, [=]() { emit deleteSignal(); });
-    connect(okButton, SIGNAL(clicked()), this, SLOT(okClicked()));
-    connect(weightLineEdit, SIGNAL(returnPressed()), this, SLOT(okClicked()));
-    connect(editButton, SIGNAL(clicked()), this, SLOT(editClicked()));
+    connect(okButton, &QAbstractButton::clicked, this, &GraphTextLine::okClicked);
+    connect(weightLineEdit, &QLineEdit::returnPressed, this, &GraphTextLine::okClicked);
+    connect(editButton, &QAbstractButton::clicked, this, &GraphTextLine::editClicked);
 
 }
 
 void GraphTextLine::setDisabled()
 {
     okButton->setHidden(true);
-    editButton->setHidden(false);
+    if (weight) editButton->setHidden(false);
     fromComboBox->setEnabled(false);
     toComboBox->setEnabled(false);
     weightLineEdit->setEnabled(false);
+}
+
+void GraphTextLine::setWeighted(bool w) {
+    weight = w;
+    if (!w) {
+        weightLineEdit->setEnabled(false);
+        weightLineEdit->setVisible(false);
+        editButton->setVisible(false);
+        okButton->setVisible(false);
+        if(fromComboBox->currentText() == "" || toComboBox->currentText() == "") {
+            okButton->setVisible(true);
+        }
+    } else {
+        if(fromComboBox->currentText() == "" || toComboBox->currentText() == "") {
+            okButton->setVisible(true);
+        } else editButton->setVisible(true);
+        weightLineEdit->setVisible(true);
+    }
 }
 
 

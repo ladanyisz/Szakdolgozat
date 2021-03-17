@@ -12,7 +12,7 @@ class GraphTextLine : public QWidget
 {
     Q_OBJECT
 public:
-    explicit GraphTextLine(QWidget *parent = nullptr);
+    explicit GraphTextLine(bool weighted, QWidget *parent = nullptr);
 
     QComboBox* fromComboBox;
     QComboBox* toComboBox;
@@ -32,6 +32,10 @@ signals:
 public slots:
     void okClicked();
     void editClicked();
+    void setWeighted(bool w);
+
+private:
+    bool weight;
 
 };
 

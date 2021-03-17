@@ -31,6 +31,7 @@ public:
 
 public slots:
     void nodesFull();
+    void edgesFull();
     void deleteGraph();
     void showGraphTextEditor();
     void hideGraphTextEditor();

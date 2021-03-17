@@ -46,6 +46,7 @@ signals:
     void weightedChanged(bool w);
     void edgeChanged(int fromId, int toId, int w, bool is_new);
     void edgeDeleted(int fromId, int toId);
+    void graphDeleted();
 
 private:
     static const int maxNodeNum = 15;

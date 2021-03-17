@@ -193,6 +193,7 @@ void GraphViewer::initViews()
     connect(graphTextEditor, &GraphTextEditor::edgeSet, scene, &GraphScene::setEdgeWeight);
     connect(graphTextEditor, &GraphTextEditor::edgeDeleted, scene, &GraphScene::deleteEdge);
     connect(graphTextEditor, &GraphTextEditor::graphReady, this, &GraphViewer::hideGraphTextEditor);
+    connect(graphTextEditor, &GraphTextEditor::edgesFull, this, &GraphViewer::edgesFull);
 
 }
 
@@ -227,14 +228,16 @@ void GraphViewer::nodesFull()
     showWarningLabel();
 }
 
+void GraphViewer::edgesFull()
+{
+    warningLabel->setText("Nincs több lehetséges él!");
+    showWarningLabel();
+}
+
 void GraphViewer::deleteGraph()
 {
     graph->deleteAll();
-    QList<QGraphicsItem*> scene_items = scene->items();
-    foreach(QGraphicsItem* item, scene_items) {
-        scene->removeItem(item);
-        delete item;
-    }
+
 }
 
 void GraphViewer::showGraphTextEditor()

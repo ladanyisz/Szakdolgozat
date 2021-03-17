@@ -35,6 +35,7 @@ signals:
     void newEdge(QString, QString, int);
     void edgeSet(QString, QString, int);
     void edgeDeleted(QString, QString);
+    void edgesFull();
 
 
 private:

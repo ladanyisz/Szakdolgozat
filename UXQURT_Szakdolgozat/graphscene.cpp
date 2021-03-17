@@ -16,6 +16,12 @@ GraphScene::GraphScene(Graph* graph, QObject *)
     connect(graph, &Graph::weightedChanged, this, &GraphScene::setWeighted);
     connect(graph, &Graph::edgeChanged, this, &GraphScene::findEdgeNodes);
     connect(graph, &Graph::edgeDeleted, this, &GraphScene::deleteReversed);
+    connect(graph, &Graph::graphDeleted, this, [=]() {
+        QList<QGraphicsItem*> scene_items = items();
+        foreach(QGraphicsItem* item, scene_items) {
+            removeItem(item);
+            delete item;
+    }} );
 }
 
 
