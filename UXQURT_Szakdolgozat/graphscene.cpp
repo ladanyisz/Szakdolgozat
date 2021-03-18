@@ -70,12 +70,14 @@ QVector<QPointF> GraphScene::nodePositions()
 {
     QVector<QPointF> points;
     points.resize(graph->getSize());
+    qreal w = sceneRect().width();
+    qreal h = sceneRect().height();
     QList<QGraphicsItem*> scene_items = items();
     foreach(QGraphicsItem* item, scene_items) {
         NodeGraphics* node = qgraphicsitem_cast<NodeGraphics*>(item);
         if (node) {
             int i = graph->getVectorPosition(node->getId());
-            points[i] = node->pos();
+            points[i] = QPointF(node->scenePos().x() / w, node->scenePos().y() / h);
         }
     }
     return points;
@@ -201,6 +203,7 @@ void GraphScene::addNewEdge(QString fromName, QString toName, int w)
             if (graph->getName(node->getId()) == fromName) fromNode = node;
             else if (graph->getName(node->getId()) == toName) toNode = node;
         }
+
     }
     if (fromNode != nullptr && toNode != nullptr) {
         addEdge(fromNode, toNode, w);

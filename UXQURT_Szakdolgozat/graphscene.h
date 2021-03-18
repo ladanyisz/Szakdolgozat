@@ -20,7 +20,7 @@ public:
     void updatePositions(QList<QPointF> positions, float w_scale, float h_scale);   // scene elemeinek pozícióját frissíti
     void updateEdges();                                                             // a csúcsok (grafikus elemek) éleinek pozícióit újraszámolja
     void setWeight(int w);
-    QVector<QPointF> nodePositions();
+    QVector<QPointF> nodePositions();                                               // mentéshez a pozíciók ablak méreteivel vett aránya
     void addNode(int id, QChar name, QPointF pos);
 
 

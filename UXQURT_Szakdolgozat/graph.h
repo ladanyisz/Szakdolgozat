@@ -51,6 +51,7 @@ signals:
     void nodesFull();                               // a csúcsok száma elérte a maxNodeNum-ot
     void directedChanged(bool d);
     void weightedChanged(bool w);
+    void newEdge(QString from, QString to, int w);
     void edgeChanged(int fromId, int toId, int w, bool is_new);
     void edgeDeleted(int fromId, int toId);
     void graphDeleted();

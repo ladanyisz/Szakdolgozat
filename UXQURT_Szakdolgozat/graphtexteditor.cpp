@@ -62,7 +62,7 @@ void GraphTextEditor::initEditor()
     for(int i=0; i<graph->getSize(); i++) {
         int id = graph->getId(i);
         for(int j=0; j<graph->getAdjNum(i); j++) {
-            if ((!graph->getDirected() && (graph->getName(i) < graph->getAdjName(i,j))) ||  graph->getDirected()) {
+            if ((!graph->getDirected() && (graph->getName(id) < graph->getAdjName(i,j))) ||  graph->getDirected()) { // itt módosítottam -> getname(id) id helyett i volt
                 GraphTextLine* line = addNewLine();
                 updateNames();
                 line->fromComboBox->setCurrentText(graph->getName(id));

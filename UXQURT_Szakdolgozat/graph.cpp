@@ -280,7 +280,9 @@ bool Graph::setEdge(Node *from, Node *to, int w)
 {
     if (from != nullptr && to != nullptr) {
         if (!isDirected) from->setReversedEdge(to, w);
-        return from->setEdge(to, w);
+        if (from->setEdge(to, w)) {
+            return true;
+        }
     }
     return false;
 }

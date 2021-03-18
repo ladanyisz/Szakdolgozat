@@ -20,6 +20,7 @@ GraphViewer::GraphViewer(QWidget *parent)
     graph = new Graph();
 
     initViews();
+    resize(800, 700);
     initMenu();
     initEditToolbar();
     initAlgorithmToolbar();
@@ -28,6 +29,7 @@ GraphViewer::GraphViewer(QWidget *parent)
 
 
     connect(graph, &Graph::nodesFull,this, &GraphViewer::nodesFull);
+    connect(graph, &Graph::newEdge, scene, &GraphScene::addNewEdge);
     connect(scene, &GraphScene::edgeSelected, this, &GraphViewer::showWeightGroup);
 
 
@@ -183,7 +185,15 @@ void GraphViewer::initViews()
     view = new QGraphicsView(scene);
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    scene->setSceneRect(view->geometry());
+//    QList<QPointF> positions = scene->originalPositions();
+//    scene->setSceneRect(view->geometry());
+//    float w_old = scene->sceneRect().width();
+//    float h_old = scene->sceneRect().height();
+//    scene->setSceneRect(view->geometry());
+//    float w_new = scene->sceneRect().width();
+//    float h_new = scene->sceneRect().height();
+//    scene->updatePositions(positions, w_new/w_old, h_new/h_old);
+//    view->fitInView(scene->sceneRect(), Qt::IgnoreAspectRatio);
 
     QWidget *widget = new QWidget;
     setCentralWidget(widget);
@@ -201,7 +211,6 @@ void GraphViewer::initViews()
     connect(graphTextEditor, &GraphTextEditor::edgeDeleted, scene, &GraphScene::deleteEdge);
     connect(graphTextEditor, &GraphTextEditor::graphReady, this, &GraphViewer::hideGraphTextEditor);
     connect(graphTextEditor, &GraphTextEditor::edgesFull, this, &GraphViewer::edgesFull);
-
 }
 
 void GraphViewer::initWeightGroup()
@@ -305,7 +314,17 @@ void GraphViewer::openFile()
         QVector<std::tuple<int, QChar, QPointF>> nodes_data = graph->loadGraph(fileName);
         for(int i=0; i<graph->getSize(); i++) {
             std::tuple<int, QChar, QPointF> node_data = nodes_data.at(i);
-            scene->addNode(std::get<0>(node_data), std::get<1>(node_data), std::get<2>(node_data));
+            qreal w = scene->sceneRect().width();
+            qreal h = scene->sceneRect().height();
+            QPointF point;
+            point.setX(std::get<2>(node_data).x()*w);
+            point.setY(std::get<2>(node_data).y()*h);
+            scene->addNode(std::get<0>(node_data), std::get<1>(node_data), point);
+        }
+        for(int i=0; i<graph->getSize(); i++) {
+            for(int j=0; j<graph->getAdjNum(i); j++) {
+                scene->addNewEdge(graph->getName(graph->getId(i)), graph->getAdjName(i,j), graph->getAdjWeight(i,j));
+            }
         }
     }
 }

@@ -2,7 +2,6 @@
 
 #include <QFile>
 #include <QTextStream>
-#include <QDebug>
 
 FileManagement::FileManagement()
 {
@@ -34,13 +33,10 @@ bool FileManagement::loadGraph(QString path, graph_data &data)
 
     QTextStream stream(&file);
     data.size = stream.readLine().toInt();
-    qDebug() << QString::number(data.size);
     if (stream.atEnd()) return false;
     data.isDirected = stream.readLine().toInt();
-    qDebug() << QString::number(data.isDirected);
     if (stream.atEnd()) return false;
     data.isWeighted = stream.readLine().toInt();
-    qDebug() << QString::number(data.isWeighted);
     if (stream.atEnd()) return false;
     QString tmp;
     for(int i=0; i<data.size; i++) {
