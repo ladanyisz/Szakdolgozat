@@ -252,12 +252,7 @@ void GraphScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
         int id = graph->addNode();
         if (id > -1) {
-            NodeGraphics* newNode = new NodeGraphics();
-            newNode->setRect(0,0,50,50);
-            newNode->setPos(event->scenePos().rx() - newNode->getSize()/2, event->scenePos().ry() - newNode->getSize()/2);
-            newNode->setId(id);
-            newNode->setName(graph->getName(id));
-            addItem(newNode);
+            addNode(id, graph->getName(id), QPointF(event->scenePos().rx() - NodeGraphics::getSize()/2, event->scenePos().ry() - NodeGraphics::getSize()/2));
         }
 
     } else if (mode == GraphMode::AddEdge) {
@@ -350,6 +345,16 @@ void GraphScene::updateNodePositions(QList<NodeGraphics *> nodes)
         node->setPos(pos);
     }
     updateEdges();
+}
+
+void GraphScene::addNode(int id, QChar name, QPointF pos)
+{
+    NodeGraphics* newNode = new NodeGraphics();
+    newNode->setRect(0,0,50,50);
+    newNode->setPos(pos);
+    newNode->setId(id);
+    newNode->setName(name);
+    addItem(newNode);
 }
 
 void GraphScene::deleteNode(NodeGraphics *node)

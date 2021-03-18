@@ -21,6 +21,7 @@ public:
     void updateEdges();                                                             // a csúcsok (grafikus elemek) éleinek pozícióit újraszámolja
     void setWeight(int w);
     QVector<QPointF> nodePositions();
+    void addNode(int id, QChar name, QPointF pos);
 
 
 
