@@ -101,6 +101,7 @@ private:
     void initWeightGroup();
     void initWarningLabel();
     void showWarningLabel();
+    void updateSceneRect();
 
     QWidget * QMainWindow;
 

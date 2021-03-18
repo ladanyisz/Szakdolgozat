@@ -20,7 +20,6 @@ GraphViewer::GraphViewer(QWidget *parent)
     graph = new Graph();
 
     initViews();
-    resize(800, 700);
     initMenu();
     initEditToolbar();
     initAlgorithmToolbar();
@@ -34,19 +33,21 @@ GraphViewer::GraphViewer(QWidget *parent)
     connect(graph, &Graph::newEdge, scene, &GraphScene::addNewEdge);
     connect(scene, &GraphScene::edgeSelected, this, &GraphViewer::showWeightGroup);
 
-
-
     setStyles();
+
 }
 
 void GraphViewer::setStyles()
 {
-    this->setStyleSheet("QToolBar {spacing: 6px; padding: 6px 3px;}"
+    this->setStyleSheet(/*"QToolBar {spacing: 6px; padding: 6px 3px;}"*/
                         "QComboBox {"
                          "font-size: 14px;"
-                         "padding: 3px 6px;"
+                         "padding: 2px 4px;"
                         "}"
                         "QCombobox::drop-down {padding: 56px;}");
+
+    nodeSelector->setStyleSheet("margin-right: 2px;");
+
     warningLabel->setStyleSheet("font-size: 16px; color: red;");
     weightGroupBox->setStyleSheet("background-color: white; border: 1px solid black;");
     weightLabel->setStyleSheet("border: unset;");
@@ -185,9 +186,9 @@ void GraphViewer::initViews()
 {
     scene = new GraphScene(graph, this);
     view = new QGraphicsView(scene);
-//    view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-//    view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-//    view->updateGeometry();
+    view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scene->setSceneRect(view->geometry());
 
 
     QWidget *widget = new QWidget;
@@ -199,9 +200,6 @@ void GraphViewer::initViews()
     graphTextEditor = new GraphTextEditor(graph, this);
     graphTextEditor->setHidden(true);
     layout->addWidget(graphTextEditor);
-
-    scene->setSceneRect(view->geometry());
-    view->fitInView(scene->sceneRect(), Qt::IgnoreAspectRatio);
 
     connect(graphTextEditor, &GraphTextEditor::nodesChanged, scene, &GraphScene::updateNodes);
     connect(graphTextEditor, &GraphTextEditor::newEdge, scene, &GraphScene::addNewEdge);
@@ -272,6 +270,8 @@ void GraphViewer::showGraphTextEditor()
     weightLineEdit->setText("");
     weightGroupBox->setVisible(false);
     pointerButton->click();
+
+    updateSceneRect();
 }
 
 void GraphViewer::hideGraphTextEditor()
@@ -286,6 +286,9 @@ void GraphViewer::hideGraphTextEditor()
     previousButton->setEnabled(true);
     nextButton->setEnabled(true);
     setupGraphAction->setEnabled(true);
+
+    view->resize(width()-18, view->height());
+    updateSceneRect();
 }
 
 void GraphViewer::showWeightGroup()
@@ -338,9 +341,8 @@ void GraphViewer::showWarningLabel()
     timer.start(2000);
 }
 
-void GraphViewer::resizeEvent(QResizeEvent *)
+void GraphViewer::updateSceneRect()
 {
-
     QList<QPointF> positions = scene->originalPositions();
     float w_old = scene->sceneRect().width();
     float h_old = scene->sceneRect().height();
@@ -349,7 +351,11 @@ void GraphViewer::resizeEvent(QResizeEvent *)
     float h_new = scene->sceneRect().height();
     scene->updatePositions(positions, w_new/w_old, h_new/h_old);
     view->fitInView(scene->sceneRect(), Qt::IgnoreAspectRatio);
+}
 
+void GraphViewer::resizeEvent(QResizeEvent *)
+{
+    updateSceneRect();
 }
 
 void GraphViewer::changeEvent(QEvent * event)
