@@ -5,6 +5,7 @@
 #include <QVector>
 #include "node.h"
 #include "filemanagement.h"
+#include <tuple>
 #include <QDebug>
 
 class Graph : public QObject
@@ -28,6 +29,7 @@ public:
     QStringList getNames();                         // használt nevek
 
     int addNode();
+    int addNode(QChar name);                        // name nevű csúcs létrehozása
     void addNodes(int n);                           // n új csúcs létrehozása
     bool setEdge(int fromId, int toId, int w = 1);  // ha új él, akkor igazzal, ha nem, akkor hamissal tér vissza
     bool setEdge(QString fromName, QString toName, int w = 1);
@@ -39,6 +41,7 @@ public:
     void serializeGraph();
 
     bool saveGraph(QString path, QVector<QPointF> positions);   // előkészíti az adatokat a mentés számára (sikeres mentés esetén true)
+    QVector<std::tuple<int, QChar, QPointF>> loadGraph(QString path);
 
 public slots:
     void changeDirected(bool d);

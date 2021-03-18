@@ -94,6 +94,21 @@ int Graph::addNode()
     return -1;
 }
 
+int Graph::addNode(QChar name)
+{
+    if (nodes.size() < maxNodeNum) {
+        Node* newNode = new Node();
+        nodes.append(newNode);
+        QChar a = 'A';
+        int ind = name.unicode() - a.unicode();
+        newNode->setName(name);
+        names[ind] = false;
+        return newNode->getId();
+    }
+    emit nodesFull();
+    return -1;
+}
+
 void Graph::addNodes(int n)
 {
     for(int i=0; i<n; i++) {
@@ -171,8 +186,12 @@ bool Graph::saveGraph(QString path, QVector<QPointF> positions)
     QVector<QString> graph_representation;
     foreach(Node* node, nodes) {
         QString gr = "";
-        for(int i=0; i<node->getAdjNum(); i++) {
-            gr += QString(node->getAjdNodeName(i)) + "," + QString::number(node->getAdjNodeWeight(i)) + ";";
+        int adj_num = node->getAdjNum();
+        if (adj_num >= 1) {
+            for(int i=0; i<adj_num-1; i++) {
+                gr += QString(node->getAjdNodeName(i)) + "," + QString::number(node->getAdjNodeWeight(i)) + ";";
+            }
+            gr += QString(node->getAjdNodeName(adj_num-1)) + "," + QString::number(node->getAdjNodeWeight(adj_num-1));
         }
         graph_representation.append(gr);
     }
@@ -184,6 +203,34 @@ bool Graph::saveGraph(QString path, QVector<QPointF> positions)
     data.graph_representation = graph_representation;
     data.positions = positions;
     return file_management.saveGraph(path, data );
+}
+
+QVector<std::tuple<int, QChar, QPointF> > Graph::loadGraph(QString path)
+{
+    QVector<std::tuple<int, QChar, QPointF>> nodes_data;
+    graph_data data;
+    if (!file_management.loadGraph(path, data)) return nodes_data;
+    deleteAll();
+    isDirected = data.isDirected == 1;
+    hasWeights = data.isWeighted == 1;
+    for(int i=0; i<data.size; i++) {
+        int id = addNode((QChar)(data.names.at(i)).at(0));
+        std::tuple<int, QChar, QPointF> node_data = std::make_tuple(id, QChar(data.names.at(i).at(0)), data.positions.at(i));
+        nodes_data.append(node_data);
+    }
+    for(int i=0; i<data.size; i++) {
+        QStringList edges = data.graph_representation.at(i).split(";");
+        foreach(QString edge, edges) {
+            QStringList edge_data = edge.split(",");
+            if (edge_data.length() == 2) {
+                Node* to = findByName(edge_data.at(0));
+                int w = edge_data.at(1).toInt();
+                nodes.at(i)->setEdge(to, w);
+            }
+        }
+    }
+    serializeGraph();
+    return nodes_data;
 }
 
 

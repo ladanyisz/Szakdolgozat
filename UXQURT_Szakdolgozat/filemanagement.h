@@ -22,7 +22,7 @@ public:
     FileManagement();
 
     bool saveGraph(QString path, graph_data data);
-
+    bool loadGraph(QString path, graph_data &data);
 
 };
 

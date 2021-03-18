@@ -51,9 +51,12 @@ void GraphViewer::setStyles()
 void GraphViewer::initMenu()
 {
     fileMenu = menuBar()->addMenu(tr("&Fájl"));
-    saveFileAction = new QAction(tr("Mentés"));
+    saveFileAction = new QAction(QIcon(":/img/save.png"),tr("Mentés"));
     fileMenu->addAction(saveFileAction);
     connect(saveFileAction, &QAction::triggered, this, &GraphViewer::saveFile);
+    openFileAction = new QAction(QIcon(":/img/open.png"), tr("Megnyitás"));
+    fileMenu->addAction(openFileAction);
+    connect(openFileAction, &QAction::triggered, this, &GraphViewer::openFile);
     //graphMenu = menuBar()->addMenu(tr("&Szereksztés"));
 
 //    deleteGraphAction = new QAction(QIcon(":/img/delete.png"),tr("Gráf törlése"));
@@ -292,14 +295,15 @@ void GraphViewer::saveFile()
         QVector<QPointF> positions = scene->nodePositions();
         graph->saveGraph(fileName, positions);
     }
-//    QFileDialog saveDialog;
-//    saveDialog.setNameFilter("All graph files (*.graph)");
-//    saveDialog.setDirectory(QDir::homePath());
-//    saveDialog.setAcceptMode(QFileDialog::AcceptSave);
-//    saveDialog.setDefaultSuffix("graph");
-//    if (saveDialog.exec()) {
-//
-//    }
+}
+
+void GraphViewer::openFile()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Gráf betöltése"), QDir::currentPath(), tr("Gráfok (*.graph)"));
+
+    if (fileName != "" && fileName != QString()) {
+        QVector<std::tuple<int, QChar, QPointF>> nodes_data = graph->loadGraph(fileName);
+    }
 }
 
 void GraphViewer::showWarningLabel()

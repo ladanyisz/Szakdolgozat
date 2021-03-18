@@ -20,6 +20,7 @@
 #include "graph.h"
 #include "graphscene.h"
 #include "graphtexteditor.h"
+#include <tuple>
 
 
 class GraphViewer : public QMainWindow
@@ -38,6 +39,7 @@ public slots:
     void hideGraphTextEditor();
     void showWeightGroup();
     void saveFile();
+    void openFile();
 
 private:
 
@@ -46,6 +48,7 @@ private:
 
     QMenu* fileMenu;
     QAction* saveFileAction;
+    QAction* openFileAction;
 
     QMenu* editMenu;
     QMenu* graphMenu;

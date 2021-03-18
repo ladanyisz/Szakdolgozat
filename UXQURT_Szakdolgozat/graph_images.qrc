@@ -15,5 +15,7 @@
         <file>img/weight.png</file>
         <file>img/blue_edit.png</file>
         <file>img/tick.png</file>
+        <file>img/open.png</file>
+        <file>img/save.png</file>
     </qresource>
 </RCC>
