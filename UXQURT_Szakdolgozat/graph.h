@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QVector>
 #include "node.h"
+#include "filemanagement.h"
 #include <QDebug>
 
 class Graph : public QObject
@@ -17,6 +18,7 @@ public:
     bool getWeighted();
     int getSize();                                  // csúcsok száma
     QChar getName(int id);                          // Node id-ja alapján
+    int getVectorPosition(int id);
     int getMaxNodeNum();
     int getId(int i);                               // a listában az i-ik csúcs id-ja
     int getWeight(int fromId, int toId);
@@ -36,6 +38,8 @@ public:
     void deleteAll();                               // összes csúcs törlése
     void serializeGraph();
 
+    bool saveGraph(QString path, QVector<QPointF> positions);   // előkészíti az adatokat a mentés számára (sikeres mentés esetén true)
+
 public slots:
     void changeDirected(bool d);
     void changeWeighted(bool w);
@@ -54,6 +58,7 @@ private:
     QVector<bool> names;
     bool isDirected;
     bool hasWeights;
+    FileManagement file_management;
 
 
     Node* findById(int id);

@@ -27,6 +27,12 @@ int Graph::getSize() { return nodes.size(); }
 
 QChar Graph::getName(int id) { return findById(id)->getName(); }
 
+int Graph::getVectorPosition(int id)
+{
+    Node* node = findById(id);
+    return nodes.indexOf(node);
+}
+
 int Graph::getMaxNodeNum() { return maxNodeNum; }
 
 int Graph::getId(int i) { return nodes.at(i)->getId(); }
@@ -60,14 +66,14 @@ bool Graph::setEdge(int fromId, int toId, int w)
 {
     Node* fromNode = findById(fromId);
     Node* toNode = findById(toId);
-    setEdge(fromNode, toNode, w);
+    return setEdge(fromNode, toNode, w);
 }
 
 bool Graph::setEdge(QString fromName, QString toName, int w)
 {
     Node* fromNode = findByName(fromName);
     Node* toNode = findByName(toName);
-    setEdge(fromNode, toNode, w);
+    return setEdge(fromNode, toNode, w);
 }
 
 int Graph::addNode()
@@ -158,6 +164,26 @@ void Graph::serializeGraph()
         qDebug() << msg;
     }
 
+}
+
+bool Graph::saveGraph(QString path, QVector<QPointF> positions)
+{
+    QVector<QString> graph_representation;
+    foreach(Node* node, nodes) {
+        QString gr = "";
+        for(int i=0; i<node->getAdjNum(); i++) {
+            gr += QString(node->getAjdNodeName(i)) + "," + QString::number(node->getAdjNodeWeight(i)) + ";";
+        }
+        graph_representation.append(gr);
+    }
+    graph_data data;
+    data.size = nodes.size();
+    data.isDirected = isDirected ? 1 : 0;
+    data.isWeighted = hasWeights ? 1 : 0;
+    data.names = getNames();
+    data.graph_representation = graph_representation;
+    data.positions = positions;
+    return file_management.saveGraph(path, data );
 }
 
 

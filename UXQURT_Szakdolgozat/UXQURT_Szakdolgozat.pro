@@ -11,6 +11,7 @@ CONFIG += c++11
 SOURCES += \
     adjnode.cpp \
     edgegraphics.cpp \
+    filemanagement.cpp \
     graph.cpp \
     graphscene.cpp \
     graphtexteditor.cpp \
@@ -23,6 +24,7 @@ SOURCES += \
 HEADERS += \
     adjnode.h \
     edgegraphics.h \
+    filemanagement.h \
     graph.h \
     graphscene.h \
     graphtexteditor.h \

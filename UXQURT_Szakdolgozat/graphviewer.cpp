@@ -8,6 +8,7 @@
 #include <QGraphicsItem>
 #include<QMenuBar>
 #include <QCheckBox>
+#include <QDir>
 
 GraphViewer::GraphViewer(QWidget *parent)
     : QMainWindow(parent) 
@@ -50,23 +51,26 @@ void GraphViewer::setStyles()
 void GraphViewer::initMenu()
 {
     fileMenu = menuBar()->addMenu(tr("&Fájl"));
+    saveFileAction = new QAction(tr("Mentés"));
+    fileMenu->addAction(saveFileAction);
+    connect(saveFileAction, &QAction::triggered, this, &GraphViewer::saveFile);
     //graphMenu = menuBar()->addMenu(tr("&Szereksztés"));
 
 //    deleteGraphAction = new QAction(QIcon(":/img/delete.png"),tr("Gráf törlése"));
 //    graphMenu->addAction(deleteGraphAction);
     deleteGraphAction = new QAction(tr("Gráf törlése"));
     menuBar()->addAction(deleteGraphAction);
-    connect(deleteGraphAction, SIGNAL(triggered()), this, SLOT(deleteGraph()));
+    connect(deleteGraphAction, &QAction::triggered, this, &GraphViewer::deleteGraph);
 
     //setupGraphAction = new QAction(QIcon(":/img/circle.png"), tr("Gráf szöveges megadása"));
     setupGraphAction = new QAction(tr("Szöveges megadás"));
     menuBar()->addAction(setupGraphAction);
     //graphMenu->addAction(setupGraphAction);
-    connect(setupGraphAction, SIGNAL(triggered()), this, SLOT(showGraphTextEditor()));
+    connect(setupGraphAction, &QAction::triggered, this, &GraphViewer::showGraphTextEditor);
 
     resetLayout = new QAction(tr("Rendezés"));
     menuBar()->addAction(resetLayout);
-    connect(resetLayout, SIGNAL(triggered()), scene, SLOT(updateNodes()));
+    connect(resetLayout, &QAction::triggered, scene, &GraphScene::updateNodes);
 }
 
 void GraphViewer::initEditToolbar()
@@ -278,6 +282,24 @@ void GraphViewer::showWeightGroup()
     weightLineEdit->setText("");
     weightLineEdit->setFocus();
     weightGroupBox->setVisible(true);
+}
+
+void GraphViewer::saveFile()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Gráf mentése"), QDir::homePath(), tr("Gráfok (*.graph)"));
+
+    if (fileName != "") {
+        QVector<QPointF> positions = scene->nodePositions();
+        graph->saveGraph(fileName, positions);
+    }
+//    QFileDialog saveDialog;
+//    saveDialog.setNameFilter("All graph files (*.graph)");
+//    saveDialog.setDirectory(QDir::homePath());
+//    saveDialog.setAcceptMode(QFileDialog::AcceptSave);
+//    saveDialog.setDefaultSuffix("graph");
+//    if (saveDialog.exec()) {
+//
+//    }
 }
 
 void GraphViewer::showWarningLabel()

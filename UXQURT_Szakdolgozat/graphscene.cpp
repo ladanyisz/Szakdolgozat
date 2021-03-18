@@ -66,6 +66,21 @@ void GraphScene::setWeight(int w)
     resetCurrEdge();
 }
 
+QVector<QPointF> GraphScene::nodePositions()
+{
+    QVector<QPointF> points;
+    points.resize(graph->getSize());
+    QList<QGraphicsItem*> scene_items = items();
+    foreach(QGraphicsItem* item, scene_items) {
+        NodeGraphics* node = qgraphicsitem_cast<NodeGraphics*>(item);
+        if (node) {
+            int i = graph->getVectorPosition(node->getId());
+            points[i] = node->pos();
+        }
+    }
+    return points;
+}
+
 void GraphScene::setDirected(bool d) { emit graphDirectedChanged(d); }
 
 void GraphScene::setWeighted(bool w) { emit graphWeightedChanged(w); }

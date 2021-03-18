@@ -15,6 +15,7 @@
 #include <QLineEdit>
 #include <QGroupBox>
 #include <QCheckBox>
+#include <QFileDialog>
 
 #include "graph.h"
 #include "graphscene.h"
@@ -36,6 +37,7 @@ public slots:
     void showGraphTextEditor();
     void hideGraphTextEditor();
     void showWeightGroup();
+    void saveFile();
 
 private:
 
@@ -43,6 +45,8 @@ private:
     QTimer timer;
 
     QMenu* fileMenu;
+    QAction* saveFileAction;
+
     QMenu* editMenu;
     QMenu* graphMenu;
     QAction* deleteGraphAction;
