@@ -11,7 +11,7 @@
 #include <QDir>
 
 GraphViewer::GraphViewer(QWidget *parent)
-    : QMainWindow(parent) 
+    : QMainWindow(parent)
 {
     setWindowTitle("Gráfok");
 //    setMinimumSize(800,500);
@@ -27,6 +27,8 @@ GraphViewer::GraphViewer(QWidget *parent)
     initWarningLabel();
     initWeightGroup();
 
+
+    pointerButton->click();
 
     connect(graph, &Graph::nodesFull,this, &GraphViewer::nodesFull);
     connect(graph, &Graph::newEdge, scene, &GraphScene::addNewEdge);
@@ -183,17 +185,10 @@ void GraphViewer::initViews()
 {
     scene = new GraphScene(graph, this);
     view = new QGraphicsView(scene);
-    view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-//    QList<QPointF> positions = scene->originalPositions();
-//    scene->setSceneRect(view->geometry());
-//    float w_old = scene->sceneRect().width();
-//    float h_old = scene->sceneRect().height();
-//    scene->setSceneRect(view->geometry());
-//    float w_new = scene->sceneRect().width();
-//    float h_new = scene->sceneRect().height();
-//    scene->updatePositions(positions, w_new/w_old, h_new/h_old);
-//    view->fitInView(scene->sceneRect(), Qt::IgnoreAspectRatio);
+//    view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//    view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//    view->updateGeometry();
+
 
     QWidget *widget = new QWidget;
     setCentralWidget(widget);
@@ -205,12 +200,16 @@ void GraphViewer::initViews()
     graphTextEditor->setHidden(true);
     layout->addWidget(graphTextEditor);
 
+    scene->setSceneRect(view->geometry());
+    view->fitInView(scene->sceneRect(), Qt::IgnoreAspectRatio);
+
     connect(graphTextEditor, &GraphTextEditor::nodesChanged, scene, &GraphScene::updateNodes);
     connect(graphTextEditor, &GraphTextEditor::newEdge, scene, &GraphScene::addNewEdge);
     connect(graphTextEditor, &GraphTextEditor::edgeSet, scene, &GraphScene::setEdgeWeight);
     connect(graphTextEditor, &GraphTextEditor::edgeDeleted, scene, &GraphScene::deleteEdge);
     connect(graphTextEditor, &GraphTextEditor::graphReady, this, &GraphViewer::hideGraphTextEditor);
     connect(graphTextEditor, &GraphTextEditor::edgesFull, this, &GraphViewer::edgesFull);
+
 }
 
 void GraphViewer::initWeightGroup()
@@ -326,6 +325,8 @@ void GraphViewer::openFile()
                 scene->addNewEdge(graph->getName(graph->getId(i)), graph->getAdjName(i,j), graph->getAdjWeight(i,j));
             }
         }
+        if (graph->getDirected() != directedCheckBox->isChecked()) directedCheckBox->click();
+        if (graph->getWeighted() != weightedCheckBox->isChecked()) weightedCheckBox->click();
     }
 }
 
