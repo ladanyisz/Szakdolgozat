@@ -10,6 +10,7 @@ CONFIG += c++11
 
 SOURCES += \
     adjnode.cpp \
+    algorithm.cpp \
     edgegraphics.cpp \
     filemanagement.cpp \
     graph.cpp \
@@ -23,6 +24,7 @@ SOURCES += \
 
 HEADERS += \
     adjnode.h \
+    algorithm.h \
     edgegraphics.h \
     filemanagement.h \
     graph.h \
