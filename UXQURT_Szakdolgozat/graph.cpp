@@ -164,6 +164,7 @@ void Graph::deleteAll()
     for(int i=0; i<Graph::getMaxNodeNum(); i++) {
         names[i] = true;
     }
+    Node::resetIds();
     emit graphDeleted();
 }
 

@@ -92,3 +92,8 @@ bool Node::hasEdge(Node *to)
 {
     return findAdjNode(to) != -1;
 }
+
+void Node::resetIds()
+{
+    Node::node_ids = 0;
+}

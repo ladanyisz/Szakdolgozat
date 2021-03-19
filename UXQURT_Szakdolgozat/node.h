@@ -29,6 +29,7 @@ public:
     void deleteReversed(Node* from);
     void setName(QChar name);
     bool hasEdge(Node* to);
+    static void resetIds();
 
 signals:
     void edgeChanged(int fromId, int toId, int w, int new_edge);    // létrejött új vagy módosult a súly
