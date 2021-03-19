@@ -330,6 +330,8 @@ void GraphViewer::openFile()
         }
         if (graph->getDirected() != directedCheckBox->isChecked()) directedCheckBox->click();
         if (graph->getWeighted() != weightedCheckBox->isChecked()) weightedCheckBox->click();
+
+        pointerButton->click();
     }
 }
 

@@ -103,6 +103,8 @@ int Graph::addNode(QChar name)
         int ind = name.unicode() - a.unicode();
         newNode->setName(name);
         names[ind] = false;
+        connect(newNode, &Node::edgeChanged, this, [=](int f, int t, int w, bool n) { emit edgeChanged(f,t,w, n); });
+        connect(newNode, &Node::edgeDeleted, this, [=](int f, int t) { emit edgeDeleted(f,t); });
         return newNode->getId();
     }
     emit nodesFull();

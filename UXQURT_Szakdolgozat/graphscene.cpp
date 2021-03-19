@@ -94,7 +94,7 @@ void GraphScene::setMode(GraphScene::GraphMode mode)
 {
     resetCurrFrom();
     resetCurrEdge();
-    if (this->mode != mode) {
+//    if (this->mode != mode) {
         if (mode == GraphMode::AddEdge || mode ==GraphMode::Move || mode == GraphMode::SetWeight) {
 
             QList<QGraphicsItem*> scene_items = items();
@@ -117,7 +117,7 @@ void GraphScene::setMode(GraphScene::GraphMode mode)
             }
         }
         this->mode = mode;
-    }
+//    }
 }
 
 void GraphScene::updateNodes()
@@ -139,6 +139,7 @@ void GraphScene::updateNodes()
             nodes.append(newNode);
             addItem(newNode);
         }
+        updateNodePositions(nodes);             // ha több csúcs lett, újrarendezzük
 
     } else if (nodes.size() > graph->getSize()) {
         while(nodes.size() > graph->getSize()) {
@@ -147,7 +148,7 @@ void GraphScene::updateNodes()
             deleteNode(removeNode);
         }
     }
-    updateNodePositions(nodes);
+
 }
 
 void GraphScene::findEdgeNodes(int from, int to, int w, bool is_new)
