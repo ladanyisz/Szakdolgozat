@@ -28,6 +28,9 @@ public:
     int getAdjWeight(int ind_this, int ind_ajd);    // él súlya szomszédhoz - index és index alapján
     QStringList getNames();                         // használt nevek
 
+    bool checkAllEdgesNonnegative();    // összes súly nemnegatív
+    bool checkConnectivity();           // összefüggő
+
     int addNode();
     int addNode(QChar name);                        // name nevű csúcs létrehozása
     void addNodes(int n);                           // n új csúcs létrehozása

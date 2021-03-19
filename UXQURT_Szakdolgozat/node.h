@@ -29,6 +29,7 @@ public:
     void deleteReversed(Node* from);
     void setName(QChar name);
     bool hasEdge(Node* to);
+    bool checkAllEdgesNonnegative();
     static void resetIds();
 
 signals:

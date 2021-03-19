@@ -93,6 +93,14 @@ bool Node::hasEdge(Node *to)
     return findAdjNode(to) != -1;
 }
 
+bool Node::checkAllEdgesNonnegative()
+{
+    foreach(AdjNode* adjnode, adjNodes) {
+        if (adjnode->getWeight() < 0) return false;
+    }
+    return true;
+}
+
 void Node::resetIds()
 {
     Node::node_ids = 0;

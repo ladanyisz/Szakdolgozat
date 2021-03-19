@@ -59,6 +59,37 @@ QStringList Graph::getNames()
     return names;
 }
 
+bool Graph::checkAllEdgesNonnegative()
+{
+    foreach(Node* node, nodes) {
+        if (!node->checkAllEdgesNonnegative()) return false;
+    }
+    return true;
+}
+
+bool Graph::checkConnectivity()     // erre még lehet egy jobb algoritmus (szélességi) --> fekete csúcsok
+{
+    if (isDirected) {
+        foreach(Node* node, nodes) {
+            if (node->getAdjNum() == 0) {
+                bool no_edges = true;
+                int i = 0;
+                while (i < nodes.size() && no_edges) {
+                    if (nodes[i] != node) no_edges = nodes[i]->hasEdge(node);
+                    i++;
+                }
+                if (no_edges) return false;
+            }
+        }
+        return true;
+    } else {
+        foreach(Node* node, nodes) {
+            if (node->getAdjNum() == 0) return false;
+        }
+        return true;
+    }
+}
+
 
 // Other public functions
 
