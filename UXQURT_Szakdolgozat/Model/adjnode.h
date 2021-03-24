@@ -11,7 +11,7 @@ class AdjNode : public QObject
 public:
     AdjNode(Node* n, int w = 1, QObject *parent = nullptr);
 
-    enum EdgeType {None, Nedded, Examined};
+    enum EdgeType {None, Needed, NotNeeded, Examined};
 
     Node* node;         // az a csúcs, amibe az él mutat
 

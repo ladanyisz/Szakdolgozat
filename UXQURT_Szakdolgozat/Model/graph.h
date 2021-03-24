@@ -22,6 +22,7 @@ public:
     int getVectorPosition(int id);
     int getMaxNodeNum();
     int getId(int i);                               // a listában az i-ik csúcs id-ja
+    int getIndex(Node* node);
     int getWeight(int fromId, int toId);
     int getAdjNum(int ind);                         // szomszédok száma - index alapján
     QChar getAdjName(int ind_this, int ind_ajd);    // szomszéd neve - index és index alapján

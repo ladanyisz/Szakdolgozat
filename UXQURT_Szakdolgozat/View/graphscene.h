@@ -37,11 +37,17 @@ public slots:
     void setDirected(bool d);
     void setWeighted(bool w);
 
+    void changeNodeState(Node::NodeType type, int id);
+    void changeEdgeState(AdjNode::EdgeType type, int from_id, int to_id);
+
 
 signals:
     void edgeSelected();
     void graphDirectedChanged(bool d);
     void graphWeightedChanged(bool w);
+    void nodeAdded();
+    void allNodesDeleted();
+    void nodesChanged();
 
 
 protected:

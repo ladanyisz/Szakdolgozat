@@ -18,6 +18,7 @@
 #include <QFileDialog>
 
 #include "../Model/graph.h"
+#include "../Model/algorithm.h"
 #include "graphscene.h"
 #include "graphtexteditor.h"
 #include <tuple>
@@ -35,11 +36,17 @@ public slots:
     void nodesFull();
     void edgesFull();
     void deleteGraph();
+    void algorithmSelected(QString selectedAlgorithm);
+    void algorithmStopped();
     void showGraphTextEditor();
     void hideGraphTextEditor();
     void showWeightGroup();
     void saveFile();
     void openFile();
+    void enableAlgorithms();
+    void disableAlgorithms();
+    void enableEdit();
+    void disableEdit();
 
 private:
 
@@ -76,6 +83,7 @@ private:
     QToolButton* pauseButton;
     QToolButton* previousButton;
     QToolButton* nextButton;
+    QToolButton* stopButton;
     QToolBar* algorithmToolbar;
 
     QLabel* warningLabel;
@@ -92,6 +100,7 @@ private:
 
 
     Graph* graph;
+    Algorithm* algo;
 
     void setStyles();
     void initMenu();

@@ -83,10 +83,6 @@ QVector<QPointF> GraphScene::nodePositions()
     return points;
 }
 
-void GraphScene::setDirected(bool d) { emit graphDirectedChanged(d); }
-
-void GraphScene::setWeighted(bool w) { emit graphWeightedChanged(w); }
-
 
 // Slots
 
@@ -253,6 +249,28 @@ void GraphScene::setEdgeWeight(QString fromName, QString toName, int w)
     }
 }
 
+void GraphScene::setDirected(bool d) { emit graphDirectedChanged(d); }
+
+void GraphScene::setWeighted(bool w) { emit graphWeightedChanged(w); }
+
+void GraphScene::changeNodeState(Node::NodeType type, int id)
+{
+    NodeGraphics* node = nullptr;
+    QList<QGraphicsItem*> scene_items = items();
+    int i = 0;
+    while (i < scene_items.length() && node == nullptr) {
+        NodeGraphics* n = qgraphicsitem_cast<NodeGraphics*>(scene_items.at(i));
+        if (n && n->getId() == id) node = n;
+        i++;
+    }
+    if (node != nullptr) node->changeBrush(type);
+}
+
+void GraphScene::changeEdgeState(AdjNode::EdgeType type, int from_id, int to_id)
+{
+
+}
+
 void GraphScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     if (event->button() != Qt::LeftButton)
@@ -267,6 +285,8 @@ void GraphScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         int id = graph->addNode();
         if (id > -1) {
             addNode(id, graph->getName(id), QPointF(event->scenePos().rx() - NodeGraphics::getSize()/2, event->scenePos().ry() - NodeGraphics::getSize()/2));
+            emit nodeAdded();
+            emit nodesChanged();
         }
 
     } else if (mode == GraphMode::AddEdge) {
@@ -307,6 +327,8 @@ void GraphScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         if (node) {
             graph->deleteNode(node->getId());
             deleteNode(node);
+            emit nodesChanged();
+            if (graph->getSize() == 0) emit allNodesDeleted();
         } else {
             EdgeGraphics* edge = qgraphicsitem_cast<EdgeGraphics*>(item);
             if (edge) {

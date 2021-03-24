@@ -37,6 +37,14 @@ int Graph::getMaxNodeNum() { return maxNodeNum; }
 
 int Graph::getId(int i) { return nodes.at(i)->getId(); }
 
+int Graph::getIndex(Node *node)
+{
+    for(int i=0; i<nodes.length(); i++) {
+        if (nodes.at(i) == node) return i;
+    }
+    return -1;
+}
+
 int Graph::getWeight(int fromId, int toId)
 {
     Node* fromNode = findById(fromId);

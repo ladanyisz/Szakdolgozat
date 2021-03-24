@@ -14,6 +14,11 @@ EdgeGraphics::EdgeGraphics(NodeGraphics* from, NodeGraphics* to) :
     pen.setWidth(2);
     this->setPen(pen);
 
+    normalPen = QPen(Qt::black);
+    examinedPen = QPen(QColor(255, 174, 0));
+    neededPen = QPen(QColor(33, 143, 79));
+    notNeededPen = QPen(QColor(167,170, 171));
+
     calculate();
 
     fromNode->addEdge(this);
@@ -233,4 +238,22 @@ QPainterPath EdgeGraphics::shape() const
     }
 
     return path;
+}
+
+void EdgeGraphics::changePen(AdjNode::EdgeType type)
+{
+    switch (type) {
+        case AdjNode::EdgeType::None:
+            this->setPen(normalPen);
+        break;
+    case AdjNode::EdgeType::Examined:
+            this->setPen(examinedPen);
+        break;
+    case AdjNode::EdgeType::Needed:
+            this->setPen(neededPen);
+        break;
+    case AdjNode::EdgeType::NotNeeded:
+            this->setPen(notNeededPen);
+        break;
+    }
 }
