@@ -4,7 +4,7 @@
 #include <QObject>
 #include "graph.h"
 
-class Algorithm
+class Algorithm: public QObject
 {
     Q_OBJECT
 public:
