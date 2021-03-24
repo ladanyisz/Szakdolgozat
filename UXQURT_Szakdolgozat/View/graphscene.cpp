@@ -148,7 +148,17 @@ void GraphScene::updateNodes()
             deleteNode(removeNode);
         }
     }
+}
 
+void GraphScene::resetNodeLayout()
+{
+    QList<NodeGraphics*> nodes;
+    QList<QGraphicsItem*> scene_items = items();
+    foreach(QGraphicsItem* item, scene_items) {
+        NodeGraphics* node = qgraphicsitem_cast<NodeGraphics*>(item);
+        if (node) nodes.append(node);
+    }
+    updateNodePositions(nodes);
 }
 
 void GraphScene::findEdgeNodes(int from, int to, int w, bool is_new)

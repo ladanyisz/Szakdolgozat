@@ -8,7 +8,7 @@
 #include <QSpinBox>
 #include <QVBoxLayout>
 #include <QWidget>
-#include "graph.h"
+#include "../Model/graph.h"
 #include "graphtextline.h"
 
 class GraphTextEditor : public QWidget

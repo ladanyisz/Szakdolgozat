@@ -5,7 +5,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QObject>
 #include <QList>
-#include "graph.h"
+#include "../Model/graph.h"
 #include "nodegraphics.h"
 #include "edgegraphics.h"
 
@@ -28,6 +28,7 @@ public:
 public slots:
     void setMode(GraphMode mode);
     void updateNodes();                                             // a graph csúcsinak száma szerint létrehoz vagy töröl csúcsokat
+    void resetNodeLayout();
     void findEdgeNodes(int from, int to, int w, bool is_new);
     void deleteReversed(int from, int to);
     void addNewEdge(QString fromName, QString toName, int w);       // két megadott csúcs között létrehoz egy új élt

@@ -9,7 +9,7 @@
 #include <QPainter>
 #include "edgegraphics.h"
 #include <QGraphicsScene>
-#include "node.h"
+#include "../Model/node.h"
 
 class EdgeGraphics;
 class NodeGraphics : public QGraphicsEllipseItem

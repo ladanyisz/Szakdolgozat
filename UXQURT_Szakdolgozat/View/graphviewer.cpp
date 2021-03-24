@@ -78,7 +78,7 @@ void GraphViewer::initMenu()
 
     resetLayout = new QAction(tr("Rendezés"));
     menuBar()->addAction(resetLayout);
-    connect(resetLayout, &QAction::triggered, scene, &GraphScene::updateNodes);
+    connect(resetLayout, &QAction::triggered, scene, &GraphScene::resetNodeLayout);
 }
 
 void GraphViewer::initEditToolbar()

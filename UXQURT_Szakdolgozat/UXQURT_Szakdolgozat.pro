@@ -9,31 +9,31 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    adjnode.cpp \
-    algorithm.cpp \
-    edgegraphics.cpp \
-    filemanagement.cpp \
-    graph.cpp \
-    graphscene.cpp \
-    graphtexteditor.cpp \
-    graphtextline.cpp \
+    Model/adjnode.cpp \
+    Model/algorithm.cpp \
+    Model/filemanagement.cpp \
+    Model/graph.cpp \
+    Model/node.cpp \
+    View/edgegraphics.cpp \
+    View/graphscene.cpp \
+    View/graphtexteditor.cpp \
+    View/graphtextline.cpp \
+    View/graphviewer.cpp \
+    View/nodegraphics.cpp \
     main.cpp \
-    graphviewer.cpp \
-    node.cpp \
-    nodegraphics.cpp
 
 HEADERS += \
-    adjnode.h \
-    algorithm.h \
-    edgegraphics.h \
-    filemanagement.h \
-    graph.h \
-    graphscene.h \
-    graphtexteditor.h \
-    graphtextline.h \
-    graphviewer.h \
-    node.h \
-    nodegraphics.h
+    Model/adjnode.h \
+    Model/algorithm.h \
+    Model/filemanagement.h \
+    Model/graph.h \
+    Model/node.h \
+    View/edgegraphics.h \
+    View/graphscene.h \
+    View/graphtexteditor.h \
+    View/graphtextline.h \
+    View/graphviewer.h \
+    View/nodegraphics.h \
 
 FORMS +=
 

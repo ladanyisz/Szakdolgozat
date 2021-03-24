@@ -1,4 +1,4 @@
-#include "graphviewer.h"
+#include "View/graphviewer.h"
 
 #include <QApplication>
 

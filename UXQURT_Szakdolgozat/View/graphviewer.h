@@ -17,7 +17,7 @@
 #include <QCheckBox>
 #include <QFileDialog>
 
-#include "graph.h"
+#include "../Model/graph.h"
 #include "graphscene.h"
 #include "graphtexteditor.h"
 #include <tuple>
