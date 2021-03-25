@@ -21,7 +21,6 @@ public:
     void selectStartNode(int s_ind);
     void init();
     void reset();
-    bool stepAlgorithm();           // második ciklus magja
     bool stepBackAlgorithm();
     void startAlgorithm();
     void pauseAlgrotithm();
@@ -37,26 +36,26 @@ signals:
     void nodeStateChange(NodeType, int id);
     void edgeStateChange(EdgeType, int from_id, int to_id);
 
+public slots:
+    bool stepAlgorithm();           // második ciklus magja
+
 
 private:
     Graph* graph;
     QVector<int> distances;
-    QVector<int> parents;           // parent node-ok id-i
+    QVector<int> parents;           // parent node-ok index-e
     QVector<int> queue;             // graph nodes index
     int u;                          // vizsgált node indexe a graph nodes-ban
     int adj_ind_in_u;               // u hanyadik szomszédos elemét vizsgáljuk (az u indexű Node listájában)
-    QStringList all_distances;
-    QStringList all_parents;
-    QStringList all_queue_states;
     bool init_ready;
     QVector<NodeType> nodeTypes;
+    QVector<QVector<EdgeType>> edgeTypes;   // [egyes csúcsok][csúcsok gyerekeinek listája]
 
     Algorithms chosenAlgo;
     int start_node_ind;
 
     void initNode();
     int remMin(QVector<int>&);       // megadja (és eltávolítja a vektorból) a graph nodes megfelelő indexét, ahol a legkisebb a dest
-    void addNamesToStringLists();
 
     QTimer timer;
 };

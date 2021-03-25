@@ -394,6 +394,7 @@ void GraphViewer::openFile()
         }
         if (graph->getDirected() != directedCheckBox->isChecked()) directedCheckBox->click();
         if (graph->getWeighted() != weightedCheckBox->isChecked()) weightedCheckBox->click();
+        algo->reset();
         if (graph->getSize() > 0) enableAlgorithms();
 
         pointerButton->click();
