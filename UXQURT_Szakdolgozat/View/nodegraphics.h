@@ -10,6 +10,7 @@
 #include "edgegraphics.h"
 #include <QGraphicsScene>
 #include "../Model/node.h"
+#include "../Model/algorithm.h"
 
 class EdgeGraphics;
 class NodeGraphics : public QGraphicsEllipseItem
@@ -28,7 +29,7 @@ public:
     void addEdge(EdgeGraphics* edge);                   // felveszi az él grafikáját az élek listájába
     void removeEdge(EdgeGraphics* edge);                // leveszi az él grafikáját az élek listájából
     void updateEdges();                                 // újraszámlja a hozzá tartozó élek grafikáját
-    void changeBrush(Node::NodeType);                   // algoritmusokhoz - kitöltés színét változtatja
+    void changeBrush(Algorithm::NodeType);                   // algoritmusokhoz - kitöltés színét változtatja
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 

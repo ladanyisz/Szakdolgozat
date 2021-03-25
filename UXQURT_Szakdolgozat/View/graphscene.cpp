@@ -253,7 +253,7 @@ void GraphScene::setDirected(bool d) { emit graphDirectedChanged(d); }
 
 void GraphScene::setWeighted(bool w) { emit graphWeightedChanged(w); }
 
-void GraphScene::changeNodeState(Node::NodeType type, int id)
+void GraphScene::changeNodeState(Algorithm::NodeType type, int id)
 {
     NodeGraphics* node = nullptr;
     QList<QGraphicsItem*> scene_items = items();
@@ -266,9 +266,27 @@ void GraphScene::changeNodeState(Node::NodeType type, int id)
     if (node != nullptr) node->changeBrush(type);
 }
 
-void GraphScene::changeEdgeState(AdjNode::EdgeType type, int from_id, int to_id)
+void GraphScene::changeEdgeState(Algorithm::EdgeType type, int from_id, int to_id)
 {
-
+    EdgeGraphics* edge = nullptr;
+    QList<QGraphicsItem*> scene_items = items();
+    int i =0;
+    while (i < scene_items.length() && edge == nullptr) {
+        EdgeGraphics* e = qgraphicsitem_cast<EdgeGraphics*>(scene_items.at(i));
+        if (e && e->getFromNodeId() == from_id && e->getToNodeId() == to_id) edge = e;
+        i++;
+    }
+    if (edge != nullptr) edge->changePen(type);
+    edge = nullptr;
+    if (!graph->getDirected()) {
+        int i =0;
+        while (i < scene_items.length() && edge == nullptr) {
+            EdgeGraphics* e = qgraphicsitem_cast<EdgeGraphics*>(scene_items.at(i));
+            if (e && e->getFromNodeId() == to_id && e->getToNodeId() == from_id) edge = e;
+            i++;
+        }
+        if (edge != nullptr) edge->changePen(type);
+    }
 }
 
 void GraphScene::mousePressEvent(QGraphicsSceneMouseEvent *event)

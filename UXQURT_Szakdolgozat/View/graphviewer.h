@@ -37,7 +37,12 @@ public slots:
     void edgesFull();
     void deleteGraph();
     void algorithmSelected(QString selectedAlgorithm);
+    void nodeSelected(QString selectedNode);
     void algorithmStopped();
+    void algorithmStarted();
+    void algorithmPaused();
+    void nextPressed();
+    void previousPressed();
     void showGraphTextEditor();
     void hideGraphTextEditor();
     void showWeightGroup();
@@ -45,6 +50,8 @@ public slots:
     void openFile();
     void enableAlgorithms();
     void disableAlgorithms();
+    void enableSelectors();
+    void disableSelectors();
     void enableEdit();
     void disableEdit();
 

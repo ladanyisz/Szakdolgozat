@@ -33,6 +33,7 @@ GraphViewer::GraphViewer(QWidget *parent)
     connect(graph, &Graph::nodesFull,this, &GraphViewer::nodesFull);
     connect(graph, &Graph::newEdge, scene, &GraphScene::addNewEdge);
     connect(algo, &Algorithm::nodeStateChange, scene, &GraphScene::changeNodeState);
+    connect(algo, &Algorithm::edgeStateChange, scene, &GraphScene::changeEdgeState);
 
     connect(scene, &GraphScene::edgeSelected, this, &GraphViewer::showWeightGroup);
     connect(scene, &GraphScene::nodeAdded, this, &GraphViewer::enableAlgorithms);
@@ -191,8 +192,15 @@ void GraphViewer::initAlgorithmToolbar()
     algorithmToolbar->addWidget(nextButton);
     algorithmToolbar->addWidget(stopButton);
 
-    connect(stopButton, &QToolButton::triggered, this, &GraphViewer::algorithmStopped);
+    connect(stopButton, &QToolButton::clicked, this, &GraphViewer::algorithmStopped);
+    connect(playButton, &QToolButton::clicked, this, &GraphViewer::algorithmStarted);
+    connect(pauseButton, &QToolButton::clicked, this, &GraphViewer::algorithmPaused);
+    connect(nextButton, &QToolButton::clicked, this, &GraphViewer::nextPressed);
+    connect(previousButton, &QToolButton::clicked, this, &GraphViewer::previousPressed);
     connect(algorithmSelector, &QComboBox::currentTextChanged, this, &GraphViewer::algorithmSelected);
+    connect(nodeSelector, &QComboBox::currentTextChanged, this, &GraphViewer::nodeSelected);
+
+
 }
 
 void GraphViewer::initViews()
@@ -269,18 +277,62 @@ void GraphViewer::deleteGraph()
 
 void GraphViewer::algorithmSelected(QString selectedAlgorithm)
 {
-    if (selectedAlgorithm == "Szélességi bejárás") {
-        qDebug() << "szelessegi";
-    } else if (selectedAlgorithm == "Mélységi bejárás") {
-        qDebug() << "mélységi";
-    } else if (selectedAlgorithm == "Prim-algoritmus") qDebug() << "prim";
-    else if (selectedAlgorithm == "Dijkstra-algoritmus") qDebug() << "dijkstra";
+    Algorithm::Algorithms selectedAlgo = Algorithm::Algorithms::None;
+    if (selectedAlgorithm == "Szélességi bejárás")
+        selectedAlgo = Algorithm::Algorithms::Szelessegi;
+    else if (selectedAlgorithm == "Mélységi bejárás")
+        selectedAlgo = Algorithm::Algorithms::Melysegi;
+    else if (selectedAlgorithm == "Prim-algoritmus")
+        selectedAlgo = Algorithm::Algorithms::Prim;
+    else if (selectedAlgorithm == "Dijkstra-algoritmus")
+        selectedAlgo = Algorithm::Algorithms::Dijkstra;
+    algo->selectAlgorithm(selectedAlgo);
+}
+
+void GraphViewer::nodeSelected(QString selectedNode)
+{
+    int index = graph->getIndex(selectedNode);
+    if (index != -1) algo->selectStartNode(index);
 }
 
 void GraphViewer::algorithmStopped()
 {
     enableEdit();
+    enableAlgorithms();
     algo->reset();
+    previousButton->setEnabled(false);
+    pauseButton->setEnabled(false);
+}
+
+void GraphViewer::algorithmStarted()
+{
+    disableEdit();
+    disableSelectors();
+    pointerButton->click();
+    algo->startAlgorithm();
+    playButton->setEnabled(false);
+    pauseButton->setEnabled(true);
+}
+
+void GraphViewer::algorithmPaused()
+{
+    algo->pauseAlgrotithm();
+    playButton->setEnabled(true);
+    pauseButton->setEnabled(false);
+}
+
+void GraphViewer::nextPressed()
+{
+    disableEdit();
+    disableSelectors();
+    if (!algo->stepAlgorithm())nextButton->setEnabled(false);
+    if (!previousButton->isEnabled()) previousButton->setEnabled(true);
+}
+
+void GraphViewer::previousPressed()
+{
+    if (!algo->stepBackAlgorithm()) previousButton->setEnabled(false);
+    if (!nextButton->isEnabled()) nextButton->setEnabled(true);
 }
 
 void GraphViewer::showGraphTextEditor()
@@ -342,6 +394,7 @@ void GraphViewer::openFile()
         }
         if (graph->getDirected() != directedCheckBox->isChecked()) directedCheckBox->click();
         if (graph->getWeighted() != weightedCheckBox->isChecked()) weightedCheckBox->click();
+        if (graph->getSize() > 0) enableAlgorithms();
 
         pointerButton->click();
     }
@@ -352,15 +405,18 @@ void GraphViewer::enableAlgorithms()
     nodeSelector->setEnabled(true);
     algorithmSelector->setEnabled(true);
     playButton->setEnabled(true);
-    pauseButton->setEnabled(true);
-    previousButton->setEnabled(true);
     nextButton->setEnabled(true);
     stopButton->setEnabled(true);
 
+    QString name = nodeSelector->currentText();
     nodeSelector->clear();
     QStringList names = graph->getNames();
     names.sort();
     nodeSelector->addItems(names);
+    if (nodeSelector->findText(name) != -1) nodeSelector->setCurrentText(name);
+
+    algorithmSelected(algorithmSelector->currentText());
+    nodeSelected(nodeSelector->currentText());
 }
 
 void GraphViewer::disableAlgorithms()
@@ -372,6 +428,18 @@ void GraphViewer::disableAlgorithms()
     previousButton->setEnabled(false);
     nextButton->setEnabled(false);
     stopButton->setEnabled(false);
+}
+
+void GraphViewer::enableSelectors()
+{
+    nodeSelector->setEnabled(true);
+    algorithmSelector->setEnabled(true);
+}
+
+void GraphViewer::disableSelectors()
+{
+    nodeSelector->setEnabled(false);
+    algorithmSelector->setEnabled(false);
 }
 
 void GraphViewer::enableEdit()

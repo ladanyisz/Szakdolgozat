@@ -23,10 +23,12 @@ public:
     int getMaxNodeNum();
     int getId(int i);                               // a listában az i-ik csúcs id-ja
     int getIndex(Node* node);
+    int getIndex(QString name);
     int getWeight(int fromId, int toId);
     int getAdjNum(int ind);                         // szomszédok száma - index alapján
     QChar getAdjName(int ind_this, int ind_ajd);    // szomszéd neve - index és index alapján
     int getAdjWeight(int ind_this, int ind_ajd);    // él súlya szomszédhoz - index és index alapján
+    int getAdjIndexInNodes(int from_index, int to_adj_index);
     QStringList getNames();                         // használt nevek
 
     bool checkAllEdgesNonnegative();    // összes súly nemnegatív

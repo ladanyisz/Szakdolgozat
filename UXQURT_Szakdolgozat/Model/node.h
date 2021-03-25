@@ -13,7 +13,6 @@ public:
     explicit Node(QObject *parent = nullptr);
     ~Node();
 
-    enum NodeType {None, Examined, Processed, ExamineAdj };
 
     int getId();
     QChar getName();
@@ -42,7 +41,7 @@ private:
     int id;
     QChar name;
     QVector<AdjNode*> adjNodes;
-    NodeType type;
+//    NodeType type;
 
     int findAdjNode(Node* to);
 };

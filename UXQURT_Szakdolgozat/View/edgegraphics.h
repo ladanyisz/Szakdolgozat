@@ -7,6 +7,7 @@
 #include <QPen>
 #include "nodegraphics.h"
 #include "../Model/node.h"
+#include "../Model/algorithm.h"
 
 class NodeGraphics;
 class EdgeGraphics : public QObject, public QGraphicsLineItem   // QObject - események miatt
@@ -19,7 +20,7 @@ public:
     QRectF boundingRect() const;                        // mi látszik
     QPainterPath shape() const;                         // ahol a kattintást is érzékeli
 
-    void changePen(AdjNode::EdgeType type);
+    void changePen(Algorithm::EdgeType type);
     int getFromNodeId();
     int getToNodeId();
 

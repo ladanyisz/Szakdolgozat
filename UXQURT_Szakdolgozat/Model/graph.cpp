@@ -45,6 +45,14 @@ int Graph::getIndex(Node *node)
     return -1;
 }
 
+int Graph::getIndex(QString name)
+{
+    for(int i=0; i<nodes.length(); i++) {
+        if (nodes.at(i)->getName() == name) return i;
+    }
+    return -1;
+}
+
 int Graph::getWeight(int fromId, int toId)
 {
     Node* fromNode = findById(fromId);
@@ -57,6 +65,17 @@ int Graph::getAdjNum(int ind) { return nodes.at(ind)->getAdjNum(); }
 QChar Graph::getAdjName(int ind_this, int ind_ajd) { return nodes.at(ind_this)->getAjdNodeName(ind_ajd); }
 
 int Graph::getAdjWeight(int ind_this, int ind_ajd) { return nodes.at(ind_this)->getAdjNodeWeight(ind_ajd); }
+
+int Graph::getAdjIndexInNodes(int from_index, int to_adj_index)
+{
+    Node* node = nodes.at(from_index);
+    for(int i=0; i<nodes.length(); i++) {
+        if (i != from_index) {
+            if (node->getAjdNodeName(to_adj_index) == nodes.at(i)->getName()) return i;
+        }
+    }
+    return -1;
+}
 
 QStringList Graph::getNames()
 {

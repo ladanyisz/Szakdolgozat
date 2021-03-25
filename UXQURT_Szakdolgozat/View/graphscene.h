@@ -6,6 +6,7 @@
 #include <QObject>
 #include <QList>
 #include "../Model/graph.h"
+#include "../Model/algorithm.h"
 #include "nodegraphics.h"
 #include "edgegraphics.h"
 
@@ -37,8 +38,8 @@ public slots:
     void setDirected(bool d);
     void setWeighted(bool w);
 
-    void changeNodeState(Node::NodeType type, int id);
-    void changeEdgeState(AdjNode::EdgeType type, int from_id, int to_id);
+    void changeNodeState(Algorithm::NodeType type, int id);
+    void changeEdgeState(Algorithm::EdgeType type, int from_id, int to_id);
 
 
 signals:

@@ -165,9 +165,9 @@ void EdgeGraphics::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
         painter->setBrush(QColor(222, 222, 222));
         if (isDirected) painter->translate(myPath.pointAtPercent(0.5));
         else painter->translate(line().center());
-        painter->drawEllipse(QPoint(0,0), 14,14);
         pen.setColor(Qt::black);
         painter->setPen(pen);
+        painter->drawEllipse(QPoint(0,0), 14,14);
         QFont font;
         font.setBold(true);
         font.setPointSize(12);
@@ -190,8 +190,8 @@ QRectF EdgeGraphics::boundingRect() const
         return QRectF(line().p1(),
                      QSize(line().p2().x()-line().p1().x(), line().p2().y()-line().p1().y())).normalized().adjusted(-extra,-extra, extra, extra);
     }
-    if (abs(toPoint.x() - fromPoint.x()) < 24 || abs(toPoint.y() - fromPoint.y())< 24) extra = 12;
-    else extra = 4;
+    if (abs(toPoint.x() - fromPoint.x()) < 24 || abs(toPoint.y() - fromPoint.y())< 24) extra = 18;
+    else extra = 8;
     return QRectF(line().p1(),
                  QSize(line().p2().x()-line().p1().x(), line().p2().y()-line().p1().y())).normalized().adjusted(-extra,-extra, extra, extra);
 
@@ -240,19 +240,19 @@ QPainterPath EdgeGraphics::shape() const
     return path;
 }
 
-void EdgeGraphics::changePen(AdjNode::EdgeType type)
+void EdgeGraphics::changePen(Algorithm::EdgeType type)
 {
     switch (type) {
-        case AdjNode::EdgeType::None:
+        case Algorithm::EdgeType::BaseEdge:
             this->setPen(normalPen);
         break;
-    case AdjNode::EdgeType::Examined:
+    case Algorithm::EdgeType::ExaminedEdge:
             this->setPen(examinedPen);
         break;
-    case AdjNode::EdgeType::Needed:
+    case Algorithm::EdgeType::NeededEdge:
             this->setPen(neededPen);
         break;
-    case AdjNode::EdgeType::NotNeeded:
+    case Algorithm::EdgeType::NotNeededEdge:
             this->setPen(notNeededPen);
         break;
     }

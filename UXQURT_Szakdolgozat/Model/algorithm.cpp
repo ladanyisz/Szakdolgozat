@@ -6,6 +6,9 @@ Algorithm::Algorithm(Graph *graph)
     this->graph = graph;
     start_node_ind = -1;
     chosenAlgo = Algorithms::None;
+    init_ready = false;
+    adj_ind_in_u = 0;
+    u = -1;
 
     timer.setInterval(1000);
 }
@@ -13,16 +16,23 @@ Algorithm::Algorithm(Graph *graph)
 void Algorithm::selectAlgorithm(Algorithm::Algorithms algo)
 {
     chosenAlgo = algo;
+    init_ready = false;
 }
 
 void Algorithm::selectStartNode(int s_ind)
 {
     start_node_ind = s_ind;
+    init_ready = false;
 }
 
 bool Algorithm::stepAlgorithm()
 {
+    qDebug() << chosenAlgo;
     if (chosenAlgo == None) return false;
+    if (!init_ready) {
+        init();
+        return true;
+    }
     bool ended = false;
     switch (chosenAlgo) {
         case Szelessegi:
@@ -34,12 +44,43 @@ bool Algorithm::stepAlgorithm()
 
     case Dijkstra:
         ended = !(distances[u] < INT32_MAX && !queue.isEmpty());
-        if (!ended) {
-            for(int j=0; j<graph->getAdjNum(u); j++) {
-
+        if (adj_ind_in_u > 0) {                     // az előző lépésben vizsgáltat visszaállítjuk ( ha volt )
+            int prev_ind = graph->getAdjIndexInNodes(u,adj_ind_in_u-1);
+            if (nodeTypes.at(prev_ind) == BaseNode)
+                emit nodeStateChange(BaseNode, prev_ind);
+            else {
+                emit nodeStateChange(ProcessedNode, prev_ind);
+                emit edgeStateChange(BaseEdge, u, prev_ind);
             }
-            u = remMin(queue);
-            ended = !(distances[u] < INT32_MAX && !queue.isEmpty());
+        }
+        if (!ended) {
+            if (adj_ind_in_u == graph->getAdjNum(u)) {        // új u-t választunk
+                qDebug() << "current u: " << graph->getName(graph->getId(u));
+                adj_ind_in_u = 0;
+                emit nodeStateChange(ProcessedNode, u);
+                nodeTypes[u] = ProcessedNode;
+                u = remMin(queue);
+                qDebug() << "new u: " << graph->getName(graph->getId(u));
+                emit nodeStateChange(ExamineAdj, u);
+                ended = !(distances[u] < INT32_MAX && !queue.isEmpty());
+
+            } else {        // belső ciklusmag
+                qDebug() << "check adj: " << graph->getAdjName(u,adj_ind_in_u);
+                int adj_index = graph->getAdjIndexInNodes(u,adj_ind_in_u);
+                emit nodeStateChange(ExaminedNode, adj_index);
+                emit edgeStateChange(ExaminedEdge, u, adj_index);
+                int newDist = distances[u] + graph->getAdjWeight(u,adj_ind_in_u);
+                if (distances[adj_index] > newDist) {
+                    parents[adj_index] = graph->getId(u);
+                    distances[adj_index] = newDist;
+                }
+
+                adj_ind_in_u++;
+            }
+
+//            for(int j=0; j<graph->getAdjNum(u); j++) {
+//            }
+
         }
         break;
 
@@ -48,16 +89,27 @@ bool Algorithm::stepAlgorithm()
     default:
         break;
     }
+    qDebug() << "queue: " << queue;
+    qDebug() << "parents: " << parents;
+    qDebug() << "distances: " << distances;
     if (ended) {
         timer.stop();
         qDebug() << "algorithm ended";
         emit algorithmEnded();
+        emit nodeStateChange(ProcessedNode, u);
+        return false;
     }
+    return true;
+}
+
+bool Algorithm::stepBackAlgorithm()
+{
     return true;
 }
 
 void Algorithm::startAlgorithm()
 {
+    if (!init_ready) init();
     timer.start();
 }
 
@@ -68,13 +120,14 @@ void Algorithm::pauseAlgrotithm()
 
 void Algorithm::reset()
 {
-    start_node_ind = -1;
-    chosenAlgo = Algorithms::None;
+    init_ready = false;
+    adj_ind_in_u = 0;
+    u = -1;
     for(int i=0; i<graph->getSize(); i++) {
         int id = graph->getId(i);
-        emit nodeStateChange(Node::NodeType::None, id);
+        emit nodeStateChange(NodeType::BaseNode, id);
         for (int j=0; j<graph->getAdjNum(i); j++) {
-            emit edgeStateChange(AdjNode::EdgeType::None, id, graph->getId(j));
+            emit edgeStateChange(EdgeType::BaseEdge, id, graph->getId(j));
         }
     }
 }
@@ -95,6 +148,7 @@ void Algorithm::init()
             queue.clear();
             distances.resize(graph->getSize());
             parents.resize(graph->getSize());
+            nodeTypes.resize(graph->getSize());
             all_distances.clear();
             all_parents.clear();
             all_queue_states.clear();
@@ -102,9 +156,10 @@ void Algorithm::init()
             for(int i=0; i<graph->getSize(); i++) {
                 distances[i] = INT32_MAX;
                 parents[i] = -1;
-                emit nodeStateChange(Node::NodeType::None, graph->getId(i));
+                nodeTypes[i] = BaseNode;
+                emit nodeStateChange(NodeType::BaseNode, graph->getId(i));
                 for(int j=0; j < graph->getAdjNum(i); j++) {
-                    emit edgeStateChange(AdjNode::EdgeType::None, graph->getId(i), graph->getId(j));
+                    emit edgeStateChange(EdgeType::BaseEdge, graph->getId(i), graph->getId(j));
                 }
             }
         }
@@ -116,6 +171,7 @@ void Algorithm::init()
         break;
     }
     if (start_node_ind != -1) initNode();
+    init_ready = true;
 }
 
 void Algorithm::initNode()
@@ -144,14 +200,14 @@ void Algorithm::initNode()
         parent += QString(QChar(157));          // empty set (?)
     }
     u = start_node_ind;
-    emit nodeStateChange(Node::NodeType::ExamineAdj, graph->getId(u));
+    emit nodeStateChange(NodeType::ExamineAdj, graph->getId(u));
     qDebug() << "parents: " << parents;
     qDebug() << "distances: " << distances;
     qDebug() << "parents list: " << all_parents;
     qDebug() << "distance list: " << all_distances;
 }
 
-int Algorithm::remMin(QVector<int> q)
+int Algorithm::remMin(QVector<int> &q)
 {
     int min_ind = q.at(0);
     int min_d = INT32_MAX;

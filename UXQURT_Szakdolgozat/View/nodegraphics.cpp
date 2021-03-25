@@ -41,22 +41,22 @@ void NodeGraphics::setName(QChar n) { name = n; }
 
 // Public functions
 
-void NodeGraphics::changeBrush(Node::NodeType type)
+void NodeGraphics::changeBrush(Algorithm::NodeType type)
 {
     switch (type) {
-        case Node::NodeType::None:
+        case Algorithm::NodeType::BaseNode:
             this->setBrush(normalBrush);
             break;
 
-        case Node::NodeType::Examined:
+        case Algorithm::NodeType::ExaminedNode:
             this->setBrush(examinedBrush);
             break;
 
-        case Node::NodeType::Processed:
+        case Algorithm::NodeType::ProcessedNode:
             this->setBrush(processedBrush);
             break;
 
-        case Node::NodeType::ExamineAdj:
+        case Algorithm::NodeType::ExamineAdj:
             this->setBrush(examineAdjBrush);
             break;
     }
