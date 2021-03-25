@@ -14,7 +14,7 @@ EdgeGraphics::EdgeGraphics(NodeGraphics* from, NodeGraphics* to) :
     pen.setWidth(2);
     this->setPen(pen);
 
-    normalPen = QPen(Qt::black);
+    normalPen = QPen(QColor(0,0,0));
     examinedPen = QPen(QColor(255, 174, 0));
     neededPen = QPen(QColor(33, 143, 79));
     notNeededPen = QPen(QColor(167,170, 171));
@@ -27,6 +27,7 @@ EdgeGraphics::EdgeGraphics(NodeGraphics* from, NodeGraphics* to) :
     weightSelected = false;
     isDirected = true;
     hasWeight = true;
+    setZValue(0);
 
     setFlag(QGraphicsItem::ItemSendsGeometryChanges);
 }

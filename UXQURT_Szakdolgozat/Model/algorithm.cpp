@@ -27,7 +27,6 @@ void Algorithm::selectStartNode(int s_ind)
 
 bool Algorithm::stepAlgorithm()
 {
-    qDebug() << chosenAlgo;
     if (chosenAlgo == None) return false;
     if (!init_ready) {
         init();
@@ -46,12 +45,9 @@ bool Algorithm::stepAlgorithm()
         ended = !(distances[u] < INT32_MAX && !queue.isEmpty());
         if (adj_ind_in_u > 0) {                     // az előző lépésben vizsgáltat visszaállítjuk ( ha volt )
             int prev_ind = graph->getAdjIndexInNodes(u,adj_ind_in_u-1);
-            if (nodeTypes.at(prev_ind) == BaseNode)
-                emit nodeStateChange(BaseNode, prev_ind);
-            else {
-                emit nodeStateChange(ProcessedNode, prev_ind);
-                emit edgeStateChange(BaseEdge, u, prev_ind);
-            }
+            if (nodeTypes.at(prev_ind) == BaseNode) emit nodeStateChange(BaseNode, prev_ind);
+            else emit nodeStateChange(ProcessedNode, prev_ind);
+            emit edgeStateChange(BaseEdge, u, prev_ind);
         }
         if (!ended) {
             if (adj_ind_in_u == graph->getAdjNum(u)) {        // új u-t választunk
@@ -74,7 +70,6 @@ bool Algorithm::stepAlgorithm()
                     parents[adj_index] = graph->getId(u);
                     distances[adj_index] = newDist;
                 }
-
                 adj_ind_in_u++;
             }
 

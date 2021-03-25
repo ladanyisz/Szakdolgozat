@@ -15,6 +15,7 @@ NodeGraphics::NodeGraphics()
     QPen pen;
     pen.setWidth(2);
     setPen(pen);
+    setZValue(1);
 
     setFlag(GraphicsItemFlag::ItemIsMovable);
     setFlag(GraphicsItemFlag::ItemSendsGeometryChanges);
