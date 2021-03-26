@@ -132,6 +132,7 @@ void Algorithm::reset()
             emit edgeStateChange(EdgeType::BaseEdge, id, graph->getId(j));
         }
     }
+    timer.stop();
 }
 
 void Algorithm::init()
