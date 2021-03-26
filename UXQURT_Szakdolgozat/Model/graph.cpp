@@ -35,7 +35,10 @@ int Graph::getVectorPosition(int id)
 
 int Graph::getMaxNodeNum() { return maxNodeNum; }
 
-int Graph::getId(int i) { return nodes.at(i)->getId(); }
+int Graph::getId(int i) {
+    if (nodes.size() > i) return nodes.at(i)->getId();
+    else return -1;
+}
 
 int Graph::getIndex(Node *node)
 {

@@ -47,6 +47,7 @@ private:
     QPoint toPoint;
     QPointF controlPoint;
     QLineF ghostLine;
+    bool notNeeded;
     int weight;
     bool weightSelected;            // ha igaz, akkor pirossal rajzolja a súly körét
     bool isDirected;                // irányított-e

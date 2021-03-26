@@ -49,7 +49,7 @@ private:
     int adj_ind_in_u;               // u hanyadik szomszédos elemét vizsgáljuk (az u indexű Node listájában)
     bool init_ready;
     QVector<NodeType> nodeTypes;
-    QVector<QVector<EdgeType>> edgeTypes;   // [egyes csúcsok][csúcsok gyerekeinek listája]
+    QVector<QVector<EdgeType>> edgeTypes;   // [egyes csúcsok][összes csúcs listája]
 
     Algorithms chosenAlgo;
     int start_node_ind;

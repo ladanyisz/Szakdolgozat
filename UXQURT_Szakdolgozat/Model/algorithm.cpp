@@ -48,8 +48,7 @@ bool Algorithm::stepAlgorithm()
             int prev_ind = graph->getAdjIndexInNodes(u,adj_ind_in_u-1);
             int prev_id =  graph->getId(prev_ind);
             emit nodeStateChange(nodeTypes.at(prev_ind), prev_id);
-//            emit edgeStateChange(edgeTypes[u][adj_ind_in_u-1], graph->getId(u), prev_id);
-            emit edgeStateChange(BaseEdge, graph->getId(u), prev_id);
+            emit edgeStateChange(edgeTypes[u][prev_ind], graph->getId(u), prev_id);
         }
         if (!ended) {
             if (adj_ind_in_u == graph->getAdjNum(u)) {        // új u-t választunk
@@ -64,17 +63,27 @@ bool Algorithm::stepAlgorithm()
 
             } else {        // belső ciklusmag
                 qDebug() << "check adj: " << graph->getAdjName(u,adj_ind_in_u);
+                qDebug() << "adj index in nodes " << graph->getAdjIndexInNodes(u,adj_ind_in_u);
                 int adj_index = graph->getAdjIndexInNodes(u,adj_ind_in_u);
                 emit nodeStateChange(ExaminedNode, graph->getId(adj_index));
                 emit edgeStateChange(ExaminedEdge, graph->getId(u), graph->getId(adj_index));
                 int newDist = distances[u] + graph->getAdjWeight(u,adj_ind_in_u);
+                qDebug() << "parent of adj: " << parents[adj_index];
                 if (distances[adj_index] > newDist) {
+                    if (parents[adj_index] != -1 && (graph->getDirected() || parents[u] != adj_index)) {             // ha jobbat találtunk, az eddigi él nem kell
+                        qDebug() << "here";
+                        edgeTypes[parents[adj_index]][adj_index] = EdgeType::NotNeededEdge;
+                        if (!graph->getDirected()) edgeTypes[adj_index][parents[adj_index]] = EdgeType::NotNeededEdge;
+                        emit edgeStateChange(EdgeType::NotNeededEdge, graph->getId(parents[adj_index]), graph->getId(adj_index));
+                    }
                     parents[adj_index] = u;
                     distances[adj_index] = newDist;
-//                    edgeTypes[u][adj_ind_in_u] = EdgeType::NeededEdge;
+                    edgeTypes[u][adj_index] = EdgeType::NeededEdge;
+                    if (!graph->getDirected()) edgeTypes[adj_index][u] = EdgeType::NeededEdge;
 //                    emit edgeStateChange(EdgeType::NeededEdge, graph->getId(u), graph->getId(adj_index));
-                } else {
-//                    edgeTypes[parents[adj_index]][adj_ind_in_u] = EdgeType::NotNeededEdge;
+                } else if ((graph->getDirected() || parents[u] != adj_index)){            // az újonnan talált él nem jobb az eddiginél, ezért nem kell
+                    edgeTypes[u][adj_index] = EdgeType::NotNeededEdge;
+                    if (!graph->getDirected()) edgeTypes[adj_index][u] = EdgeType::NotNeededEdge;
 //                    emit edgeStateChange(EdgeType::NotNeededEdge, graph->getId(u), graph->getId(adj_index));
                 }
                 adj_ind_in_u++;
@@ -127,9 +136,15 @@ void Algorithm::reset()
     u = -1;
     for(int i=0; i<graph->getSize(); i++) {
         int id = graph->getId(i);
-        emit nodeStateChange(NodeType::BaseNode, id);
-        for (int j=0; j<graph->getAdjNum(i); j++) {
-            emit edgeStateChange(EdgeType::BaseEdge, id, graph->getId(j));
+        qDebug() << "id: " << id;
+        if (id != -1) {
+            emit nodeStateChange(NodeType::BaseNode, id);
+            for (int j=0; j<graph->getAdjNum(i); j++) {
+                qDebug() << graph->getAdjIndexInNodes(i,j);
+                int adj_id = graph->getId(graph->getId(graph->getAdjIndexInNodes(i,j)));
+                qDebug() << adj_id;
+                if (adj_id != 1) emit edgeStateChange(EdgeType::BaseEdge, id, adj_id);
+            }
         }
     }
     timer.stop();
@@ -146,6 +161,7 @@ void Algorithm::init()
         break;
 
     case Dijkstra:
+        if (!graph->getWeighted()) emit needWeights();
         if (!graph->checkAllEdgesNonnegative()) emit needOnlyNonnegativeEdges();
         else {
             queue.clear();
@@ -159,10 +175,11 @@ void Algorithm::init()
                 parents[i] = -1;
                 nodeTypes[i] = BaseNode;
                 emit nodeStateChange(NodeType::BaseNode, graph->getId(i));
-//                edgeTypes[i].resize(graph->getAdjNum(i));
+                edgeTypes[i].resize(n);
                 for(int j=0; j < graph->getAdjNum(i); j++) {
-//                    edgeTypes[i][j] = EdgeType::BaseEdge;
-                    emit edgeStateChange(EdgeType::BaseEdge, graph->getId(i), graph->getId(j));
+                    int index_in_nodes = graph->getAdjIndexInNodes(i,j);
+                    edgeTypes[i][index_in_nodes] = EdgeType::BaseEdge;
+                    emit edgeStateChange(EdgeType::BaseEdge, graph->getId(i), graph->getId(index_in_nodes));
                 }
             }
         }

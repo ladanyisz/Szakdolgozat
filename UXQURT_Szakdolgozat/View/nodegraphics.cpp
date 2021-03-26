@@ -8,7 +8,7 @@ NodeGraphics::NodeGraphics()
 {
     normalBrush = QBrush(QColor(124, 183, 214));
     examinedBrush = QBrush(QColor(255, 174, 0));
-    processedBrush = QBrush(QColor(33, 143, 79));
+    processedBrush = QBrush(QColor(63, 181, 113));
     examineAdjBrush = QBrush(QColor(230, 94, 92));
     setRect(0,0,size,size);
     setBrush(normalBrush);

@@ -16,8 +16,11 @@ EdgeGraphics::EdgeGraphics(NodeGraphics* from, NodeGraphics* to) :
 
     normalPen = QPen(QColor(0,0,0));
     examinedPen = QPen(QColor(255, 174, 0));
-    neededPen = QPen(QColor(33, 143, 79));
-    notNeededPen = QPen(QColor(167,170, 171));
+    neededPen = QPen(QColor(
+                         63, 181, 113
+));
+    notNeededPen = QPen(QColor(220,220, 220));
+    notNeeded = false;
 
     calculate();
 
@@ -163,15 +166,21 @@ void EdgeGraphics::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
         // súly
         if (weightSelected) pen.setColor(Qt::red);
         painter->setPen(pen);
-        painter->setBrush(QColor(222, 222, 222));
+//        if (!notNeeded) painter->setBrush(QColor(222, 222, 222));
+        /*else */ if (notNeeded) painter->setBrush(QColor(notNeededPen.color()));
+        else if (this->pen().color() != Qt::black) painter->setBrush(this->pen().color());
+        else painter->setBrush(QColor(222, 222, 222));
+
         if (isDirected) painter->translate(myPath.pointAtPercent(0.5));
         else painter->translate(line().center());
-        pen.setColor(Qt::black);
-        painter->setPen(pen);
+//        pen.setColor(Qt::black);
+//        if (!notNeeded) painter->setPen(pen);
         painter->drawEllipse(QPoint(0,0), 14,14);
         QFont font;
         font.setBold(true);
         font.setPointSize(12);
+        if (notNeeded) painter->setPen(QColor(190,190,190));
+        else painter->setPen(Qt::black);
         painter->setFont(font);
         if (weight < 10 && weight > -1) {
             painter->drawText(- 5 ,6, QString::number(weight));
@@ -246,15 +255,19 @@ void EdgeGraphics::changePen(Algorithm::EdgeType type)
     switch (type) {
         case Algorithm::EdgeType::BaseEdge:
             this->setPen(normalPen);
+            notNeeded = false;
         break;
     case Algorithm::EdgeType::ExaminedEdge:
             this->setPen(examinedPen);
+            notNeeded = false;
         break;
     case Algorithm::EdgeType::NeededEdge:
             this->setPen(neededPen);
+            notNeeded = false;
         break;
     case Algorithm::EdgeType::NotNeededEdge:
             this->setPen(notNeededPen);
+            notNeeded = true;
         break;
     }
 }
