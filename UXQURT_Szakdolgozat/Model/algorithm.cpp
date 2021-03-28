@@ -52,39 +52,35 @@ bool Algorithm::stepAlgorithm()
         }
         if (!ended) {
             if (adj_ind_in_u == graph->getAdjNum(u)) {        // új u-t választunk
-                qDebug() << "current u: " << graph->getName(graph->getId(u));
                 adj_ind_in_u = 0;
-                emit nodeStateChange(ProcessedNode, graph->getId(u));
+                emit nodeStateChange(ProcessedNode, graph->getId(u));   // visszafelé lépéshez                    //
                 nodeTypes[u] = ProcessedNode;
                 u = remMin(queue);                  // ehhez a legjobb utat ismerjük
-                qDebug() << "new u: " << graph->getName(graph->getId(u));
                 emit nodeStateChange(ExamineAdj, graph->getId(u));
                 ended = !(distances[u] < INT32_MAX && !queue.isEmpty());
 
             } else {        // belső ciklusmag
-                qDebug() << "check adj: " << graph->getAdjName(u,adj_ind_in_u);
-                qDebug() << "adj index in nodes " << graph->getAdjIndexInNodes(u,adj_ind_in_u);
                 int adj_index = graph->getAdjIndexInNodes(u,adj_ind_in_u);
                 emit nodeStateChange(ExaminedNode, graph->getId(adj_index));
                 emit edgeStateChange(ExaminedEdge, graph->getId(u), graph->getId(adj_index));
                 int newDist = distances[u] + graph->getAdjWeight(u,adj_ind_in_u);
-                qDebug() << "parent of adj: " << parents[adj_index];
                 if (distances[adj_index] > newDist) {
-                    if (parents[adj_index] != -1 && (graph->getDirected() || parents[u] != adj_index)) {             // ha jobbat találtunk, az eddigi él nem kell
-                        qDebug() << "here";
+                    if (parents[adj_index] != -1 && (graph->getDirected() || parents[u] != adj_index)) {
+//                        edgeSteps.push(edgeTypes[parents[adj_index]][adj_index]);
                         edgeTypes[parents[adj_index]][adj_index] = EdgeType::NotNeededEdge;
-                        if (!graph->getDirected()) edgeTypes[adj_index][parents[adj_index]] = EdgeType::NotNeededEdge;
+                        if (!graph->getDirected()) {
+//                            edgeSteps.push(edgeTypes[parents[adj_index]][adj_index]);
+                            edgeTypes[adj_index][parents[adj_index]] = EdgeType::NotNeededEdge;
+                        }
                         emit edgeStateChange(EdgeType::NotNeededEdge, graph->getId(parents[adj_index]), graph->getId(adj_index));
                     }
                     parents[adj_index] = u;
                     distances[adj_index] = newDist;
                     edgeTypes[u][adj_index] = EdgeType::NeededEdge;
                     if (!graph->getDirected()) edgeTypes[adj_index][u] = EdgeType::NeededEdge;
-//                    emit edgeStateChange(EdgeType::NeededEdge, graph->getId(u), graph->getId(adj_index));
                 } else if ((graph->getDirected() || parents[u] != adj_index)){            // az újonnan talált él nem jobb az eddiginél, ezért nem kell
                     edgeTypes[u][adj_index] = EdgeType::NotNeededEdge;
                     if (!graph->getDirected()) edgeTypes[adj_index][u] = EdgeType::NotNeededEdge;
-//                    emit edgeStateChange(EdgeType::NotNeededEdge, graph->getId(u), graph->getId(adj_index));
                 }
                 adj_ind_in_u++;
             }
@@ -100,10 +96,21 @@ bool Algorithm::stepAlgorithm()
     default:
         break;
     }
+    qDebug() << "-----ODA----";
     qDebug() << "queue: " << queue;
     qDebug() << "parents: " << parents;
     qDebug() << "distances: " << distances;
+    qDebug() << "u: " << u << ", adj_ind_in_u: " << adj_ind_in_u;
+    addState();
     if (ended) {
+        for(int i=0; i<graph->getSize(); i++) {
+            for(int j=0; j<graph->getSize(); j++) {
+                if (i != j && edgeTypes[i][j] == EdgeType::BaseEdge) {
+                    edgeTypes[i][j] = EdgeType::NotNeededEdge;
+                    emit edgeStateChange(EdgeType::NotNeededEdge, graph->getId(i), graph->getId(j));
+                }
+            }
+        }
         timer.stop();
         qDebug() << "algorithm ended";
         emit algorithmEnded();
@@ -115,6 +122,45 @@ bool Algorithm::stepAlgorithm()
 
 bool Algorithm::stepBackAlgorithm()
 {
+//    qDebug() << "steps: " << steps;
+////    qDebug() << "node steps: " << nodeSteps;
+//    if (steps.isEmpty()) return false;
+//    int i = steps.pop();
+
+//    if (i == 0) {
+//        std::tuple<NodeType, int> a = nodeSteps.pop();
+//        emit nodeStateChange(std::get<0>(a), std::get<1>(a));
+//    } else if (i == 1) {
+
+//    }
+    if (steps.isEmpty() || steps.length() == 1) return false;
+    steps.pop();            // utolsó állapot, nem kell
+    AlgorithmState state = steps.top();
+    distances = state.distances;
+    parents = state.parents;
+    queue = state.queue;
+    qDebug() << "-----VISSZA----";
+    qDebug() << "dist: " << distances;
+    qDebug() << "par: " << parents;
+    u = state.u;
+    adj_ind_in_u = state.adj_ind_in_u;
+    nodeTypes = state.nodeTypes;
+    edgeTypes = state.edgeTypes;
+    for(int i=0; i<graph->getSize(); i++) {
+        emit nodeStateChange(nodeTypes[i], graph->getId(i));
+        for(int j=0; j<graph->getAdjNum(i); j++) {
+            int adj_in_nodes = graph->getAdjIndexInNodes(i,j);
+            emit edgeStateChange(edgeTypes[i][adj_in_nodes], graph->getId(i), graph->getId(adj_in_nodes));
+        }
+    }
+    emit nodeStateChange(NodeType::ExamineAdj, u);
+    qDebug() << "u: " << u << ", adj_ind_in_u: " << adj_ind_in_u;
+    if ((adj_ind_in_u-1) != -1) {
+        int adj_index = graph->getAdjIndexInNodes(u,(adj_ind_in_u-1));
+        emit nodeStateChange(NodeType::ExaminedNode, graph->getId(adj_index));
+        emit edgeStateChange(EdgeType::ExaminedEdge, graph->getId(u), graph->getId(adj_index));
+    }
+    if (steps.length() == 1) return false;
     return true;
 }
 
@@ -136,22 +182,19 @@ void Algorithm::reset()
     u = -1;
     for(int i=0; i<graph->getSize(); i++) {
         int id = graph->getId(i);
-        qDebug() << "id: " << id;
-        if (id != -1) {
-            emit nodeStateChange(NodeType::BaseNode, id);
+        emit nodeStateChange(NodeType::BaseNode, id);
             for (int j=0; j<graph->getAdjNum(i); j++) {
-                qDebug() << graph->getAdjIndexInNodes(i,j);
-                int adj_id = graph->getId(graph->getId(graph->getAdjIndexInNodes(i,j)));
-                qDebug() << adj_id;
-                if (adj_id != 1) emit edgeStateChange(EdgeType::BaseEdge, id, adj_id);
+                int adj_id = graph->getId(graph->getAdjIndexInNodes(i,j));
+                emit edgeStateChange(EdgeType::BaseEdge, id, adj_id);
             }
-        }
     }
     timer.stop();
 }
 
 void Algorithm::init()
 {
+    steps.clear();
+
     switch (chosenAlgo) {
         case Szelessegi:
         break;
@@ -192,6 +235,7 @@ void Algorithm::init()
     }
     if (start_node_ind != -1) initNode();
     init_ready = true;
+    addState();
 }
 
 void Algorithm::initNode()
@@ -219,5 +263,11 @@ int Algorithm::remMin(QVector<int> &q)
     }
     q.removeAll(min_ind);
     return min_ind;
+}
+
+void Algorithm::addState()
+{
+    AlgorithmState state = AlgorithmState(distances, parents, queue, u, adj_ind_in_u, nodeTypes, edgeTypes);
+    steps.push(state);
 }
 
