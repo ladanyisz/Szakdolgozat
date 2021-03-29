@@ -40,6 +40,8 @@ GraphViewer::GraphViewer(QWidget *parent)
         pauseButton->click();
         nextButton->setEnabled(false);
     });
+    connect(algo, &Algorithm::needWeights, this, &GraphViewer::needWeights);
+    connect(algo, &Algorithm::needOnlyNonnegativeEdges, this, &GraphViewer::needOnlyNonnegativeEdges);
 
     connect(scene, &GraphScene::edgeSelected, this, &GraphViewer::showWeightGroup);
     connect(scene, &GraphScene::nodeAdded, this, &GraphViewer::enableAlgorithms);
@@ -60,7 +62,7 @@ void GraphViewer::setStyles()
 
     nodeSelector->setStyleSheet("margin-right: 2px;");
 
-    warningLabel->setStyleSheet("font-size: 16px; color: red;");
+    warningLabel->setStyleSheet("font-size: 16px; color: red; background-color: rgba(255,255,255,0.7);");
     weightGroupBox->setStyleSheet("background-color: white; border: 1px solid black;");
     weightLabel->setStyleSheet("border: unset;");
 }
@@ -321,6 +323,8 @@ void GraphViewer::algorithmStarted()
     } else {
         pauseButton->setEnabled(true);
         pauseButton->click();
+        enableEdit();
+        enableSelectors();
     }
 
 }
@@ -481,11 +485,23 @@ void GraphViewer::disableEdit()
     pointerButton->click();
 }
 
+void GraphViewer::needWeights()
+{
+    warningLabel->setText("Az algoritmus csak súlyozott gráfon futtatható!");
+    showWarningLabel();
+}
+
+void GraphViewer::needOnlyNonnegativeEdges()
+{
+    warningLabel->setText("Az algoritmus csak olyan gráfon futtatható, aminek minden élköltsége nemnegatív");
+    showWarningLabel();
+}
+
 void GraphViewer::showWarningLabel()
 {
     warningLabel->setHidden(false);
     timer.setSingleShot(true);
-    timer.start(2000);
+    timer.start(5000);
 }
 
 void GraphViewer::updateSceneRect()

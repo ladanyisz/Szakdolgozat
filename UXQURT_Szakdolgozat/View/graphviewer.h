@@ -54,6 +54,8 @@ public slots:
     void disableSelectors();
     void enableEdit();
     void disableEdit();
+    void needWeights();
+    void needOnlyNonnegativeEdges();
 
 private:
 

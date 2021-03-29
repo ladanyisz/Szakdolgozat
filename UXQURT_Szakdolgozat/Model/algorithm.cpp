@@ -58,6 +58,7 @@ bool Algorithm::stepAlgorithm()
                 emit nodeStateChange(ProcessedNode, graph->getId(u));   // visszafelé lépéshez                    //
                 nodeTypes[u] = ProcessedNode;
                 u = remMin(queue);                  // ehhez a legjobb utat ismerjük
+                qDebug() << "u: " << u;
                 emit nodeStateChange(ExamineAdj, graph->getId(u));
                 ended = !(distances[u] < INT32_MAX && !queue.isEmpty());
 
@@ -104,6 +105,7 @@ bool Algorithm::stepAlgorithm()
     addState();
     if (ended) {
         for(int i=0; i<graph->getSize(); i++) {
+            emit nodeStateChange(ProcessedNode, graph->getId(i));
             for(int j=0; j<graph->getSize(); j++) {
                 if (i != j && edgeTypes[i][j] == EdgeType::BaseEdge) {
                     edgeTypes[i][j] = EdgeType::NotNeededEdge;
@@ -112,9 +114,7 @@ bool Algorithm::stepAlgorithm()
             }
         }
         timer->stop();
-        qDebug() << "algorithm ended";
         emit algorithmEnded();
-        emit nodeStateChange(ProcessedNode, graph->getId(u));
         return false;
     }
     return true;
@@ -236,12 +236,15 @@ void Algorithm::init()
 void Algorithm::initNode()
 {
     distances[start_node_ind] = 0;
+    qDebug() << "start_node_ind" << start_node_ind;
     for(int i=0; i<graph->getSize(); i++) {
+        qDebug() << "i" << i;
         if (i != start_node_ind)
             queue.append(i);
     }
     u = start_node_ind;
     emit nodeStateChange(NodeType::ExamineAdj, graph->getId(u));
+    qDebug() << "queue: " << queue;
     qDebug() << "parents: " << parents;
     qDebug() << "distances: " << distances;
 }
