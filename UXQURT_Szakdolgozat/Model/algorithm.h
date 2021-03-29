@@ -45,6 +45,7 @@ public:
     bool stepBackAlgorithm();
     void startAlgorithm();
     void pauseAlgrotithm();
+    bool getInitState();
 
 signals:
     void needOnlyNonnegativeEdges();
@@ -83,7 +84,7 @@ private:
     int remMin(QVector<int>&);       // megadja (és eltávolítja a vektorból) a graph nodes megfelelő indexét, ahol a legkisebb a dest
     void addState();
 
-    QTimer timer;
+    QTimer* timer;
 };
 
 #endif // ALGORITHM_H

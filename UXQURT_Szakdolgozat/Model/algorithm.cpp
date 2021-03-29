@@ -9,9 +9,10 @@ Algorithm::Algorithm(Graph *graph)
     init_ready = false;
     adj_ind_in_u = 0;
     u = -1;
+    timer = new QTimer();
 
-    timer.setInterval(1000);
-    connect(&timer, &QTimer::timeout, this, &Algorithm::stepAlgorithm);
+    timer->setInterval(1000);
+    connect(timer, &QTimer::timeout, this, &Algorithm::stepAlgorithm);
 }
 
 void Algorithm::selectAlgorithm(Algorithm::Algorithms algo)
@@ -29,6 +30,7 @@ void Algorithm::selectStartNode(int s_ind)
 bool Algorithm::stepAlgorithm()
 {
     if (chosenAlgo == None) return false;
+    qDebug() << "step algo";
     if (!init_ready) {
         init();
         return true;
@@ -66,10 +68,8 @@ bool Algorithm::stepAlgorithm()
                 int newDist = distances[u] + graph->getAdjWeight(u,adj_ind_in_u);
                 if (distances[adj_index] > newDist) {
                     if (parents[adj_index] != -1 && (graph->getDirected() || parents[u] != adj_index)) {
-//                        edgeSteps.push(edgeTypes[parents[adj_index]][adj_index]);
                         edgeTypes[parents[adj_index]][adj_index] = EdgeType::NotNeededEdge;
                         if (!graph->getDirected()) {
-//                            edgeSteps.push(edgeTypes[parents[adj_index]][adj_index]);
                             edgeTypes[adj_index][parents[adj_index]] = EdgeType::NotNeededEdge;
                         }
                         emit edgeStateChange(EdgeType::NotNeededEdge, graph->getId(parents[adj_index]), graph->getId(adj_index));
@@ -111,7 +111,7 @@ bool Algorithm::stepAlgorithm()
                 }
             }
         }
-        timer.stop();
+        timer->stop();
         qDebug() << "algorithm ended";
         emit algorithmEnded();
         emit nodeStateChange(ProcessedNode, graph->getId(u));
@@ -122,26 +122,13 @@ bool Algorithm::stepAlgorithm()
 
 bool Algorithm::stepBackAlgorithm()
 {
-//    qDebug() << "steps: " << steps;
-////    qDebug() << "node steps: " << nodeSteps;
-//    if (steps.isEmpty()) return false;
-//    int i = steps.pop();
 
-//    if (i == 0) {
-//        std::tuple<NodeType, int> a = nodeSteps.pop();
-//        emit nodeStateChange(std::get<0>(a), std::get<1>(a));
-//    } else if (i == 1) {
-
-//    }
     if (steps.isEmpty() || steps.length() == 1) return false;
-    steps.pop();            // utolsó állapot, nem kell
+    steps.pop();            // utolsó állapot, nem kell - ami épp látszik
     AlgorithmState state = steps.top();
     distances = state.distances;
     parents = state.parents;
     queue = state.queue;
-    qDebug() << "-----VISSZA----";
-    qDebug() << "dist: " << distances;
-    qDebug() << "par: " << parents;
     u = state.u;
     adj_ind_in_u = state.adj_ind_in_u;
     nodeTypes = state.nodeTypes;
@@ -154,7 +141,6 @@ bool Algorithm::stepBackAlgorithm()
         }
     }
     emit nodeStateChange(NodeType::ExamineAdj, u);
-    qDebug() << "u: " << u << ", adj_ind_in_u: " << adj_ind_in_u;
     if ((adj_ind_in_u-1) != -1) {
         int adj_index = graph->getAdjIndexInNodes(u,(adj_ind_in_u-1));
         emit nodeStateChange(NodeType::ExaminedNode, graph->getId(adj_index));
@@ -167,16 +153,22 @@ bool Algorithm::stepBackAlgorithm()
 void Algorithm::startAlgorithm()
 {
     if (!init_ready) init();
-    timer.start();
+    timer->start();
 }
 
 void Algorithm::pauseAlgrotithm()
 {
-    timer.stop();
+    timer->stop();
+}
+
+bool Algorithm::getInitState()
+{
+    return init_ready;
 }
 
 void Algorithm::reset()
 {
+    timer->stop();
     init_ready = false;
     adj_ind_in_u = 0;
     u = -1;
@@ -188,11 +180,11 @@ void Algorithm::reset()
                 emit edgeStateChange(EdgeType::BaseEdge, id, adj_id);
             }
     }
-    timer.stop();
 }
 
 void Algorithm::init()
 {
+    bool can_start = false;
     steps.clear();
 
     switch (chosenAlgo) {
@@ -206,7 +198,7 @@ void Algorithm::init()
     case Dijkstra:
         if (!graph->getWeighted()) emit needWeights();
         if (!graph->checkAllEdgesNonnegative()) emit needOnlyNonnegativeEdges();
-        else {
+        if(graph->getWeighted() && graph->checkAllEdgesNonnegative()) {
             queue.clear();
             int n = graph->getSize();
             distances.resize(n);
@@ -225,6 +217,7 @@ void Algorithm::init()
                     emit edgeStateChange(EdgeType::BaseEdge, graph->getId(i), graph->getId(index_in_nodes));
                 }
             }
+            can_start = true;
         }
         break;
 
@@ -233,9 +226,11 @@ void Algorithm::init()
     default:
         break;
     }
-    if (start_node_ind != -1) initNode();
-    init_ready = true;
-    addState();
+    if (can_start) {
+        if (start_node_ind != -1) initNode();
+        init_ready = true;
+        addState();
+    }
 }
 
 void Algorithm::initNode()

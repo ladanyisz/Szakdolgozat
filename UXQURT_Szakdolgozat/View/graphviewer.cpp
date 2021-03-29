@@ -30,18 +30,22 @@ GraphViewer::GraphViewer(QWidget *parent)
 
     pointerButton->click();
 
+    connect(&timer, &QTimer::timeout, this, [=]() {warningLabel->setHidden(true);});
+
     connect(graph, &Graph::nodesFull,this, &GraphViewer::nodesFull);
     connect(graph, &Graph::newEdge, scene, &GraphScene::addNewEdge);
     connect(algo, &Algorithm::nodeStateChange, scene, &GraphScene::changeNodeState);
     connect(algo, &Algorithm::edgeStateChange, scene, &GraphScene::changeEdgeState);
+    connect(algo, &Algorithm::algorithmEnded, this, [=]() {
+        pauseButton->click();
+        nextButton->setEnabled(false);
+    });
 
     connect(scene, &GraphScene::edgeSelected, this, &GraphViewer::showWeightGroup);
     connect(scene, &GraphScene::nodeAdded, this, &GraphViewer::enableAlgorithms);
     connect(scene, &GraphScene::allNodesDeleted, this, &GraphViewer::disableAlgorithms);
     connect(scene, &GraphScene::nodesChanged, this, &GraphViewer::enableAlgorithms);
     setStyles();
-
-
 
 }
 
@@ -310,8 +314,15 @@ void GraphViewer::algorithmStarted()
     disableSelectors();
     pointerButton->click();
     algo->startAlgorithm();
-    playButton->setEnabled(false);
-    pauseButton->setEnabled(true);
+    if (algo->getInitState()) {
+        playButton->setEnabled(false);
+        pauseButton->setEnabled(true);
+        previousButton->setEnabled(true);
+    } else {
+        pauseButton->setEnabled(true);
+        pauseButton->click();
+    }
+
 }
 
 void GraphViewer::algorithmPaused()
@@ -325,8 +336,14 @@ void GraphViewer::nextPressed()
 {
     disableEdit();
     disableSelectors();
-    if (!algo->stepAlgorithm())nextButton->setEnabled(false);
-    if (!previousButton->isEnabled()) previousButton->setEnabled(true);
+    bool step_success = algo->stepAlgorithm();
+    if (algo->getInitState()) {
+        if (!step_success) nextButton->setEnabled(false);
+        if (!previousButton->isEnabled()) previousButton->setEnabled(true);
+    } else {
+        enableEdit();
+        enableSelectors();
+    }
 }
 
 void GraphViewer::previousPressed()
@@ -468,7 +485,6 @@ void GraphViewer::showWarningLabel()
 {
     warningLabel->setHidden(false);
     timer.setSingleShot(true);
-    connect(&timer, &QTimer::timeout, this, [=]() {warningLabel->setHidden(true);});
     timer.start(2000);
 }
 
