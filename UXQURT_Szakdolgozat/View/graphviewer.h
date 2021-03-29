@@ -56,6 +56,8 @@ public slots:
     void disableEdit();
     void needWeights();
     void needOnlyNonnegativeEdges();
+    void noWeights();
+    void needsToBeConnected();
 
 private:
 

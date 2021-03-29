@@ -38,6 +38,41 @@ bool Algorithm::stepAlgorithm()
     bool ended = false;
     switch (chosenAlgo) {
         case Szelessegi:
+        ended = !(!queue.isEmpty() || (graph->getAdjNum(u) != 0 && adj_ind_in_u < graph->getAdjNum(u)));
+        if (adj_ind_in_u > 0) {                     // az előző lépésben vizsgált gyereket visszaállítjuk ( ha volt )
+            int prev_ind = graph->getAdjIndexInNodes(u,adj_ind_in_u-1);
+            int prev_id =  graph->getId(prev_ind);
+            emit nodeStateChange(nodeTypes.at(prev_ind), prev_id);
+            emit edgeStateChange(edgeTypes[u][prev_ind], graph->getId(u), prev_id);
+        }
+        if (!ended) {
+            if (u == -1 || adj_ind_in_u == graph->getAdjNum(u)) {      // ha az összes gyereket végignéztük, vége a belső ciklusnak, ismétlődik a külső ciklusmag vagy most kezdődik
+                if (u != -1) {
+                    adj_ind_in_u = 0;
+                    emit nodeStateChange(ProcessedNode, graph->getId(u));
+                    nodeTypes[u] = ProcessedNode;
+                }
+                u = queue.first();
+                queue.removeFirst();
+                emit nodeStateChange(ExamineAdj, graph->getId(u));
+            } else {                                        // belső ciklusmag
+                int adj_index = graph->getAdjIndexInNodes(u,adj_ind_in_u);
+                emit nodeStateChange(ExaminedNode, graph->getId(adj_index));
+                emit edgeStateChange(ExaminedEdge, graph->getId(u), graph->getId(adj_index));
+                if (distances[adj_index] == INT32_MAX) {
+                    distances[adj_index] = distances[u] + 1;
+                    parents[adj_index] = u;
+                    nodeTypes[adj_index] = ReachedButNotProcessed;
+                    edgeTypes[u][adj_index] = NeededEdge;
+                    if (!graph->getDirected()) edgeTypes[adj_index][u] = NeededEdge;
+                    queue.append(adj_index);
+                } else {
+                    edgeTypes[u][adj_index] = NotNeededEdge;
+                    if (!graph->getDirected()) edgeTypes[adj_index][u] = NotNeededEdge;
+                }
+                adj_ind_in_u++;
+            }
+        }
         break;
 
     case Melysegi:
@@ -46,7 +81,7 @@ bool Algorithm::stepAlgorithm()
 
     case Dijkstra:
         ended = !(distances[u] < INT32_MAX && !queue.isEmpty());
-        if (adj_ind_in_u > 0) {                     // az előző lépésben vizsgáltat visszaállítjuk ( ha volt )
+        if (adj_ind_in_u > 0) {                     // az előző lépésben vizsgált gyereket visszaállítjuk ( ha volt )
             int prev_ind = graph->getAdjIndexInNodes(u,adj_ind_in_u-1);
             int prev_id =  graph->getId(prev_ind);
             emit nodeStateChange(nodeTypes.at(prev_ind), prev_id);
@@ -86,13 +121,47 @@ bool Algorithm::stepAlgorithm()
                 adj_ind_in_u++;
             }
 
-//            for(int j=0; j<graph->getAdjNum(u); j++) {
-//            }
-
         }
         break;
 
     case Prim:
+        ended = !(!queue.isEmpty() || (graph->getAdjNum(u) != 0 && adj_ind_in_u < graph->getAdjNum(u)));
+        if (adj_ind_in_u > 0) {                     // az előző lépésben vizsgált gyereket visszaállítjuk ( ha volt )
+            int prev_ind = graph->getAdjIndexInNodes(u,adj_ind_in_u-1);
+            int prev_id =  graph->getId(prev_ind);
+            emit nodeStateChange(nodeTypes.at(prev_ind), prev_id);
+            emit edgeStateChange(edgeTypes[u][prev_ind], graph->getId(u), prev_id);
+        }
+        if (!ended) {
+            if (adj_ind_in_u == graph->getAdjNum(u)) {
+                adj_ind_in_u = 0;
+                emit nodeStateChange(ProcessedNode, graph->getId(u));
+                nodeTypes[u] = ProcessedNode;
+                u = remMin(queue);                  // ehhez a legjobb utat ismerjük
+                emit nodeStateChange(ExamineAdj, graph->getId(u));
+            } else {                                        // belső ciklusmag
+                int adj_index = graph->getAdjIndexInNodes(u,adj_ind_in_u);
+                emit nodeStateChange(ExaminedNode, graph->getId(adj_index));
+                emit edgeStateChange(ExaminedEdge, graph->getId(u), graph->getId(adj_index));
+                int newWeight = graph->getAdjWeight(u, adj_ind_in_u);
+                if (distances[adj_index] > newWeight) {
+                    if (parents[adj_index] != -1 && parents[u] != adj_index) {
+                        edgeTypes[parents[adj_index]][adj_index] = EdgeType::NotNeededEdge;
+                        edgeTypes[adj_index][parents[adj_index]] = EdgeType::NotNeededEdge;
+                        emit edgeStateChange(EdgeType::NotNeededEdge, graph->getId(parents[adj_index]), graph->getId(adj_index));
+                    }
+                    parents[adj_index] = u;
+                    distances[adj_index] = newWeight;
+                    edgeTypes[u][adj_index] = NeededEdge;
+                    edgeTypes[adj_index][u] = NeededEdge;
+                } else if (parents[u] != adj_index) {
+                    edgeTypes[u][adj_index] = NotNeededEdge;
+                    edgeTypes[adj_ind_in_u][u] = NotNeededEdge;
+                }
+                adj_ind_in_u++;
+            }
+        }
+
         break;
     default:
         break;
@@ -113,6 +182,7 @@ bool Algorithm::stepAlgorithm()
                 }
             }
         }
+        qDebug() << "algorithm ended";
         timer->stop();
         emit algorithmEnded();
         return false;
@@ -186,9 +256,33 @@ void Algorithm::init()
 {
     bool can_start = false;
     steps.clear();
+    queue.clear();
+    int n = graph->getSize();
+    nodeTypes.resize(n);
+    edgeTypes.resize(n);
+
 
     switch (chosenAlgo) {
         case Szelessegi:
+        qDebug() << "szelessegi";
+        if (graph->getWeighted()) emit noWeights();
+        else {
+            distances.resize(n);
+            parents.resize(n);
+            for(int i=0; i<n; i++) {
+                distances[i] = INT32_MAX;
+                parents[i] = -1;
+                nodeTypes[i] = BaseNode;
+                emit nodeStateChange(NodeType::BaseNode, graph->getId(i));
+                edgeTypes[i].resize(n);
+                for(int j = 0; j<graph->getAdjNum(i); j++) {
+                    int index_in_nodes = graph->getAdjIndexInNodes(i,j);
+                    edgeTypes[i][index_in_nodes] = BaseEdge;
+                    emit edgeStateChange(BaseEdge, graph->getId(i), graph->getId(index_in_nodes));
+                }
+            }
+            can_start = true;
+        }
         break;
 
     case Melysegi:
@@ -199,12 +293,8 @@ void Algorithm::init()
         if (!graph->getWeighted()) emit needWeights();
         if (!graph->checkAllEdgesNonnegative()) emit needOnlyNonnegativeEdges();
         if(graph->getWeighted() && graph->checkAllEdgesNonnegative()) {
-            queue.clear();
-            int n = graph->getSize();
             distances.resize(n);
             parents.resize(n);
-            nodeTypes.resize(n);
-            edgeTypes.resize(n);
             for(int i=0; i<n; i++) {
                 distances[i] = INT32_MAX;
                 parents[i] = -1;
@@ -222,28 +312,75 @@ void Algorithm::init()
         break;
 
     case Prim:
+        if (!graph->getWeighted()) emit needWeights();
+        if (graph->getDirected()) emit needsToBeUndirected();
+        if (!graph->checkConnectivity()) emit needsToBeConnected();
+        if (graph->getWeighted() && !graph->getDirected() && graph->checkConnectivity()) {
+            distances.resize(n);
+            parents.resize(n);
+            for(int i=0; i<n; i++) {
+                distances[i] = INT32_MAX;
+                parents[i] = -1;
+                nodeTypes[i] = BaseNode;
+                emit nodeStateChange(NodeType::BaseNode, graph->getId(i));
+                edgeTypes[i].resize(n);
+                for(int j=0; j < graph->getAdjNum(i); j++) {
+                    int index_in_nodes = graph->getAdjIndexInNodes(i,j);
+                    edgeTypes[i][index_in_nodes] = EdgeType::BaseEdge;
+                    emit edgeStateChange(EdgeType::BaseEdge, graph->getId(i), graph->getId(index_in_nodes));
+                }
+            }
+            can_start = true;
+        }
         break;
+
     default:
         break;
     }
     if (can_start) {
-        if (start_node_ind != -1) initNode();
         init_ready = true;
+        if (start_node_ind != -1) initNode();
         addState();
     }
 }
 
 void Algorithm::initNode()
 {
-    distances[start_node_ind] = 0;
-    qDebug() << "start_node_ind" << start_node_ind;
-    for(int i=0; i<graph->getSize(); i++) {
-        qDebug() << "i" << i;
-        if (i != start_node_ind)
-            queue.append(i);
+    switch (chosenAlgo) {
+
+    case Szelessegi:
+        distances[start_node_ind] = 0;
+        queue.append(start_node_ind);
+        nodeTypes[start_node_ind] = ReachedButNotProcessed;
+        emit nodeStateChange(ReachedButNotProcessed, graph->getId(start_node_ind));
+        stepAlgorithm();
+        break;
+
+    case Dijkstra:
+        distances[start_node_ind] = 0;
+        for(int i=0; i<graph->getSize(); i++) {
+            if (i != start_node_ind)
+                queue.append(i);
+        }
+        u = start_node_ind;
+        emit nodeStateChange(NodeType::ExamineAdj, graph->getId(u));
+        break;
+
+    case Prim:
+        distances[start_node_ind] = 0;
+        for(int i=0; i<graph->getSize(); i++) {
+            if (i != start_node_ind)
+                queue.append(i);
+        }
+        u = start_node_ind;
+        emit nodeStateChange(NodeType::ExamineAdj, graph->getId(u));
+        break;
+
+    default:
+        break;
+
     }
-    u = start_node_ind;
-    emit nodeStateChange(NodeType::ExamineAdj, graph->getId(u));
+
     qDebug() << "queue: " << queue;
     qDebug() << "parents: " << parents;
     qDebug() << "distances: " << distances;

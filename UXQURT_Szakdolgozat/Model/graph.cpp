@@ -105,7 +105,7 @@ bool Graph::checkConnectivity()     // erre még lehet egy jobb algoritmus (szé
                 bool no_edges = true;
                 int i = 0;
                 while (i < nodes.size() && no_edges) {
-                    if (nodes[i] != node) no_edges = nodes[i]->hasEdge(node);
+                    if (nodes[i] != node) no_edges = !nodes[i]->hasEdge(node);
                     i++;
                 }
                 if (no_edges) return false;

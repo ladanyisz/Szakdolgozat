@@ -42,6 +42,8 @@ GraphViewer::GraphViewer(QWidget *parent)
     });
     connect(algo, &Algorithm::needWeights, this, &GraphViewer::needWeights);
     connect(algo, &Algorithm::needOnlyNonnegativeEdges, this, &GraphViewer::needOnlyNonnegativeEdges);
+    connect(algo, &Algorithm::noWeights, this, &GraphViewer::noWeights);
+    connect(algo, &Algorithm::needsToBeConnected, this, &GraphViewer::needsToBeConnected);
 
     connect(scene, &GraphScene::edgeSelected, this, &GraphViewer::showWeightGroup);
     connect(scene, &GraphScene::nodeAdded, this, &GraphViewer::enableAlgorithms);
@@ -471,6 +473,10 @@ void GraphViewer::enableEdit()
     if (graph->getWeighted()) weightButton->setEnabled(true);
     deleteButton->setEnabled(true);
 
+    deleteGraphAction->setEnabled(true);
+    directedCheckBox->setEnabled(true);
+    weightedCheckBox->setEnabled(true);
+    setupGraphAction->setEnabled(true);
 }
 
 void GraphViewer::disableEdit()
@@ -479,6 +485,10 @@ void GraphViewer::disableEdit()
     edgeButton->setEnabled(false);
     weightButton->setEnabled(false);
     deleteButton->setEnabled(false);
+    deleteGraphAction->setEnabled(false);
+    directedCheckBox->setEnabled(false);
+    weightedCheckBox->setEnabled(false);
+    setupGraphAction->setEnabled(false);
 
     weightLineEdit->setText("");
     weightGroupBox->setVisible(false);
@@ -493,7 +503,19 @@ void GraphViewer::needWeights()
 
 void GraphViewer::needOnlyNonnegativeEdges()
 {
-    warningLabel->setText("Az algoritmus csak olyan gráfon futtatható, aminek minden élköltsége nemnegatív");
+    warningLabel->setText("Az algoritmus csak olyan gráfon futtatható, aminek minden élköltsége nemnegatív!");
+    showWarningLabel();
+}
+
+void GraphViewer::noWeights()
+{
+    warningLabel->setText("Az algoritmus csak súlyozatlan gráfon futtatható!");
+    showWarningLabel();
+}
+
+void GraphViewer::needsToBeConnected()
+{
+    warningLabel->setText("Az algoritmus csak összefüggő gráfon futtatható!");
     showWarningLabel();
 }
 

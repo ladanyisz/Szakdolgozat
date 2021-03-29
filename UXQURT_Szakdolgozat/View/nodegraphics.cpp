@@ -10,6 +10,7 @@ NodeGraphics::NodeGraphics()
     examinedBrush = QBrush(QColor(255, 174, 0));
     processedBrush = QBrush(QColor(63, 181, 113));
     examineAdjBrush = QBrush(QColor(230, 94, 92));
+    greyBrush = QBrush(QColor(150,150,150));
     setRect(0,0,size,size);
     setBrush(normalBrush);
     QPen pen;
@@ -45,21 +46,26 @@ void NodeGraphics::setName(QChar n) { name = n; }
 void NodeGraphics::changeBrush(Algorithm::NodeType type)
 {
     switch (type) {
-        case Algorithm::NodeType::BaseNode:
-            this->setBrush(normalBrush);
-            break;
 
-        case Algorithm::NodeType::ExaminedNode:
-            this->setBrush(examinedBrush);
-            break;
+    case Algorithm::NodeType::BaseNode:
+        this->setBrush(normalBrush);
+        break;
 
-        case Algorithm::NodeType::ProcessedNode:
-            this->setBrush(processedBrush);
-            break;
+    case Algorithm::NodeType::ExaminedNode:
+        this->setBrush(examinedBrush);
+        break;
 
-        case Algorithm::NodeType::ExamineAdj:
-            this->setBrush(examineAdjBrush);
-            break;
+    case Algorithm::NodeType::ProcessedNode:
+        this->setBrush(processedBrush);
+        break;
+
+    case Algorithm::NodeType::ExamineAdj:
+        this->setBrush(examineAdjBrush);
+        break;
+
+    case Algorithm::NodeType::ReachedButNotProcessed:
+        this->setBrush(greyBrush);
+        break;
     }
 }
 

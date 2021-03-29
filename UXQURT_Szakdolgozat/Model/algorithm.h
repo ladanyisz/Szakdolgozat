@@ -13,7 +13,7 @@ class Algorithm: public QObject
     Q_OBJECT
 
 public:
-    enum NodeType { BaseNode, ExaminedNode , ProcessedNode, ExamineAdj };
+    enum NodeType { BaseNode, ExaminedNode , ProcessedNode, ExamineAdj, ReachedButNotProcessed };
     enum EdgeType { BaseEdge, NeededEdge, NotNeededEdge, ExaminedEdge };
     enum Algorithms { None, Szelessegi, Melysegi, Dijkstra, Prim};
 
@@ -53,6 +53,7 @@ signals:
     void needWeights();
     void needsToBeUndirected();
     void needsToBeDirected();
+    void needsToBeConnected();
     void algorithmEnded();
 
     void nodeStateChange(NodeType, int id);
@@ -73,9 +74,6 @@ private:
     QVector<NodeType> nodeTypes;
     QVector<QVector<EdgeType>> edgeTypes;
     QStack<AlgorithmState> steps;
-//    QStack<int> steps;
-//    QStack<std::tuple<NodeType, int>> nodeSteps;
-//    QStack<std::tuple<EdgeType, int, int>> edgeSteps;
 
     Algorithms chosenAlgo;
     int start_node_ind;

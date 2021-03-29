@@ -42,6 +42,7 @@ private:
     QBrush examinedBrush;
     QBrush processedBrush;
     QBrush examineAdjBrush;
+    QBrush greyBrush;
 
     QVector<EdgeGraphics*> edges;
 
