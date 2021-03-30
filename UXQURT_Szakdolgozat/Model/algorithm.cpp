@@ -36,6 +36,7 @@ bool Algorithm::stepAlgorithm()
         return true;
     }
     bool ended = false;
+    emit step_start();
     switch (chosenAlgo) {
         case Szelessegi:
         ended = !(!queue.isEmpty() || (graph->getAdjNum(u) != 0 && adj_ind_in_u < graph->getAdjNum(u)));
@@ -61,6 +62,7 @@ bool Algorithm::stepAlgorithm()
                 emit edgeStateChange(ExaminedEdge, graph->getId(u), graph->getId(adj_index));
                 if (distances[adj_index] == INT32_MAX) {
                     distances[adj_index] = distances[u] + 1;
+//                    emit distChanged(adj_index, distances[u] + 1);
                     parents[adj_index] = u;
                     nodeTypes[adj_index] = ReachedButNotProcessed;
                     edgeTypes[u][adj_index] = NeededEdge;
@@ -112,6 +114,8 @@ bool Algorithm::stepAlgorithm()
                     }
                     parents[adj_index] = u;
                     distances[adj_index] = newDist;
+                    emit parentChanged(adj_index, graph->getName(graph->getId(u)));
+                    emit distChanged(adj_index, newDist);
                     edgeTypes[u][adj_index] = EdgeType::NeededEdge;
                     if (!graph->getDirected()) edgeTypes[adj_index][u] = EdgeType::NeededEdge;
                 } else if ((graph->getDirected() || parents[u] != adj_index)){            // az újonnan talált él nem jobb az eddiginél, ezért nem kell
@@ -264,7 +268,6 @@ void Algorithm::init()
 
     switch (chosenAlgo) {
         case Szelessegi:
-        qDebug() << "szelessegi";
         if (graph->getWeighted()) emit noWeights();
         else {
             distances.resize(n);
@@ -341,6 +344,7 @@ void Algorithm::init()
         init_ready = true;
         if (start_node_ind != -1) initNode();
         addState();
+        emit initReady(start_node_ind);
     }
 }
 

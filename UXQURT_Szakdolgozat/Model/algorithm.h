@@ -55,6 +55,10 @@ signals:
     void needsToBeDirected();
     void needsToBeConnected();
     void algorithmEnded();
+    void initReady(int);                // index
+    void parentChanged(int, QChar);     // index, name
+    void distChanged(int, int);         // index, dist
+    void step_start();
 
     void nodeStateChange(NodeType, int id);
     void edgeStateChange(EdgeType, int from_id, int to_id);

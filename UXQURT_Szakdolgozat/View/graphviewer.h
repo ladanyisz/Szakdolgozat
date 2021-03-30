@@ -16,6 +16,7 @@
 #include <QGroupBox>
 #include <QCheckBox>
 #include <QFileDialog>
+#include <QTableWidget>
 
 #include "../Model/graph.h"
 #include "../Model/algorithm.h"
@@ -58,10 +59,15 @@ public slots:
     void needOnlyNonnegativeEdges();
     void noWeights();
     void needsToBeConnected();
+    void algoInitReady(int);
+    void parentChanged(int, QChar);
+    void distChanged(int, int);
+    void clearColorsInAlgTable();
 
 private:
 
     QHBoxLayout* layout;
+    QVBoxLayout* v_layout;
     QTimer timer;
 
     QMenu* fileMenu;
@@ -109,6 +115,12 @@ private:
 
     GraphTextEditor* graphTextEditor;
 
+    // Algoritmus által számított értékek
+    QGridLayout* algoValues;
+    QFont tableFont;
+    QFont tableDataFont;
+//    QTableWidget* algoValuesTable;
+
 
     Graph* graph;
     Algorithm* algo;
@@ -118,12 +130,13 @@ private:
     void initEditToolbar();
     void initAlgorithmToolbar();
     void initViews();
+    void initAlgoViews();
     void initWeightGroup();
     void initWarningLabel();
     void showWarningLabel();
     void updateSceneRect();
 
-    QWidget * QMainWindow;
+//    QWidget * QMainWindow;
 
 
 

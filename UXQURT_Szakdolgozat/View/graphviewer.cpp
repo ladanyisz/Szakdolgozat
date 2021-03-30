@@ -9,6 +9,7 @@
 #include<QMenuBar>
 #include <QCheckBox>
 #include <QDir>
+#include <QItemSelectionModel>
 
 GraphViewer::GraphViewer(QWidget *parent)
     : QMainWindow(parent)
@@ -21,6 +22,7 @@ GraphViewer::GraphViewer(QWidget *parent)
     algo = new Algorithm(graph);
 
     initViews();
+    initAlgoViews();
     initMenu();
     initEditToolbar();
     initAlgorithmToolbar();
@@ -39,11 +41,16 @@ GraphViewer::GraphViewer(QWidget *parent)
     connect(algo, &Algorithm::algorithmEnded, this, [=]() {
         pauseButton->click();
         nextButton->setEnabled(false);
+        clearColorsInAlgTable();
     });
     connect(algo, &Algorithm::needWeights, this, &GraphViewer::needWeights);
     connect(algo, &Algorithm::needOnlyNonnegativeEdges, this, &GraphViewer::needOnlyNonnegativeEdges);
     connect(algo, &Algorithm::noWeights, this, &GraphViewer::noWeights);
     connect(algo, &Algorithm::needsToBeConnected, this, &GraphViewer::needsToBeConnected);
+    connect(algo, &Algorithm::initReady, this, &GraphViewer::algoInitReady);
+    connect(algo, &Algorithm::distChanged, this, &GraphViewer::distChanged);
+    connect(algo, &Algorithm::parentChanged, this, &GraphViewer::parentChanged);
+    connect(algo, &Algorithm::step_start, this, &GraphViewer::clearColorsInAlgTable);
 
     connect(scene, &GraphScene::edgeSelected, this, &GraphViewer::showWeightGroup);
     connect(scene, &GraphScene::nodeAdded, this, &GraphViewer::enableAlgorithms);
@@ -62,7 +69,7 @@ void GraphViewer::setStyles()
                         "}"
                         "QCombobox::drop-down {padding: 56px;}");
 
-    nodeSelector->setStyleSheet("margin-right: 2px;");
+    nodeSelector->setStyleSheet("margin-right: 2px; width: 10px;");
 
     warningLabel->setStyleSheet("font-size: 16px; color: red; background-color: rgba(255,255,255,0.7);");
     weightGroupBox->setStyleSheet("background-color: white; border: 1px solid black;");
@@ -217,14 +224,18 @@ void GraphViewer::initViews()
     view = new QGraphicsView(scene);
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     scene->setSceneRect(view->geometry());
 
 
     QWidget *widget = new QWidget;
     setCentralWidget(widget);
     layout = new QHBoxLayout();
-    layout->addWidget(view);
+//    layout->addWidget(view);
     widget->setLayout(layout);
+    v_layout = new QVBoxLayout();
+    v_layout->addWidget(view);
+    layout->addLayout(v_layout);
 
     graphTextEditor = new GraphTextEditor(graph, this);
     graphTextEditor->setHidden(true);
@@ -237,6 +248,24 @@ void GraphViewer::initViews()
     connect(graphTextEditor, &GraphTextEditor::graphReady, this, &GraphViewer::hideGraphTextEditor);
     connect(graphTextEditor, &GraphTextEditor::edgesFull, this, &GraphViewer::edgesFull);
 
+}
+
+void GraphViewer::initAlgoViews()
+{
+    algoValues = new QGridLayout();
+    v_layout->addLayout(algoValues);
+    tableFont.setPixelSize(24);
+    tableFont.setBold(true);
+    tableDataFont.setPixelSize(24);
+    algoValues->setSizeConstraint(QLayout::SetMinimumSize);
+
+//    algoValuesTable = new QTableWidget();
+//    v_layout->addWidget(algoValuesTable);
+//    algoValuesTable->setRowCount(2);
+//    algoValuesTable->setColumnCount(5);
+//    QStringList v_labels = {"d", "p"};
+//    algoValuesTable->setVerticalHeaderLabels(v_labels);
+//    algoValuesTable->setEnabled(false);
 }
 
 void GraphViewer::initWeightGroup()
@@ -310,6 +339,16 @@ void GraphViewer::algorithmStopped()
     algo->reset();
     previousButton->setEnabled(false);
     pauseButton->setEnabled(false);
+
+    while (algoValues->layout()->count() > 0) {
+        QLayoutItem* i = algoValues->itemAt(0);
+        if (i->widget()) {
+            algoValues->removeWidget(i->widget());
+            delete i->widget();
+        }
+    }
+    view->resize(view->width(), view->height() + 92);
+    updateSceneRect();
 }
 
 void GraphViewer::algorithmStarted()
@@ -419,7 +458,7 @@ void GraphViewer::openFile()
         if (graph->getWeighted() != weightedCheckBox->isChecked()) weightedCheckBox->click();
         algo->reset();
         if (graph->getSize() > 0) enableAlgorithms();
-
+        algorithmStopped();
         pointerButton->click();
     }
 }
@@ -519,6 +558,104 @@ void GraphViewer::needsToBeConnected()
     showWarningLabel();
 }
 
+void GraphViewer::algoInitReady(int ind)
+{
+
+//    setStyleSheet("QLabel { background-color: red;}");
+    int w = 30;
+    QLabel* d = new QLabel("d");
+    QLabel* p = new QLabel("p");
+    d->setFixedWidth(w);
+    p->setFixedWidth(w);
+    d->setFont(tableFont);
+    p->setFont(tableFont);
+    d->setAlignment(Qt::AlignCenter);
+    p->setAlignment(Qt::AlignCenter);
+    algoValues->addWidget(d, 1,0, Qt::AlignLeft);
+    algoValues->addWidget(p, 2,0, Qt::AlignLeft);
+    algoValues->setColumnStretch(0,0);
+//    algoValues->setColumnMinimumWidth(0, 15);
+
+    QStringList names = graph->getNames();
+    names.sort();
+    int i = 1;
+    foreach(QString name, names) {
+        QLabel* n = new QLabel(name);
+        n->setFont(tableFont);
+        n->setFixedWidth(w);
+        n->setAlignment(Qt::AlignCenter);
+        algoValues->addWidget(n, 0, i, Qt::AlignHCenter);
+
+        int index = graph->getIndex(name);
+        QLabel* d = new QLabel();
+        d->setFont(tableDataFont);
+        d->setFixedWidth(w);
+        d->setAlignment(Qt::AlignCenter);
+        if (index == ind) d->setText("0");
+        else {
+            QPixmap pmap(":/img/infinity.png");
+            d->setPixmap(pmap);
+        }
+        algoValues->addWidget(d, 1, i, Qt::AlignHCenter);
+
+        QLabel* p = new QLabel();
+        QPixmap pix(":/img/empty-set.png");
+        p->setAlignment(Qt::AlignCenter);
+        p->setPixmap(pix);
+        p->setFixedWidth(w);
+        p->setFont(tableDataFont);
+        algoValues->addWidget(p, 2, i, Qt::AlignHCenter);
+        algoValues->setColumnStretch(i,0);
+        i++;
+    }
+    QLabel* empty = new QLabel("");
+    algoValues->addWidget(empty, 0, i);
+    algoValues->setColumnStretch(i,1);
+    algoValues->setSpacing(0);
+    algoValues->setHorizontalSpacing(12);
+    qDebug() << "rect aft: " << view->rect();
+    view->resize(view->width(), height() - 162);
+    updateSceneRect();
+}
+
+void GraphViewer::parentChanged(int ind, QChar n)
+{
+    QChar name = graph->getName(graph->getId(ind));
+    bool found = false;
+    int i = 1;
+    while (i < algoValues->columnCount() && !found) {
+        QLayoutItem* item = algoValues->itemAtPosition(0,i);
+        QLabel* label = qobject_cast<QLabel*>(item->widget());
+        if (label && label->text() == QString(name)) {
+            found = true;
+            QLayoutItem* item = algoValues->itemAtPosition(2,i);
+            QLabel* label = qobject_cast<QLabel*>(item->widget());
+            label->setStyleSheet("background-color: red;");
+            label->setText(n);
+        }
+        i++;
+    }
+}
+
+void GraphViewer::distChanged(int ind, int d)
+{
+    QChar name = graph->getName(graph->getId(ind));
+    bool found = false;
+    int i = 1;
+    while (i < algoValues->columnCount() && !found) {
+        QLayoutItem* item = algoValues->itemAtPosition(0,i);
+        QLabel* label = qobject_cast<QLabel*>(item->widget());
+        if (label && label->text() == QString(name)) {
+            found = true;
+            QLayoutItem* item = algoValues->itemAtPosition(1,i);
+            QLabel* label = qobject_cast<QLabel*>(item->widget());
+            label->setStyleSheet("background-color: red;");
+            label->setText(QString::number(d));
+        }
+        i++;
+    }
+}
+
 void GraphViewer::showWarningLabel()
 {
     warningLabel->setHidden(false);
@@ -526,12 +663,24 @@ void GraphViewer::showWarningLabel()
     timer.start(5000);
 }
 
+void GraphViewer::clearColorsInAlgTable()
+{
+    for(int i=1; i<algoValues->columnCount()-1; i++) {
+        for(int j=1; j<algoValues->rowCount(); j++) {
+            QLayoutItem* item = algoValues->itemAtPosition(j,i);
+            QLabel* label = qobject_cast<QLabel*>(item->widget());
+            label->setStyleSheet("background-color: none;");
+        }
+    }
+
+}
+
 void GraphViewer::updateSceneRect()
 {
     QList<QPointF> positions = scene->originalPositions();
     float w_old = scene->sceneRect().width();
     float h_old = scene->sceneRect().height();
-    scene->setSceneRect(view->geometry());
+    scene->setSceneRect(view->rect());
     float w_new = scene->sceneRect().width();
     float h_new = scene->sceneRect().height();
     scene->updatePositions(positions, w_new/w_old, h_new/h_old);
