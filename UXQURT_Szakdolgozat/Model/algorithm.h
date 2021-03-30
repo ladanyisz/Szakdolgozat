@@ -58,6 +58,7 @@ signals:
     void initReady(int);                // index
     void parentChanged(int, QChar);     // index, name
     void distChanged(int, int);         // index, dist
+    void queueChanged(QString);
     void step_start();
 
     void nodeStateChange(NodeType, int id);
@@ -85,6 +86,8 @@ private:
     void initNode();
     int remMin(QVector<int>&);       // megadja (és eltávolítja a vektorból) a graph nodes megfelelő indexét, ahol a legkisebb a dest
     void addState();
+    QString queueToVectorMin();
+    QString queueToVector();
 
     QTimer* timer;
 };

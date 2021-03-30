@@ -47,9 +47,11 @@ GraphViewer::GraphViewer(QWidget *parent)
     connect(algo, &Algorithm::needOnlyNonnegativeEdges, this, &GraphViewer::needOnlyNonnegativeEdges);
     connect(algo, &Algorithm::noWeights, this, &GraphViewer::noWeights);
     connect(algo, &Algorithm::needsToBeConnected, this, &GraphViewer::needsToBeConnected);
+    connect(algo, &Algorithm::needsToBeUndirected, this, &GraphViewer::needsToBeUndirected);
     connect(algo, &Algorithm::initReady, this, &GraphViewer::algoInitReady);
     connect(algo, &Algorithm::distChanged, this, &GraphViewer::distChanged);
     connect(algo, &Algorithm::parentChanged, this, &GraphViewer::parentChanged);
+    connect(algo, &Algorithm::queueChanged, this, &GraphViewer::queueChanged);
     connect(algo, &Algorithm::step_start, this, &GraphViewer::clearColorsInAlgTable);
 
     connect(scene, &GraphScene::edgeSelected, this, &GraphViewer::showWeightGroup);
@@ -224,7 +226,6 @@ void GraphViewer::initViews()
     view = new QGraphicsView(scene);
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     scene->setSceneRect(view->geometry());
 
 
@@ -252,12 +253,20 @@ void GraphViewer::initViews()
 
 void GraphViewer::initAlgoViews()
 {
+    QHBoxLayout* h_layout = new QHBoxLayout();
     algoValues = new QGridLayout();
-    v_layout->addLayout(algoValues);
+    v_layout->addLayout(h_layout);
+    h_layout->addLayout(algoValues);
+    h_layout->setSpacing(40);
+
     tableFont.setPixelSize(24);
     tableFont.setBold(true);
     tableDataFont.setPixelSize(24);
-    algoValues->setSizeConstraint(QLayout::SetMinimumSize);
+
+    queue = new QLabel("Q - < >");
+    queue->setFont(tableFont);
+    h_layout->addWidget(queue, Qt::AlignLeft);
+    queue->setVisible(false);
 
 //    algoValuesTable = new QTableWidget();
 //    v_layout->addWidget(algoValuesTable);
@@ -347,7 +356,8 @@ void GraphViewer::algorithmStopped()
             delete i->widget();
         }
     }
-    view->resize(view->width(), view->height() + 92);
+    if (queue->isVisible()) view->resize(view->width(), view->height() + 92);
+    queue->setVisible(false);
     updateSceneRect();
 }
 
@@ -437,7 +447,7 @@ void GraphViewer::saveFile()
 void GraphViewer::openFile()
 {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Gráf betöltése"), QDir::currentPath(), tr("Gráfok (*.graph)"));
-
+    QRectF rect = view->rect();
     if (fileName != "" && fileName != QString()) {
         QVector<std::tuple<int, QChar, QPointF>> nodes_data = graph->loadGraph(fileName);
         for(int i=0; i<graph->getSize(); i++) {
@@ -459,6 +469,8 @@ void GraphViewer::openFile()
         algo->reset();
         if (graph->getSize() > 0) enableAlgorithms();
         algorithmStopped();
+        view->resize(rect.width(), rect.height());
+        updateSceneRect();
         pointerButton->click();
     }
 }
@@ -558,10 +570,18 @@ void GraphViewer::needsToBeConnected()
     showWarningLabel();
 }
 
+void GraphViewer::needsToBeUndirected()
+{
+    warningLabel->setText("Az algoritmus csak irányítatlan gráfon futtatható!");
+    showWarningLabel();
+}
+
 void GraphViewer::algoInitReady(int ind)
 {
 
 //    setStyleSheet("QLabel { background-color: red;}");
+//    queue->setText("Q - < >");
+    queue->setVisible(true);
     int w = 30;
     QLabel* d = new QLabel("d");
     QLabel* p = new QLabel("p");
@@ -573,7 +593,7 @@ void GraphViewer::algoInitReady(int ind)
     p->setAlignment(Qt::AlignCenter);
     algoValues->addWidget(d, 1,0, Qt::AlignLeft);
     algoValues->addWidget(p, 2,0, Qt::AlignLeft);
-    algoValues->setColumnStretch(0,0);
+//    algoValues->setColumnStretch(0,0);
 //    algoValues->setColumnMinimumWidth(0, 15);
 
     QStringList names = graph->getNames();
@@ -605,15 +625,14 @@ void GraphViewer::algoInitReady(int ind)
         p->setFixedWidth(w);
         p->setFont(tableDataFont);
         algoValues->addWidget(p, 2, i, Qt::AlignHCenter);
-        algoValues->setColumnStretch(i,0);
+//        algoValues->setColumnStretch(i,0);
         i++;
     }
-    QLabel* empty = new QLabel("");
-    algoValues->addWidget(empty, 0, i);
-    algoValues->setColumnStretch(i,1);
+//    QLabel* empty = new QLabel("");
+//    algoValues->addWidget(empty, 0, i);
+//    algoValues->setColumnStretch(i,1);
     algoValues->setSpacing(0);
     algoValues->setHorizontalSpacing(12);
-    qDebug() << "rect aft: " << view->rect();
     view->resize(view->width(), height() - 162);
     updateSceneRect();
 }
@@ -630,7 +649,7 @@ void GraphViewer::parentChanged(int ind, QChar n)
             found = true;
             QLayoutItem* item = algoValues->itemAtPosition(2,i);
             QLabel* label = qobject_cast<QLabel*>(item->widget());
-            label->setStyleSheet("background-color: red;");
+            label->setStyleSheet("background-color: rgb(255, 174, 0);");
             label->setText(n);
         }
         i++;
@@ -649,11 +668,16 @@ void GraphViewer::distChanged(int ind, int d)
             found = true;
             QLayoutItem* item = algoValues->itemAtPosition(1,i);
             QLabel* label = qobject_cast<QLabel*>(item->widget());
-            label->setStyleSheet("background-color: red;");
+            label->setStyleSheet("background-color: rgb(255, 174, 0);");
             label->setText(QString::number(d));
         }
         i++;
     }
+}
+
+void GraphViewer::queueChanged(QString q)
+{
+    queue->setText("Q - " + q);
 }
 
 void GraphViewer::showWarningLabel()
@@ -665,7 +689,7 @@ void GraphViewer::showWarningLabel()
 
 void GraphViewer::clearColorsInAlgTable()
 {
-    for(int i=1; i<algoValues->columnCount()-1; i++) {
+    for(int i=1; i<algoValues->columnCount(); i++) {
         for(int j=1; j<algoValues->rowCount(); j++) {
             QLayoutItem* item = algoValues->itemAtPosition(j,i);
             QLabel* label = qobject_cast<QLabel*>(item->widget());
@@ -680,7 +704,7 @@ void GraphViewer::updateSceneRect()
     QList<QPointF> positions = scene->originalPositions();
     float w_old = scene->sceneRect().width();
     float h_old = scene->sceneRect().height();
-    scene->setSceneRect(view->rect());
+    scene->setSceneRect(view->geometry());
     float w_new = scene->sceneRect().width();
     float h_new = scene->sceneRect().height();
     scene->updatePositions(positions, w_new/w_old, h_new/h_old);

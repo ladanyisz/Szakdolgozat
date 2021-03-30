@@ -59,9 +59,11 @@ public slots:
     void needOnlyNonnegativeEdges();
     void noWeights();
     void needsToBeConnected();
+    void needsToBeUndirected();
     void algoInitReady(int);
     void parentChanged(int, QChar);
     void distChanged(int, int);
+    void queueChanged(QString);
     void clearColorsInAlgTable();
 
 private:
@@ -119,6 +121,7 @@ private:
     QGridLayout* algoValues;
     QFont tableFont;
     QFont tableDataFont;
+    QLabel* queue;
 //    QTableWidget* algoValuesTable;
 
 
