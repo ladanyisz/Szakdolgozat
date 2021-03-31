@@ -40,7 +40,7 @@ public:
     Algorithm(Graph* graph);
     void selectAlgorithm(Algorithms algo);
     void selectStartNode(int s_ind);
-    void init();
+
     void reset();
     bool stepBackAlgorithm();
     void startAlgorithm();
@@ -48,21 +48,25 @@ public:
     bool getInitState();
 
 signals:
+    // szükséges gráf típusának jelzése
     void needOnlyNonnegativeEdges();
     void noWeights();
     void needWeights();
     void needsToBeUndirected();
     void needsToBeDirected();
     void needsToBeConnected();
-    void algorithmEnded();
+
+    // algoritmus változásai
     void initReady(int);                // index
+    void step_start();
+    void algorithmEnded();
     void parentChanged(int, QChar);     // index, name
     void distChanged(int, int);         // index, dist
     void queueChanged(QString);
-    void step_start();
 
     void nodeStateChange(NodeType, int id);
     void edgeStateChange(EdgeType, int from_id, int to_id);
+
 
 public slots:
     bool stepAlgorithm();           // második ciklus magja
@@ -83,11 +87,13 @@ private:
     Algorithms chosenAlgo;
     int start_node_ind;
 
+    void init();
+    void initNode();
+
     bool stepDijkstra();
     bool stepSzelessegi();
     bool stepPrim();
 
-    void initNode();
     int remMin(QVector<int>&);       // megadja (és eltávolítja a vektorból) a graph nodes megfelelő indexét, ahol a legkisebb a dest
     void addState();
     QString queueToVectorMin();
