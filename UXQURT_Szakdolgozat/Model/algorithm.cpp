@@ -136,17 +136,22 @@ void Algorithm::init()                                  // ( 1 )
         break;
 
     case Prim:
+
+        // gráf ellenőrzése - élsúlyozott, összefüggő, irányítatlan
         if (!graph->getWeighted()) emit needWeights();
         if (graph->getDirected()) emit needsToBeUndirected();
         if (!graph->checkConnectivity()) emit needsToBeConnected();
+
         if (graph->getWeighted() && !graph->getDirected() && graph->checkConnectivity()) {
 
-            for(int i=0; i<n; i++) {
+            for(int i=0; i<n; i++) {                                        // első ciklus - alapértékek
                 distances[i] = INT32_MAX;
                 parents[i] = -1;
+
                 nodeTypes[i] = BaseNode;
                 emit nodeStateChange(NodeType::BaseNode, graph->getId(i));
                 edgeTypes[i].resize(n);
+
                 for(int j=0; j < graph->getAdjNum(i); j++) {
                     int index_in_nodes = graph->getAdjIndexInNodes(i,j);
                     edgeTypes[i][index_in_nodes] = EdgeType::BaseEdge;
@@ -194,17 +199,20 @@ void Algorithm::initNode()                              // ( 2 )
         }
 
         emit queueChanged(queueToVectorMin());
+
         u = start_node_ind;
         emit nodeStateChange(NodeType::ExamineAdj, graph->getId(u));
         break;
 
 
     case Prim:
-        distances[start_node_ind] = 0;
-        for(int i=0; i<graph->getSize(); i++) {
+        distances[start_node_ind] = 0;                              // kezdő csúcs 0 költséggel kerül be
+
+        for(int i=0; i<graph->getSize(); i++) {                     // minimum prioritásos sor feltöltése a gráf csúcsaival (kivéve a kezdőcsúcsot)
             if (i != start_node_ind)
                 queue.append(i);
         }
+
         emit queueChanged(queueToVectorMin());
         u = start_node_ind;
         emit nodeStateChange(NodeType::ExamineAdj, graph->getId(u));
@@ -307,7 +315,7 @@ bool Algorithm::stepDijkstra()
                     emit edgeStateChange(EdgeType::NotNeededEdge, graph->getId(parents[adj_index]), graph->getId(adj_index));
                 }
 
-                parents[adj_index] = u;                                                     // új érték
+                parents[adj_index] = u;                                                     // új értékek
                 distances[adj_index] = newDist;
                 emit parentChanged(adj_index, graph->getName(graph->getId(u)));
                 emit distChanged(adj_index, newDist);
@@ -400,49 +408,57 @@ bool Algorithm::stepSzelessegi()
 
 bool Algorithm::stepPrim()
 {
-    bool ended = !(!queue.isEmpty() ||
-              (graph->getAdjNum(u) != 0 && adj_ind_in_u < graph->getAdjNum(u)/* && queue.indexOf(graph->getAdjIndexInNodes(u,adj_ind_in_u)) != -1*/));
-    if (adj_ind_in_u > 0) {                     // az előző lépésben vizsgált gyereket visszaállítjuk ( ha volt )
+    bool ended = !(!queue.isEmpty()); /*||                                                  // külső ciklus feltétele
+              (graph->getAdjNum(u) != 0 && adj_ind_in_u < graph->getAdjNum(u)*//* && queue.indexOf(graph->getAdjIndexInNodes(u,adj_ind_in_u)) != -1*//*)*/
+
+    if (adj_ind_in_u > 0) {                                                                 // az előző lépésben vizsgált gyereket visszaállítjuk ( ha volt )
         int prev_ind = graph->getAdjIndexInNodes(u,adj_ind_in_u-1);
         int prev_id =  graph->getId(prev_ind);
         emit nodeStateChange(nodeTypes.at(prev_ind), prev_id);
         emit edgeStateChange(edgeTypes[u][prev_ind], graph->getId(u), prev_id);
     }
-    if (!ended) {
-        if (adj_ind_in_u == graph->getAdjNum(u)) {
-            adj_ind_in_u = 0;
+
+    if (!ended) {                                                                           // külső ciklusmag
+
+        if (adj_ind_in_u < graph->getAdjNum(u)) {                                           // belső ciklusfeltétel (az összes szomszédot megnézzük)
+
+            int adj_index = graph->getAdjIndexInNodes(u,adj_ind_in_u);                      // aktuálisan vizsgált szomszéd
+            emit nodeStateChange(ExaminedNode, graph->getId(adj_index));
+            emit edgeStateChange(ExaminedEdge, graph->getId(u), graph->getId(adj_index));
+
+            int newWeight = graph->getAdjWeight(u, adj_ind_in_u);
+            if (distances[adj_index] > newWeight && queue.indexOf(adj_index) != -1) {       // jobb költségű-e az új él és benne van-e még a min. prior. sorban?
+
+                if (parents[adj_index] != -1 && parents[u] != adj_index) {                  // ha volt már ide út, akkor az nem kell
+                    edgeTypes[parents[adj_index]][adj_index] = EdgeType::NotNeededEdge;
+                    edgeTypes[adj_index][parents[adj_index]] = EdgeType::NotNeededEdge;
+                    emit edgeStateChange(EdgeType::NotNeededEdge, graph->getId(parents[adj_index]), graph->getId(adj_index));
+                }
+
+                parents[adj_index] = u;                                                     // új értékek
+                distances[adj_index] = newWeight;
+                emit parentChanged(adj_index, graph->getName(graph->getId(u)));
+                emit distChanged(adj_index, newWeight);
+                edgeTypes[u][adj_index] = NeededEdge;
+                edgeTypes[adj_index][u] = NeededEdge;
+
+                emit queueChanged(queueToVectorMin());                                      // Q.adjust miatt (helyes sorrend jelenjen meg)
+
+            } else if (parents[u] != adj_index) {                                           // az újonnan talált él nem jobb az eddiginél, ezért nem kell
+                edgeTypes[u][adj_index] = NotNeededEdge;
+                edgeTypes[adj_ind_in_u][u] = NotNeededEdge;
+            }
+
+            adj_ind_in_u++;                                                                 // a belső ciklust léptetjük (következő szomszédot vizsgáljuk)
+
+        } else {                                                                            // belső ciklus utáni értékadás
+            adj_ind_in_u = 0;                                                               // a szomszédokat az elejéről nézzük
             emit nodeStateChange(ProcessedNode, graph->getId(u));
             nodeTypes[u] = ProcessedNode;
-            u = remMin(queue);                  // ehhez a legjobb utat ismerjük
+
+            u = remMin(queue);                                                              // kivesszük a sorból a minimumot (könnyűél - a minimális feszítőfa (MST) része)
             emit queueChanged(queueToVectorMin());
             emit nodeStateChange(ExamineAdj, graph->getId(u));
-        } else {                                        // belső ciklusmag
-            int adj_index = graph->getAdjIndexInNodes(u,adj_ind_in_u);
-//                if (queue.indexOf(adj_index) != -1) {
-                emit nodeStateChange(ExaminedNode, graph->getId(adj_index));
-                emit edgeStateChange(ExaminedEdge, graph->getId(u), graph->getId(adj_index));
-                int newWeight = graph->getAdjWeight(u, adj_ind_in_u);
-                if (distances[adj_index] > newWeight) {
-                    if (parents[adj_index] != -1 && parents[u] != adj_index) {
-                        edgeTypes[parents[adj_index]][adj_index] = EdgeType::NotNeededEdge;
-                        edgeTypes[adj_index][parents[adj_index]] = EdgeType::NotNeededEdge;
-                        emit edgeStateChange(EdgeType::NotNeededEdge, graph->getId(parents[adj_index]), graph->getId(adj_index));
-                    }
-                    parents[adj_index] = u;
-                    distances[adj_index] = newWeight;
-                    emit parentChanged(adj_index, graph->getName(graph->getId(u)));
-                    emit distChanged(adj_index, newWeight);
-                    edgeTypes[u][adj_index] = NeededEdge;
-                    edgeTypes[adj_index][u] = NeededEdge;
-                    emit queueChanged(queueToVectorMin());
-                } else if (parents[u] != adj_index) {
-                    edgeTypes[u][adj_index] = NotNeededEdge;
-                    edgeTypes[adj_ind_in_u][u] = NotNeededEdge;
-                }
-                adj_ind_in_u++;
-//                } else {
-//                    adj_ind_in_u = graph->getAdjNum(u);
-//                }
         }
     }
     return ended;
