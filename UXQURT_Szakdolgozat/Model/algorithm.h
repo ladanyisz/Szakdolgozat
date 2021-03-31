@@ -77,8 +77,15 @@ private:
     QVector<int> distances;
     QVector<int> parents;           // parent node-ok index-e
     QVector<int> queue;             // graph nodes index
+    QVector<int> discovery_time;
+    QVector<int> finishing_time;
     int u;                          // vizsgált node indexe a graph nodes-ban
     int adj_ind_in_u;               // u hanyadik szomszédos elemét vizsgáljuk (az u indexű Node listájában)
+    int time;
+    int r;
+    bool in_dfs_visit;
+    int prev_u;
+    QVector<int> adj_ind_in_us;
     bool init_ready;
     QVector<NodeType> nodeTypes;
     QVector<QVector<EdgeType>> edgeTypes;
@@ -93,6 +100,8 @@ private:
     bool stepDijkstra();
     bool stepSzelessegi();
     bool stepPrim();
+    bool stepMelysegi();
+    void stepMelysegiVisit();
 
     int remMin(QVector<int>&);       // megadja (és eltávolítja a vektorból) a graph nodes megfelelő indexét, ahol a legkisebb a dest
     void addState();

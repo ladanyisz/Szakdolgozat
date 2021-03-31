@@ -9,7 +9,10 @@ Algorithm::Algorithm(Graph *graph)
     init_ready = false;
     adj_ind_in_u = 0;
     u = -1;
+    time = 0;
     timer = new QTimer();
+    r = 0;
+    in_dfs_visit = false;
 
     timer->setInterval(1000);
     connect(timer, &QTimer::timeout, this, &Algorithm::stepAlgorithm);
@@ -50,6 +53,9 @@ void Algorithm::reset()
     init_ready = false;
     adj_ind_in_u = 0;
     u = -1;
+    time = 0;
+    r = 0;
+    in_dfs_visit = false;
     for(int i=0; i<graph->getSize(); i++) {
         int id = graph->getId(i);
         emit nodeStateChange(NodeType::BaseNode, id);
@@ -106,6 +112,39 @@ void Algorithm::init()                                  // ( 1 )
         break;
 
     case Melysegi:
+
+        // gráf ellenőrzése - súlyozatlan, irányított
+        if (graph->getWeighted()) emit noWeights();
+        if (!graph->getDirected()) emit needsToBeDirected();
+
+        if (!graph->getWeighted() && graph->getDirected()) {
+            time = 0;
+            r = 0;
+            in_dfs_visit = false;
+            adj_ind_in_u = -1;
+            prev_u = -1;
+            adj_ind_in_us.clear();
+            adj_ind_in_us.resize(n);
+
+            discovery_time.clear();
+            finishing_time.clear();
+            discovery_time.resize(n);
+            finishing_time.resize(n);
+
+            for(int i=0; i<n; i++) {                                             // első ciklus - alapértékek
+
+
+                nodeTypes[i] = BaseNode;
+                emit nodeStateChange(NodeType::BaseNode, graph->getId(i));
+                edgeTypes[i].resize(n);
+                for(int j = 0; j<graph->getAdjNum(i); j++) {
+                    int index_in_nodes = graph->getAdjIndexInNodes(i,j);
+                    edgeTypes[i][index_in_nodes] = BaseEdge;
+                    emit edgeStateChange(BaseEdge, graph->getId(i), graph->getId(index_in_nodes));
+                }
+            }
+            can_start = true;
+        }
 
         break;
 
@@ -245,7 +284,7 @@ bool Algorithm::stepAlgorithm()                         // ( 3 )
         break;
 
     case Melysegi:
-
+            ended = stepMelysegi();
         break;
 
     case Dijkstra:
@@ -262,7 +301,13 @@ bool Algorithm::stepAlgorithm()                         // ( 3 )
     qDebug() << "queue: " << queue;
     qDebug() << "parents: " << parents;
     qDebug() << "distances: " << distances;
-    qDebug() << "u: " << u << ", adj_ind_in_u: " << adj_ind_in_u;
+    qDebug() << "discoverty_times: " << discovery_time;
+    qDebug() << "finishing times: " << finishing_time;
+    qDebug() << "u: " << u;
+//    if (u != -1) {
+//         qDebug() << "adj_ind_in_u: " << adj_ind_in_us[u];
+//    }
+    qDebug() << "adj_ind_in_us: " << adj_ind_in_us;
     addState();
     if (ended) {
         for(int i=0; i<graph->getSize(); i++) {
@@ -462,6 +507,113 @@ bool Algorithm::stepPrim()
         }
     }
     return ended;
+}
+
+bool Algorithm::stepMelysegi()
+{
+    bool ended = (r >= graph->getSize());
+qDebug() << "melysegi";
+qDebug() << "u: " << u << ", prev_u: " << prev_u;
+qDebug() << "adj_ind_in_us: " << adj_ind_in_us;
+    if (u != -1 &&  adj_ind_in_us[u] > 0) {                    // az előző lépésben vizsgált gyereket visszaállítjuk ( ha volt )
+        int prev_ind = graph->getAdjIndexInNodes(u, adj_ind_in_us[u]-1);
+        int prev_id =  graph->getId(prev_ind);
+//        emit nodeStateChange(nodeTypes.at(prev_ind), prev_id);
+//        emit edgeStateChange(edgeTypes[u][prev_ind], graph->getId(u), prev_id);
+
+    }
+    if (prev_u != -1 && adj_ind_in_us[prev_u] > 0) {
+        int prev_ind = graph->getAdjIndexInNodes(prev_u, adj_ind_in_us[prev_u]-1);
+        int prev_id =  graph->getId(prev_ind);
+        emit edgeStateChange(edgeTypes[prev_u][prev_ind], graph->getId(prev_u), prev_id);
+        if (prev_ind != u)
+            emit nodeStateChange(nodeTypes.at(prev_ind), graph->getId(prev_ind));
+    }
+//    if (prev_u != -1 && prev_u != u &&  adj_ind_in_us[prev_u] > 0) {                    // az előző lépésben vizsgált gyereket visszaállítjuk ( ha volt )
+//        int prev_ind = graph->getAdjIndexInNodes(prev_u, adj_ind_in_us[prev_u]-1);
+//        int prev_id =  graph->getId(prev_ind);
+//        emit nodeStateChange(nodeTypes.at(prev_ind), prev_id);
+//        emit edgeStateChange(edgeTypes[prev_u][prev_ind], graph->getId(prev_u), prev_id);
+
+//    }
+
+    if (!ended) {
+        if (!in_dfs_visit) {                            // DFS fv ciklusmagja
+
+            while (r < graph->getSize() && nodeTypes[r] != BaseNode)           // a false ágon lévő skip miatt
+                r++;
+
+            if (r < graph->getSize()) {             // jártunk-e már ennél a csúcsnál?
+                parents[r] = -1;
+                u = r;
+                emit nodeStateChange(ExamineAdj, graph->getId(u));
+                for(int i=0; i<graph->getSize(); i++) {
+                    adj_ind_in_us[i] = -1;
+                }
+                in_dfs_visit = true;                    // a rekurzív fv-hívás a következő lépésben történik meg
+            }
+
+        } else {                                        // DFS visit fv
+            stepMelysegiVisit();
+        }
+    }
+
+    return ended;
+}
+
+void Algorithm::stepMelysegiVisit()
+{
+    qDebug() << "adj num: " << graph->getAdjNum(u);
+    if (adj_ind_in_us[u] == -1) {                                                   // értékadás a ciklus előtt
+        discovery_time[u] = ++time;
+        nodeTypes[u] = ReachedButNotProcessed;                                  // color = grey;
+//        emit nodeStateChange(ReachedButNotProcessed, graph->getId(u));
+        if (parents[u] != -1) emit nodeStateChange(nodeTypes[parents[u]], graph->getId(parents[u]));
+        emit nodeStateChange(ExamineAdj, graph->getId(u));
+        adj_ind_in_us[u]++;
+
+    } else if (adj_ind_in_us[u] > -1 && adj_ind_in_us[u] < graph->getAdjNum(u)) {       // cikluson belül
+
+        int adj_index = graph->getAdjIndexInNodes(u, adj_ind_in_us[u]);
+        emit nodeStateChange(ExaminedNode, graph->getId(adj_index));
+        emit edgeStateChange(ExaminedEdge, graph->getId(u), graph->getId(adj_index));
+
+        if (nodeTypes[adj_index] == BaseNode) {                                 // faél
+
+            parents[adj_index] = u;
+            emit parentChanged(adj_index, graph->getName(graph->getId(u)));
+            edgeTypes[u][adj_index] = EdgeType::NeededEdge;
+//            emit edgeStateChange(NeededEdge, graph->getId(u), graph->getId(adj_index));
+
+
+            prev_u = u;                                 // rekurzió
+            u = adj_index;
+
+        } else {
+
+            if (nodeTypes[adj_index] == ReachedButNotProcessed) {
+                // visszaél
+            }
+            prev_u = u;
+
+
+
+        }
+        adj_ind_in_us[prev_u]++;
+
+    } else {                                                                    // ciklus utáni értékadás
+        finishing_time[u] = ++time;
+        nodeTypes[u] = ProcessedNode;
+        emit nodeStateChange(ProcessedNode, graph->getId(u));
+        u = parents[u];                                                     // visszalépünk a rekurzióban
+
+        if (u == -1) {                                             // vége a rekurziónak
+            in_dfs_visit = false;                                           // a legelső ciklust léptetjük
+            r++;
+        } else {
+            emit nodeStateChange(ExamineAdj, graph->getId(u));
+        }
+    }
 }
 
 bool Algorithm::stepBackAlgorithm()

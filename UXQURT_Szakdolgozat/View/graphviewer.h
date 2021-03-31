@@ -59,6 +59,7 @@ public slots:
     void needOnlyNonnegativeEdges();
     void noWeights();
     void needsToBeConnected();
+    void needToBeDirected();
     void needsToBeUndirected();
     void algoInitReady(int);
     void parentChanged(int, QChar);

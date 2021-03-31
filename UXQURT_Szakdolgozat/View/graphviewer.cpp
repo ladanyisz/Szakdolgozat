@@ -48,6 +48,7 @@ GraphViewer::GraphViewer(QWidget *parent)
     connect(algo, &Algorithm::noWeights, this, &GraphViewer::noWeights);
     connect(algo, &Algorithm::needsToBeConnected, this, &GraphViewer::needsToBeConnected);
     connect(algo, &Algorithm::needsToBeUndirected, this, &GraphViewer::needsToBeUndirected);
+    connect(algo, &Algorithm::needsToBeDirected, this, &GraphViewer::needToBeDirected);
     connect(algo, &Algorithm::initReady, this, &GraphViewer::algoInitReady);
     connect(algo, &Algorithm::distChanged, this, &GraphViewer::distChanged);
     connect(algo, &Algorithm::parentChanged, this, &GraphViewer::parentChanged);
@@ -560,6 +561,12 @@ void GraphViewer::noWeights()
 void GraphViewer::needsToBeConnected()
 {
     warningLabel->setText("Az algoritmus csak összefüggő gráfon futtatható!");
+    showWarningLabel();
+}
+
+void GraphViewer::needToBeDirected()
+{
+    warningLabel->setText("Az algoritmus csak irányított gráfon futtatható!");
     showWarningLabel();
 }
 
