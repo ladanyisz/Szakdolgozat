@@ -468,13 +468,14 @@ bool Algorithm::stepBackAlgorithm()
 {
     emit step_start();
     if (steps.isEmpty() || steps.length() == 1) return false;
-    steps.pop();            // utolsó állapot, nem kell - ami épp látszik
+    steps.pop();                                                // utolsó állapot, nem kell - ami épp látszik
     AlgorithmState state = steps.top();
+
     for(int i=0; i< graph->getSize(); i++) {
         if (distances.at(i) != state.distances.at(i))
             emit distChanged(i, state.distances.at(i));
         if (parents.at(i) != state.parents.at(i)) {
-            QChar n = state.parents.at(i) == -1 ? QChar() : graph->getName(graph->getId(i));
+            QChar n = state.parents.at(i) == -1 ? QChar() : graph->getName(graph->getId(state.parents.at(i)));
             emit parentChanged(i, n);
         }
     }
@@ -484,6 +485,7 @@ bool Algorithm::stepBackAlgorithm()
     if (i < queue.length() && same) {
         same = queue.at(i) == state.queue.at(i);
     }
+
     distances = state.distances;
     parents = state.parents;
     queue = state.queue;
@@ -491,6 +493,7 @@ bool Algorithm::stepBackAlgorithm()
         if (chosenAlgo == Szelessegi) emit queueChanged(queueToVector());
         else if (chosenAlgo != Melysegi) emit queueChanged(queueToVectorMin());
     }
+
     u = state.u;
     adj_ind_in_u = state.adj_ind_in_u;
     nodeTypes = state.nodeTypes;
