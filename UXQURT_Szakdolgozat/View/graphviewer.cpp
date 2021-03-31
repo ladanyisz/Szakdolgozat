@@ -265,16 +265,9 @@ void GraphViewer::initAlgoViews()
 
     queue = new QLabel("Q - < >");
     queue->setFont(tableFont);
+    queue->setTextFormat(Qt::PlainText);
     h_layout->addWidget(queue, Qt::AlignLeft);
     queue->setVisible(false);
-
-//    algoValuesTable = new QTableWidget();
-//    v_layout->addWidget(algoValuesTable);
-//    algoValuesTable->setRowCount(2);
-//    algoValuesTable->setColumnCount(5);
-//    QStringList v_labels = {"d", "p"};
-//    algoValuesTable->setVerticalHeaderLabels(v_labels);
-//    algoValuesTable->setEnabled(false);
 }
 
 void GraphViewer::initWeightGroup()
@@ -650,7 +643,12 @@ void GraphViewer::parentChanged(int ind, QChar n)
             QLayoutItem* item = algoValues->itemAtPosition(2,i);
             QLabel* label = qobject_cast<QLabel*>(item->widget());
             label->setStyleSheet("background-color: rgb(255, 174, 0);");
-            label->setText(n);
+            if (n == QChar()) {
+                QPixmap pix(":/img/empty-set.png");
+                label->setPixmap(pix);
+                label->setText("");
+            } else
+                label->setText(n);
         }
         i++;
     }
@@ -669,7 +667,13 @@ void GraphViewer::distChanged(int ind, int d)
             QLayoutItem* item = algoValues->itemAtPosition(1,i);
             QLabel* label = qobject_cast<QLabel*>(item->widget());
             label->setStyleSheet("background-color: rgb(255, 174, 0);");
-            label->setText(QString::number(d));
+            if (d != INT32_MAX)
+                label->setText(QString::number(d));
+            else {
+                QPixmap pmap(":/img/infinity.png");
+                label->setPixmap(pmap);
+                label->setText("");
+            }
         }
         i++;
     }

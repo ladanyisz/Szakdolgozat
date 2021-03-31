@@ -86,52 +86,7 @@ bool Algorithm::stepAlgorithm()
         break;
 
     case Dijkstra:
-        ended = !(distances[u] < INT32_MAX && !queue.isEmpty());
-        if (adj_ind_in_u > 0) {                     // az előző lépésben vizsgált gyereket visszaállítjuk ( ha volt )
-            int prev_ind = graph->getAdjIndexInNodes(u,adj_ind_in_u-1);
-            int prev_id =  graph->getId(prev_ind);
-            emit nodeStateChange(nodeTypes.at(prev_ind), prev_id);
-            emit edgeStateChange(edgeTypes[u][prev_ind], graph->getId(u), prev_id);
-        }
-        if (!ended) {
-            if (adj_ind_in_u == graph->getAdjNum(u)) {        // új u-t választunk
-                adj_ind_in_u = 0;
-                emit nodeStateChange(ProcessedNode, graph->getId(u));   // visszafelé lépéshez                    //
-                nodeTypes[u] = ProcessedNode;
-                u = remMin(queue);                  // ehhez a legjobb utat ismerjük
-                emit queueChanged(queueToVectorMin());
-                qDebug() << "u: " << u;
-                emit nodeStateChange(ExamineAdj, graph->getId(u));
-                ended = !(distances[u] < INT32_MAX && !queue.isEmpty());
-
-            } else {        // belső ciklusmag
-                int adj_index = graph->getAdjIndexInNodes(u,adj_ind_in_u);
-                emit nodeStateChange(ExaminedNode, graph->getId(adj_index));
-                emit edgeStateChange(ExaminedEdge, graph->getId(u), graph->getId(adj_index));
-                int newDist = distances[u] + graph->getAdjWeight(u,adj_ind_in_u);
-                if (distances[adj_index] > newDist) {
-                    if (parents[adj_index] != -1 && (graph->getDirected() || parents[u] != adj_index)) {
-                        edgeTypes[parents[adj_index]][adj_index] = EdgeType::NotNeededEdge;
-                        if (!graph->getDirected()) {
-                            edgeTypes[adj_index][parents[adj_index]] = EdgeType::NotNeededEdge;
-                        }
-                        emit edgeStateChange(EdgeType::NotNeededEdge, graph->getId(parents[adj_index]), graph->getId(adj_index));
-                    }
-                    parents[adj_index] = u;
-                    distances[adj_index] = newDist;
-                    emit parentChanged(adj_index, graph->getName(graph->getId(u)));
-                    emit distChanged(adj_index, newDist);
-                    edgeTypes[u][adj_index] = EdgeType::NeededEdge;
-                    if (!graph->getDirected()) edgeTypes[adj_index][u] = EdgeType::NeededEdge;
-                    emit queueChanged(queueToVectorMin());                  // Q.adjust miatt (helyes sorrend jelenjen meg)
-                } else if ((graph->getDirected() || parents[u] != adj_index)){            // az újonnan talált él nem jobb az eddiginél, ezért nem kell
-                    edgeTypes[u][adj_index] = EdgeType::NotNeededEdge;
-                    if (!graph->getDirected()) edgeTypes[adj_index][u] = EdgeType::NotNeededEdge;
-                }
-                adj_ind_in_u++;
-            }
-
-        }
+        ended = stepDijkstra();
         break;
 
     case Prim:
@@ -210,15 +165,96 @@ bool Algorithm::stepAlgorithm()
     return true;
 }
 
+bool Algorithm::stepDijkstra()
+{
+    bool ended = !(distances[u] < INT32_MAX && !queue.isEmpty());                           // külső ciklus feltétele
+
+    if (adj_ind_in_u > 0) {                                                                 // az előző lépésben vizsgált gyereket visszaállítjuk ( ha volt )
+        int prev_ind = graph->getAdjIndexInNodes(u,adj_ind_in_u-1);
+        int prev_id =  graph->getId(prev_ind);
+        emit nodeStateChange(nodeTypes.at(prev_ind), prev_id);
+        emit edgeStateChange(edgeTypes[u][prev_ind], graph->getId(u), prev_id);
+    }
+
+
+    if (!ended) {                                                                           // külső ciklusmag
+
+        if (adj_ind_in_u == graph->getAdjNum(u)) {                                          // új u-t választunk
+            adj_ind_in_u = 0;
+            emit nodeStateChange(ProcessedNode, graph->getId(u));   // visszafelé lépéshez                    //
+            nodeTypes[u] = ProcessedNode;
+            u = remMin(queue);                  // ehhez a legjobb utat ismerjük
+            emit queueChanged(queueToVectorMin());
+            emit nodeStateChange(ExamineAdj, graph->getId(u));
+            ended = !(distances[u] < INT32_MAX && !queue.isEmpty());
+
+        } else {        // belső ciklusmag
+            int adj_index = graph->getAdjIndexInNodes(u,adj_ind_in_u);
+            emit nodeStateChange(ExaminedNode, graph->getId(adj_index));
+            emit edgeStateChange(ExaminedEdge, graph->getId(u), graph->getId(adj_index));
+            int newDist = distances[u] + graph->getAdjWeight(u,adj_ind_in_u);
+            if (distances[adj_index] > newDist) {
+                if (parents[adj_index] != -1 && (graph->getDirected() || parents[u] != adj_index)) {
+                    edgeTypes[parents[adj_index]][adj_index] = EdgeType::NotNeededEdge;
+                    if (!graph->getDirected()) {
+                        edgeTypes[adj_index][parents[adj_index]] = EdgeType::NotNeededEdge;
+                    }
+                    emit edgeStateChange(EdgeType::NotNeededEdge, graph->getId(parents[adj_index]), graph->getId(adj_index));
+                }
+                parents[adj_index] = u;
+                distances[adj_index] = newDist;
+                emit parentChanged(adj_index, graph->getName(graph->getId(u)));
+                emit distChanged(adj_index, newDist);
+                edgeTypes[u][adj_index] = EdgeType::NeededEdge;
+                if (!graph->getDirected()) edgeTypes[adj_index][u] = EdgeType::NeededEdge;
+                emit queueChanged(queueToVectorMin());                  // Q.adjust miatt (helyes sorrend jelenjen meg)
+            } else if ((graph->getDirected() || parents[u] != adj_index)){            // az újonnan talált él nem jobb az eddiginél, ezért nem kell
+                edgeTypes[u][adj_index] = EdgeType::NotNeededEdge;
+                if (!graph->getDirected()) edgeTypes[adj_index][u] = EdgeType::NotNeededEdge;
+            }
+            adj_ind_in_u++;
+        }
+    }
+    return ended;
+}
+
+bool Algorithm::stepSzelessegi()
+{
+    return true;
+}
+
+bool Algorithm::stepPrim()
+{
+    return true;
+}
+
 bool Algorithm::stepBackAlgorithm()
 {
-
+    emit step_start();
     if (steps.isEmpty() || steps.length() == 1) return false;
     steps.pop();            // utolsó állapot, nem kell - ami épp látszik
     AlgorithmState state = steps.top();
+    for(int i=0; i< graph->getSize(); i++) {
+        if (distances.at(i) != state.distances.at(i))
+            emit distChanged(i, state.distances.at(i));
+        if (parents.at(i) != state.parents.at(i)) {
+            QChar n = state.parents.at(i) == -1 ? QChar() : graph->getName(graph->getId(i));
+            emit parentChanged(i, n);
+        }
+    }
+    int i=0;
+    bool same = true;
+    same = queue.length() == state.queue.length();
+    if (i < queue.length() && same) {
+        same = queue.at(i) == state.queue.at(i);
+    }
     distances = state.distances;
     parents = state.parents;
     queue = state.queue;
+    if (!same) {
+        if (chosenAlgo == Szelessegi) emit queueChanged(queueToVector());
+        else if (chosenAlgo != Melysegi) emit queueChanged(queueToVectorMin());
+    }
     u = state.u;
     adj_ind_in_u = state.adj_ind_in_u;
     nodeTypes = state.nodeTypes;
@@ -369,11 +405,12 @@ void Algorithm::initNode()
     switch (chosenAlgo) {
 
     case Szelessegi:
+        qDebug() << "szelessegi";
         distances[start_node_ind] = 0;
         queue.append(start_node_ind);
+        emit queueChanged(queueToVector());
         nodeTypes[start_node_ind] = ReachedButNotProcessed;
         emit nodeStateChange(ReachedButNotProcessed, graph->getId(start_node_ind));
-        emit queueChanged(queueToVector());
         break;
 
     case Dijkstra:
@@ -412,13 +449,6 @@ int Algorithm::remMin(QVector<int> &q)
 {
     int min_ind = q.at(0);
     int min_d = INT32_MAX;
-//    for(int i=0; i<q.length(); i++) {
-//        int index = q.at(i);
-//        if (distances.at(index) < min_d) {
-//            min_d = distances.at(index);
-//            min_ind = index;
-//        }
-//    }
     foreach(int index, q) {
         if (distances.at(index) < min_d) {
             min_d = distances.at(index);
@@ -457,8 +487,10 @@ QString Algorithm::queueToVector()
         str += QString(graph->getName(graph->getId(q.first()))) + ", ";
         q.removeFirst();
     }
+    qDebug() << "str length: " << str.length();
     if (str.length() > 4) str.remove(str.length()-2,2);
     str += " >";
+    qDebug() << "str: " << str;
     return str;
 }
 

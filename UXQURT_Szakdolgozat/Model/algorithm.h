@@ -83,6 +83,10 @@ private:
     Algorithms chosenAlgo;
     int start_node_ind;
 
+    bool stepDijkstra();
+    bool stepSzelessegi();
+    bool stepPrim();
+
     void initNode();
     int remMin(QVector<int>&);       // megadja (és eltávolítja a vektorból) a graph nodes megfelelő indexét, ahol a legkisebb a dest
     void addState();
