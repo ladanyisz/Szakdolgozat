@@ -71,6 +71,11 @@ bool Algorithm::getInitState()
     return init_ready;
 }
 
+Algorithm::Algorithms Algorithm::getChosenAlgo()
+{
+    return chosenAlgo;
+}
+
 
 // ALGORITMUS
 
@@ -133,7 +138,7 @@ void Algorithm::init()                                  // ( 1 )
 
             for(int i=0; i<n; i++) {                                             // első ciklus - alapértékek
 
-
+                parents[i] = -1;                                    // az algoritmus szerint nem kellene, de a visszalépéshez kell
                 nodeTypes[i] = BaseNode;
                 emit nodeStateChange(NodeType::BaseNode, graph->getId(i));
                 edgeTypes[i].resize(n);
@@ -515,13 +520,7 @@ bool Algorithm::stepMelysegi()
 qDebug() << "melysegi";
 qDebug() << "u: " << u << ", prev_u: " << prev_u;
 qDebug() << "adj_ind_in_us: " << adj_ind_in_us;
-    if (u != -1 &&  adj_ind_in_us[u] > 0) {                    // az előző lépésben vizsgált gyereket visszaállítjuk ( ha volt )
-        int prev_ind = graph->getAdjIndexInNodes(u, adj_ind_in_us[u]-1);
-        int prev_id =  graph->getId(prev_ind);
-//        emit nodeStateChange(nodeTypes.at(prev_ind), prev_id);
-//        emit edgeStateChange(edgeTypes[u][prev_ind], graph->getId(u), prev_id);
 
-    }
     if (prev_u != -1 && adj_ind_in_us[prev_u] > 0) {
         int prev_ind = graph->getAdjIndexInNodes(prev_u, adj_ind_in_us[prev_u]-1);
         int prev_id =  graph->getId(prev_ind);
@@ -529,13 +528,6 @@ qDebug() << "adj_ind_in_us: " << adj_ind_in_us;
         if (prev_ind != u)
             emit nodeStateChange(nodeTypes.at(prev_ind), graph->getId(prev_ind));
     }
-//    if (prev_u != -1 && prev_u != u &&  adj_ind_in_us[prev_u] > 0) {                    // az előző lépésben vizsgált gyereket visszaállítjuk ( ha volt )
-//        int prev_ind = graph->getAdjIndexInNodes(prev_u, adj_ind_in_us[prev_u]-1);
-//        int prev_id =  graph->getId(prev_ind);
-//        emit nodeStateChange(nodeTypes.at(prev_ind), prev_id);
-//        emit edgeStateChange(edgeTypes[prev_u][prev_ind], graph->getId(prev_u), prev_id);
-
-//    }
 
     if (!ended) {
         if (!in_dfs_visit) {                            // DFS fv ciklusmagja
@@ -550,7 +542,8 @@ qDebug() << "adj_ind_in_us: " << adj_ind_in_us;
                 for(int i=0; i<graph->getSize(); i++) {
                     adj_ind_in_us[i] = -1;
                 }
-                in_dfs_visit = true;                    // a rekurzív fv-hívás a következő lépésben történik meg
+                in_dfs_visit = true;                    // mostantól rekurzív fv-hívás
+                stepMelysegiVisit();
             }
 
         } else {                                        // DFS visit fv
@@ -566,8 +559,8 @@ void Algorithm::stepMelysegiVisit()
     qDebug() << "adj num: " << graph->getAdjNum(u);
     if (adj_ind_in_us[u] == -1) {                                                   // értékadás a ciklus előtt
         discovery_time[u] = ++time;
+        emit discoveryFinishChanged(u, discovery_time[u], finishing_time[u]);
         nodeTypes[u] = ReachedButNotProcessed;                                  // color = grey;
-//        emit nodeStateChange(ReachedButNotProcessed, graph->getId(u));
         if (parents[u] != -1) emit nodeStateChange(nodeTypes[parents[u]], graph->getId(parents[u]));
         emit nodeStateChange(ExamineAdj, graph->getId(u));
         adj_ind_in_us[u]++;
@@ -578,7 +571,7 @@ void Algorithm::stepMelysegiVisit()
         emit nodeStateChange(ExaminedNode, graph->getId(adj_index));
         emit edgeStateChange(ExaminedEdge, graph->getId(u), graph->getId(adj_index));
 
-        if (nodeTypes[adj_index] == BaseNode) {                                 // faél
+        if (nodeTypes[adj_index] == BaseNode) {                                 // fa-él
 
             parents[adj_index] = u;
             emit parentChanged(adj_index, graph->getName(graph->getId(u)));
@@ -592,7 +585,13 @@ void Algorithm::stepMelysegiVisit()
         } else {
 
             if (nodeTypes[adj_index] == ReachedButNotProcessed) {
-                // visszaél
+                edgeTypes[u][adj_index] = BackEdge;                             // vissza-él
+            } else if (nodeTypes[adj_index == ProcessedNode]) {
+                if (discovery_time[u] < discovery_time[adj_index]) {
+                    edgeTypes[u][adj_index] = ForwardEdge;                      // előre-él
+                } else if (discovery_time[u] > discovery_time[adj_index]) {
+                    edgeTypes[u][adj_index] = CrossEdge;                        // kereszt-él
+                }
             }
             prev_u = u;
 
@@ -603,6 +602,7 @@ void Algorithm::stepMelysegiVisit()
 
     } else {                                                                    // ciklus utáni értékadás
         finishing_time[u] = ++time;
+        emit discoveryFinishChanged(u, discovery_time[u], finishing_time[u]);
         nodeTypes[u] = ProcessedNode;
         emit nodeStateChange(ProcessedNode, graph->getId(u));
         u = parents[u];                                                     // visszalépünk a rekurzióban
@@ -622,22 +622,33 @@ bool Algorithm::stepBackAlgorithm()
     if (steps.isEmpty() || steps.length() == 1) return false;
     steps.pop();                                                // utolsó állapot, nem kell - ami épp látszik
     AlgorithmState state = steps.top();
+    qDebug() << "step back: ";
+    qDebug() << "disc: " << discovery_time << " - state disc: " << state.discovery_time;
+    qDebug() << "finish: " << finishing_time << " - state fini: " << state.finishing_time;
 
     for(int i=0; i< graph->getSize(); i++) {
-        if (distances.at(i) != state.distances.at(i))
-            emit distChanged(i, state.distances.at(i));
+
+        if (chosenAlgo != Melysegi) {
+            if (distances.at(i) != state.distances.at(i))
+                emit distChanged(i, state.distances.at(i));
+        } else {
+            if (discovery_time.at(i) != state.discovery_time.at(i) || finishing_time.at(i) != state.finishing_time.at(i))
+                emit discoveryFinishChanged(i, state.discovery_time.at(i), state.finishing_time.at(i));
+                ;
+        }
         if (parents.at(i) != state.parents.at(i)) {
             QChar n = state.parents.at(i) == -1 ? QChar() : graph->getName(graph->getId(state.parents.at(i)));
             emit parentChanged(i, n);
         }
     }
+
     int i=0;
     bool same = true;
     same = queue.length() == state.queue.length();
-    if (i < queue.length() && same) {
+    while (i < queue.length() && same) {
         same = queue.at(i) == state.queue.at(i);
+        i++;
     }
-
     distances = state.distances;
     parents = state.parents;
     queue = state.queue;
@@ -645,7 +656,6 @@ bool Algorithm::stepBackAlgorithm()
         if (chosenAlgo == Szelessegi) emit queueChanged(queueToVector());
         else if (chosenAlgo != Melysegi) emit queueChanged(queueToVectorMin());
     }
-
     u = state.u;
     adj_ind_in_u = state.adj_ind_in_u;
     nodeTypes = state.nodeTypes;
@@ -657,12 +667,28 @@ bool Algorithm::stepBackAlgorithm()
             emit edgeStateChange(edgeTypes[i][adj_in_nodes], graph->getId(i), graph->getId(adj_in_nodes));
         }
     }
+
     emit nodeStateChange(NodeType::ExamineAdj, u);
-    if ((adj_ind_in_u-1) != -1) {
-        int adj_index = graph->getAdjIndexInNodes(u,(adj_ind_in_u-1));
+    int aiiu;
+    if (chosenAlgo != Melysegi) {
+        aiiu = adj_ind_in_u;
+    } else {
+        aiiu = u == -1 ? -1 : adj_ind_in_us[u];
+    }
+    if ((aiiu-1) != -1 && aiiu != -1) {
+        int adj_index = graph->getAdjIndexInNodes(u,(aiiu-1));
         emit nodeStateChange(NodeType::ExaminedNode, graph->getId(adj_index));
         emit edgeStateChange(EdgeType::ExaminedEdge, graph->getId(u), graph->getId(adj_index));
     }
+
+    discovery_time = state.discovery_time;
+    finishing_time = state.finishing_time;
+    adj_ind_in_us = state.adj_ind_in_us;
+    r = state.r;
+    time = state.time;
+    prev_u = state.prev_u;
+    in_dfs_visit = state.in_dfs_visit;
+
     if (steps.length() == 1) return false;
     return true;
 }
@@ -686,7 +712,8 @@ int Algorithm::remMin(QVector<int> &q)
 
 void Algorithm::addState()
 {
-    AlgorithmState state = AlgorithmState(distances, parents, queue, u, adj_ind_in_u, nodeTypes, edgeTypes);
+    AlgorithmState state = AlgorithmState(distances, parents, queue, u, adj_ind_in_u, nodeTypes, edgeTypes,
+                                          discovery_time, finishing_time, adj_ind_in_us, r, time, prev_u, in_dfs_visit);
     steps.push(state);
 }
 

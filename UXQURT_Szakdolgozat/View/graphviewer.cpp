@@ -53,6 +53,7 @@ GraphViewer::GraphViewer(QWidget *parent)
     connect(algo, &Algorithm::distChanged, this, &GraphViewer::distChanged);
     connect(algo, &Algorithm::parentChanged, this, &GraphViewer::parentChanged);
     connect(algo, &Algorithm::queueChanged, this, &GraphViewer::queueChanged);
+    connect(algo, &Algorithm::discoveryFinishChanged, this, &GraphViewer::discoveryFinishChanged);
     connect(algo, &Algorithm::step_start, this, &GraphViewer::clearColorsInAlgTable);
 
     connect(scene, &GraphScene::edgeSelected, this, &GraphViewer::showWeightGroup);
@@ -317,11 +318,14 @@ void GraphViewer::deleteGraph()
 
 void GraphViewer::algorithmSelected(QString selectedAlgorithm)
 {
+    nodeSelector->setEnabled(true);
     Algorithm::Algorithms selectedAlgo = Algorithm::Algorithms::None;
     if (selectedAlgorithm == "Szélességi bejárás")
         selectedAlgo = Algorithm::Algorithms::Szelessegi;
-    else if (selectedAlgorithm == "Mélységi bejárás")
+    else if (selectedAlgorithm == "Mélységi bejárás") {
         selectedAlgo = Algorithm::Algorithms::Melysegi;
+        nodeSelector->setEnabled(false);
+    }
     else if (selectedAlgorithm == "Prim-algoritmus")
         selectedAlgo = Algorithm::Algorithms::Prim;
     else if (selectedAlgorithm == "Dijkstra-algoritmus")
@@ -578,23 +582,31 @@ void GraphViewer::needsToBeUndirected()
 
 void GraphViewer::algoInitReady(int ind)
 {
-
-//    setStyleSheet("QLabel { background-color: red;}");
-//    queue->setText("Q - < >");
-    queue->setVisible(true);
     int w = 30;
-    QLabel* d = new QLabel("d");
+    queue->setVisible(true);
+    if (algo->getChosenAlgo() != Algorithm::Algorithms::Melysegi){
+
+        QLabel* d = new QLabel("d");
+        d->setFixedWidth(w);
+        d->setFont(tableFont);
+//        d->setAlignment(Qt::AlignCenter);
+        algoValues->addWidget(d, 1,0, Qt::AlignLeft);
+
+    } else {
+        queue->setText("");
+
+        QLabel* df = new QLabel("d/f");
+        df->setFixedWidth(60);
+        df->setFont(tableFont);
+//        df->setAlignment(Qt::AlignCenter);
+        algoValues->addWidget(df, 1,0, Qt::AlignLeft);
+    }
+
     QLabel* p = new QLabel("p");
-    d->setFixedWidth(w);
     p->setFixedWidth(w);
-    d->setFont(tableFont);
     p->setFont(tableFont);
-    d->setAlignment(Qt::AlignCenter);
-    p->setAlignment(Qt::AlignCenter);
-    algoValues->addWidget(d, 1,0, Qt::AlignLeft);
+//    p->setAlignment(Qt::AlignCenter);
     algoValues->addWidget(p, 2,0, Qt::AlignLeft);
-//    algoValues->setColumnStretch(0,0);
-//    algoValues->setColumnMinimumWidth(0, 15);
 
     QStringList names = graph->getNames();
     names.sort();
@@ -607,16 +619,29 @@ void GraphViewer::algoInitReady(int ind)
         algoValues->addWidget(n, 0, i, Qt::AlignHCenter);
 
         int index = graph->getIndex(name);
-        QLabel* d = new QLabel();
-        d->setFont(tableDataFont);
-        d->setFixedWidth(w);
-        d->setAlignment(Qt::AlignCenter);
-        if (index == ind) d->setText("0");
-        else {
-            QPixmap pmap(":/img/infinity.png");
-            d->setPixmap(pmap);
+
+        if (algo->getChosenAlgo() != Algorithm::Algorithms::Melysegi) {
+            QLabel* d = new QLabel();
+            d->setFont(tableDataFont);
+            d->setFixedWidth(w);
+            d->setAlignment(Qt::AlignCenter);
+            if (index == ind) d->setText("0");
+            else {
+                QPixmap pmap(":/img/infinity.png");
+                d->setPixmap(pmap);
+            }
+            algoValues->addWidget(d, 1, i, Qt::AlignHCenter);
+
+        } else {
+
+            QLabel* df = new QLabel();
+            df->setFont(tableDataFont);
+            df->setFixedWidth(60);
+            df->setAlignment(Qt::AlignCenter);
+            df->setText("0/0");
+            algoValues->addWidget(df, 1, i, Qt::AlignHCenter);
+
         }
-        algoValues->addWidget(d, 1, i, Qt::AlignHCenter);
 
         QLabel* p = new QLabel();
         QPixmap pix(":/img/empty-set.png");
@@ -625,12 +650,10 @@ void GraphViewer::algoInitReady(int ind)
         p->setFixedWidth(w);
         p->setFont(tableDataFont);
         algoValues->addWidget(p, 2, i, Qt::AlignHCenter);
-//        algoValues->setColumnStretch(i,0);
         i++;
     }
-//    QLabel* empty = new QLabel("");
-//    algoValues->addWidget(empty, 0, i);
-//    algoValues->setColumnStretch(i,1);
+
+
     algoValues->setSpacing(0);
     algoValues->setHorizontalSpacing(12);
     view->resize(view->width(), height() - 162);
@@ -691,6 +714,25 @@ void GraphViewer::queueChanged(QString q)
     queue->setText("Q - " + q);
 }
 
+void GraphViewer::discoveryFinishChanged(int ind, int d, int f)
+{
+    QChar name = graph->getName(graph->getId(ind));
+    bool found = false;
+    int i = 1;
+    while (i < algoValues->columnCount() && !found) {
+        QLayoutItem* item = algoValues->itemAtPosition(0,i);
+        QLabel* label = qobject_cast<QLabel*>(item->widget());
+        if (label && label->text() == QString(name)) {
+            found = true;
+            QLayoutItem* item = algoValues->itemAtPosition(1,i);
+            QLabel* label = qobject_cast<QLabel*>(item->widget());
+            label->setStyleSheet("background-color: rgb(255, 174, 0);");
+            label->setText(QString::number(d) + "/" + QString::number(f));
+        }
+        i++;
+    }
+}
+
 void GraphViewer::showWarningLabel()
 {
     warningLabel->setHidden(false);
@@ -700,6 +742,7 @@ void GraphViewer::showWarningLabel()
 
 void GraphViewer::clearColorsInAlgTable()
 {
+    qDebug() << "clear color";
     for(int i=1; i<algoValues->columnCount(); i++) {
         for(int j=1; j<algoValues->rowCount(); j++) {
             QLayoutItem* item = algoValues->itemAtPosition(j,i);

@@ -21,6 +21,7 @@ EdgeGraphics::EdgeGraphics(NodeGraphics* from, NodeGraphics* to) :
 ));
     notNeededPen = QPen(QColor(220,220, 220));
     notNeeded = false;
+//    edgeStr = "";
 
     calculate();
 
@@ -166,15 +167,12 @@ void EdgeGraphics::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
         // súly
         if (weightSelected) pen.setColor(Qt::red);
         painter->setPen(pen);
-//        if (!notNeeded) painter->setBrush(QColor(222, 222, 222));
-        /*else */ if (notNeeded) painter->setBrush(QColor(notNeededPen.color()));
+        if (notNeeded) painter->setBrush(QColor(notNeededPen.color()));
         else if (this->pen().color() != Qt::black) painter->setBrush(this->pen().color());
         else painter->setBrush(QColor(222, 222, 222));
 
         if (isDirected) painter->translate(myPath.pointAtPercent(0.5));
         else painter->translate(line().center());
-//        pen.setColor(Qt::black);
-//        if (!notNeeded) painter->setPen(pen);
         painter->drawEllipse(QPoint(0,0), 14,14);
         QFont font;
         font.setBold(true);
@@ -189,6 +187,17 @@ void EdgeGraphics::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
         } else {
             painter->drawText( - 15 , 6, QString::number(weight));
         }
+    }
+
+    // mélységi gráfkeresés esetén az él típusa
+    if (edgeStr != "") {
+        QFont font;
+        font.setPointSize(9);
+        painter->setPen(QColor(140, 140, 140));
+        painter->setFont(font);
+        if (isDirected) painter->translate(myPath.pointAtPercent(0.5));
+        else painter->translate(line().center());
+        painter->drawText(-10,0, edgeStr);
     }
 }
 
@@ -253,21 +262,41 @@ QPainterPath EdgeGraphics::shape() const
 void EdgeGraphics::changePen(Algorithm::EdgeType type)
 {
     switch (type) {
-        case Algorithm::EdgeType::BaseEdge:
-            this->setPen(normalPen);
-            notNeeded = false;
+    case Algorithm::EdgeType::BaseEdge:
+        this->setPen(normalPen);
+        edgeStr = "";
+        notNeeded = false;
         break;
     case Algorithm::EdgeType::ExaminedEdge:
-            this->setPen(examinedPen);
-            notNeeded = false;
+        this->setPen(examinedPen);
+        edgeStr = "";
+        notNeeded = false;
         break;
     case Algorithm::EdgeType::NeededEdge:
-            this->setPen(neededPen);
-            notNeeded = false;
+        this->setPen(neededPen);
+        edgeStr = "";
+        notNeeded = false;
         break;
     case Algorithm::EdgeType::NotNeededEdge:
-            this->setPen(notNeededPen);
-            notNeeded = true;
+        this->setPen(notNeededPen);
+        edgeStr = "";
+        notNeeded = true;
         break;
+    case Algorithm::EdgeType::BackEdge:
+        this->setPen(notNeededPen);
+        edgeStr = tr("vissza-él");
+        notNeeded = true;
+        break;
+    case Algorithm::EdgeType::ForwardEdge:
+        this->setPen(notNeededPen);
+        edgeStr = tr("előre-él");
+        notNeeded = true;
+        break;
+    case Algorithm::EdgeType::CrossEdge:
+        this->setPen(notNeededPen);
+        edgeStr = tr("kereszt-él");
+        notNeeded = true;
+        break;
+
     }
 }

@@ -65,6 +65,7 @@ public slots:
     void parentChanged(int, QChar);
     void distChanged(int, int);
     void queueChanged(QString);
+    void discoveryFinishChanged(int, int, int);
     void clearColorsInAlgTable();
 
 private:

@@ -52,6 +52,7 @@ private:
     bool weightSelected;            // ha igaz, akkor pirossal rajzolja a súly körét
     bool isDirected;                // irányított-e
     bool hasWeight;                 // vannak-e súlyai (ha nincs, akkor egyet kell beállítani
+    QString edgeStr;
 
 };
 

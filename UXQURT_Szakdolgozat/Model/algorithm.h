@@ -14,12 +14,14 @@ class Algorithm: public QObject
 
 public:
     enum NodeType { BaseNode, ExaminedNode , ProcessedNode, ExamineAdj, ReachedButNotProcessed };
-    enum EdgeType { BaseEdge, NeededEdge, NotNeededEdge, ExaminedEdge };
+    enum EdgeType { BaseEdge, NeededEdge, NotNeededEdge, ExaminedEdge, BackEdge, ForwardEdge, CrossEdge };
     enum Algorithms { None, Szelessegi, Melysegi, Dijkstra, Prim};
 
     struct AlgorithmState {
         AlgorithmState() {}
-        AlgorithmState(QVector<int> d, QVector<int> p, QVector<int> q, int u, int aiiu, QVector<NodeType> n, QVector<QVector<EdgeType>> e) {
+        AlgorithmState(QVector<int> d, QVector<int> p, QVector<int> q,
+                       int u, int aiiu, QVector<NodeType> n, QVector<QVector<EdgeType>> e,
+                       QVector<int>disc, QVector<int>fin, QVector<int>aiiius, int r, int time, int prev_u, bool dfs_v) {
             distances = QVector<int>(d);
             parents = QVector<int>(p);
             queue = QVector<int>(q);
@@ -27,6 +29,14 @@ public:
             adj_ind_in_u = aiiu;
             nodeTypes = QVector<NodeType>(n);
             edgeTypes = QVector<QVector<EdgeType>>(e);
+
+            discovery_time = QVector<int>(disc);
+            finishing_time = QVector<int>(fin);
+            adj_ind_in_us = QVector<int>(aiiius);
+            this->r = r;
+            this->time = time;
+            this->prev_u = prev_u;
+            this->in_dfs_visit = dfs_v;
         }
         QVector<int> distances;
         QVector<int> parents;
@@ -35,7 +45,16 @@ public:
         int adj_ind_in_u;
         QVector<NodeType> nodeTypes;
         QVector<QVector<EdgeType>> edgeTypes;
+
+        QVector<int> discovery_time;
+        QVector<int> finishing_time;
+        QVector<int> adj_ind_in_us;
+        int r;
+        int time;
+        int prev_u;
+        bool in_dfs_visit;
     };
+
 
     Algorithm(Graph* graph);
     void selectAlgorithm(Algorithms algo);
@@ -46,6 +65,7 @@ public:
     void startAlgorithm();
     void pauseAlgrotithm();
     bool getInitState();
+    Algorithms getChosenAlgo();
 
 signals:
     // szükséges gráf típusának jelzése
@@ -63,6 +83,7 @@ signals:
     void parentChanged(int, QChar);     // index, name
     void distChanged(int, int);         // index, dist
     void queueChanged(QString);
+    void discoveryFinishChanged(int, int, int); // index, discovery, finish time
 
     void nodeStateChange(NodeType, int id);
     void edgeStateChange(EdgeType, int from_id, int to_id);
