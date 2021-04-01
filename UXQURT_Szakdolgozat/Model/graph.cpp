@@ -97,7 +97,7 @@ bool Graph::checkAllEdgesNonnegative()
     return true;
 }
 
-bool Graph::checkConnectivity()     // erre még lehet egy jobb algoritmus (szélességi) --> fekete csúcsok
+bool Graph::checkConnectivity()
 {
     if (isDirected) {
         foreach(Node* node, nodes) {
@@ -113,6 +113,7 @@ bool Graph::checkConnectivity()     // erre még lehet egy jobb algoritmus (szé
         }
         return true;
     } else {
+        if (nodes.size() <= 1) return true;
         foreach(Node* node, nodes) {
             if (node->getAdjNum() == 0) return false;
         }

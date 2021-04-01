@@ -267,15 +267,11 @@ void Algorithm::initNode()                              // ( 2 )
 
     }
 
-    qDebug() << "queue: " << queue;
-    qDebug() << "parents: " << parents;
-    qDebug() << "distances: " << distances;
 }
 
 bool Algorithm::stepAlgorithm()                         // ( 3 )
 {
     if (chosenAlgo == None) return false;
-    qDebug() << "step algo";
     if (!init_ready) {
         init();
         return true;
@@ -309,9 +305,6 @@ bool Algorithm::stepAlgorithm()                         // ( 3 )
     qDebug() << "discoverty_times: " << discovery_time;
     qDebug() << "finishing times: " << finishing_time;
     qDebug() << "u: " << u;
-//    if (u != -1) {
-//         qDebug() << "adj_ind_in_u: " << adj_ind_in_us[u];
-//    }
     qDebug() << "adj_ind_in_us: " << adj_ind_in_us;
     addState();
     if (ended) {
@@ -556,7 +549,6 @@ qDebug() << "adj_ind_in_us: " << adj_ind_in_us;
 
 void Algorithm::stepMelysegiVisit()
 {
-    qDebug() << "adj num: " << graph->getAdjNum(u);
     if (adj_ind_in_us[u] == -1) {                                                   // értékadás a ciklus előtt
         discovery_time[u] = ++time;
         emit discoveryFinishChanged(u, discovery_time[u], finishing_time[u]);
