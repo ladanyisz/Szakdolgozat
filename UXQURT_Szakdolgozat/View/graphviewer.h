@@ -119,6 +119,8 @@ private:
 
     GraphTextEditor* graphTextEditor;
 
+    QString path;
+
     // Algoritmus által számított értékek
     QGridLayout* algoValues;
     QFont tableFont;

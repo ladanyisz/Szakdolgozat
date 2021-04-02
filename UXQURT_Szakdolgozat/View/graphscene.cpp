@@ -94,8 +94,13 @@ void GraphScene::setMode(GraphScene::GraphMode mode)
         if (mode == GraphMode::AddEdge || mode ==GraphMode::Move || mode == GraphMode::SetWeight) {
 
             QList<QGraphicsItem*> scene_items = items();
+            NodeGraphics* node;
             foreach(QGraphicsItem* item ,scene_items) {
-                item->setCursor(Qt::PointingHandCursor);
+                node = qgraphicsitem_cast<NodeGraphics*>(item);
+                if (node || mode == GraphMode::SetWeight)
+                    item->setCursor(Qt::PointingHandCursor);
+                else
+                    item->unsetCursor();
             }
         } else if (this->mode != GraphMode::AddNode && mode == GraphMode::AddNode) {
 

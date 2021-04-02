@@ -21,6 +21,8 @@ GraphViewer::GraphViewer(QWidget *parent)
     graph = new Graph();
     algo = new Algorithm(graph);
 
+    path = "";
+
     initViews();
     initAlgoViews();
     initMenu();
@@ -434,9 +436,15 @@ void GraphViewer::showWeightGroup()
 
 void GraphViewer::saveFile()
 {
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Gráf mentése"), QDir::homePath(), tr("Gráfok (*.graph)"));
+    QString dir;
+    if (path == "")
+        dir = QDir::rootPath();
+    else
+        dir = path;
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Gráf mentése"), dir, tr("Gráfok (*.graph)"));
 
     if (fileName != "") {
+        path = QFileInfo(fileName).path();
         QVector<QPointF> positions = scene->nodePositions();
         graph->saveGraph(fileName, positions);
     }
@@ -444,9 +452,16 @@ void GraphViewer::saveFile()
 
 void GraphViewer::openFile()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Gráf betöltése"), QDir::currentPath(), tr("Gráfok (*.graph)"));
+    QString dir;
+    if (path == "")
+        dir = QDir::rootPath();
+    else
+        dir = path;
+//    QString fileName = QFileDialog::getOpenFileName(this, tr("Gráf betöltése"), QDir::currentPath(), tr("Gráfok (*.graph)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Gráf betöltése"), dir, tr("Gráfok (*.graph)"));
     QRectF rect = view->rect();
     if (fileName != "" && fileName != QString()) {
+        path = QFileInfo(fileName).path();
         QVector<std::tuple<int, QChar, QPointF>> nodes_data = graph->loadGraph(fileName);
         for(int i=0; i<graph->getSize(); i++) {
             std::tuple<int, QChar, QPointF> node_data = nodes_data.at(i);
