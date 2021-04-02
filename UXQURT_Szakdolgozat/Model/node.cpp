@@ -101,6 +101,19 @@ bool Node::checkAllEdgesNonnegative()
     return true;
 }
 
+void Node::sortChildren()
+{
+    for(int i=0; i<adjNodes.size(); i++) {
+        for(int j=0; j<adjNodes.size()-i-1; j++) {
+            if (adjNodes[j]->node->getName() > adjNodes[j+1]->node->getName()) {
+                AdjNode* tmp = adjNodes[j];
+                adjNodes[j] = adjNodes[j+1];
+                adjNodes[j+1] = tmp;
+            }
+        }
+    }
+}
+
 void Node::resetIds()
 {
     Node::node_ids = 0;

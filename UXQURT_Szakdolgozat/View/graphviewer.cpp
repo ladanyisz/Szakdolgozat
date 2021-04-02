@@ -665,7 +665,7 @@ void GraphViewer::parentChanged(int ind, QChar n)
     QChar name = graph->getName(graph->getId(ind));
     bool found = false;
     int i = 1;
-    while (i < graph->getSize() && !found) {
+    while (i < graph->getSize() + 1 && !found) {
         QLayoutItem* item = algoValues->itemAtPosition(0,i);
         QLabel* label = qobject_cast<QLabel*>(item->widget());
         if (label && label->text() == QString(name)) {
@@ -689,7 +689,7 @@ void GraphViewer::distChanged(int ind, int d)
     QChar name = graph->getName(graph->getId(ind));
     bool found = false;
     int i = 1;
-    while (i < graph->getSize() && !found) {
+    while (i < graph->getSize() + 1 && !found) {
         QLayoutItem* item = algoValues->itemAtPosition(0,i);
         QLabel* label = qobject_cast<QLabel*>(item->widget());
         if (label && label->text() == QString(name)) {
@@ -719,7 +719,7 @@ void GraphViewer::discoveryFinishChanged(int ind, int d, int f)
     QChar name = graph->getName(graph->getId(ind));
     bool found = false;
     int i = 1;
-    while (i < graph->getSize() && !found) {
+    while (i < graph->getSize() + 1 && !found) {
         QLayoutItem* item = algoValues->itemAtPosition(0,i);
         QLabel* label = qobject_cast<QLabel*>(item->widget());
         if (label && label->text() == QString(name)) {
@@ -743,7 +743,7 @@ void GraphViewer::showWarningLabel()
 void GraphViewer::clearColorsInAlgTable()
 {
     qDebug() << "clear color";
-    for(int i=1; i<graph->getSize(); i++) {
+    for(int i=1; i<graph->getSize() + 1; i++) {
         for(int j=1; j<algoValues->rowCount(); j++) {
             QLayoutItem* item = algoValues->itemAtPosition(j,i);
             QLabel* label = qobject_cast<QLabel*>(item->widget());

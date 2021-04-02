@@ -246,6 +246,12 @@ void Graph::serializeGraph()
 
 }
 
+void Graph::sortAllChildren()
+{
+    foreach(Node* node, nodes)
+        node->sortChildren();
+}
+
 bool Graph::saveGraph(QString path, QVector<QPointF> positions)
 {
     QVector<QString> graph_representation;

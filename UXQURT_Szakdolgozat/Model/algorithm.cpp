@@ -81,6 +81,7 @@ Algorithm::Algorithms Algorithm::getChosenAlgo()
 
 void Algorithm::init()                                  // ( 1 )
 {
+    graph->sortAllChildren();
     bool can_start = false;
     steps.clear();
     queue.clear();

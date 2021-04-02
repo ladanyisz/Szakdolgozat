@@ -29,6 +29,7 @@ public:
     void setName(QChar name);
     bool hasEdge(Node* to);
     bool checkAllEdgesNonnegative();
+    void sortChildren();
     static void resetIds();
 
 signals:
