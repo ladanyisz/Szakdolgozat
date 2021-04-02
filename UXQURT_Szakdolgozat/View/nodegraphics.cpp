@@ -5,13 +5,21 @@
 #include <QDebug>
 #include <QGraphicsView>
 
+
+QColor NodeGraphics::normalNode = QColor(124, 183, 214);
+QColor NodeGraphics::examined = QColor(255, 174, 0);
+QColor NodeGraphics::examineAdj = QColor(230, 94, 92);
+QColor NodeGraphics::processed = QColor(63, 181, 113);
+QColor NodeGraphics::grey = QColor(150,150,150);
+
 NodeGraphics::NodeGraphics()
 {
-    normalBrush = QBrush(QColor(124, 183, 214));
-    examinedBrush = QBrush(QColor(255, 174, 0));
-    processedBrush = QBrush(QColor(63, 181, 113));
-    examineAdjBrush = QBrush(QColor(230, 94, 92));
-    greyBrush = QBrush(QColor(150,150,150));
+    normalBrush = QBrush(NodeGraphics::normalNode);
+    examinedBrush = QBrush(NodeGraphics::examined);
+    processedBrush = QBrush(NodeGraphics::processed);
+    examineAdjBrush = QBrush(NodeGraphics::examineAdj);
+    greyBrush = QBrush(NodeGraphics::grey);
+
     setRect(0,0,size,size);
     setBrush(normalBrush);
     QPen pen;

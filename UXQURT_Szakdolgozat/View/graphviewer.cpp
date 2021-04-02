@@ -230,7 +230,8 @@ void GraphViewer::initViews()
     view = new QGraphicsView(scene);
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    scene->setSceneRect(view->geometry());
+//    view->resize(width()-18, view->height());
+    updateSceneRect();
 
 
     QWidget *widget = new QWidget;
@@ -272,6 +273,10 @@ void GraphViewer::initAlgoViews()
     queue->setTextFormat(Qt::PlainText);
     h_layout->addWidget(queue, Qt::AlignLeft);
     queue->setVisible(false);
+
+    algoInfos = new AlgorithmInfos();
+    layout->addWidget(algoInfos);
+    algoInfos->setVisible(false);
 }
 
 void GraphViewer::initWeightGroup()
@@ -294,8 +299,8 @@ void GraphViewer::initWeightGroup()
 void GraphViewer::initWarningLabel()
 {
     warningLabel = new QLabel(this);
-    int w = width();
-    warningLabel->setGeometry(20,70,w,30);
+//    int w = width();
+    warningLabel->setGeometry(20,70,500,30);
     warningLabel->setHidden(true);
 }
 
@@ -349,6 +354,8 @@ void GraphViewer::algorithmStopped()
     previousButton->setEnabled(false);
     pauseButton->setEnabled(false);
 
+    algoInfos->setVisible(false);
+
     while (algoValues->layout()->count() > 0) {
         QLayoutItem* i = algoValues->itemAt(0);
         if (i->widget()) {
@@ -358,6 +365,7 @@ void GraphViewer::algorithmStopped()
     }
     if (queue->isVisible()) view->resize(view->width(), view->height() + 92);
     queue->setVisible(false);
+    view->resize(width()-18, view->height());
     updateSceneRect();
 }
 
@@ -371,6 +379,10 @@ void GraphViewer::algorithmStarted()
         playButton->setEnabled(false);
         pauseButton->setEnabled(true);
         previousButton->setEnabled(true);
+        algoInfos->setAlgorithm(algo->getChosenAlgo());
+        algoInfos->setVisible(true);
+        view->resize(view->width(), height()-162);
+        updateSceneRect();
     } else {
         pauseButton->setEnabled(true);
         pauseButton->click();
@@ -395,6 +407,10 @@ void GraphViewer::nextPressed()
     if (algo->getInitState()) {
         if (!step_success) nextButton->setEnabled(false);
         if (!previousButton->isEnabled()) previousButton->setEnabled(true);
+        algoInfos->setAlgorithm(algo->getChosenAlgo());
+        algoInfos->setVisible(true);
+        view->resize(view->width(), height() - 162);
+        updateSceneRect();
     } else {
         enableEdit();
         enableSelectors();

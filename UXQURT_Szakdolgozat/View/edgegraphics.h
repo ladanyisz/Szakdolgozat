@@ -20,6 +20,11 @@ public:
     QRectF boundingRect() const;                        // mi látszik
     QPainterPath shape() const;                         // ahol a kattintást is érzékeli
 
+    QColor static normal;
+    QColor static examined;
+    QColor static needed;
+    QColor static notNeeded;
+
     void changePen(Algorithm::EdgeType type);
     int getFromNodeId();
     int getToNodeId();
@@ -47,7 +52,7 @@ private:
     QPoint toPoint;
     QPointF controlPoint;
     QLineF ghostLine;
-    bool notNeeded;
+    bool isNotNeeded;
     int weight;
     bool weightSelected;            // ha igaz, akkor pirossal rajzolja a súly körét
     bool isDirected;                // irányított-e

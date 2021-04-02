@@ -24,6 +24,8 @@ public:
     QVector<QPointF> nodePositions();                                               // mentéshez a pozíciók ablak méreteivel vett aránya
     void addNode(int id, QChar name, QPointF pos);
 
+//    QColor const normalNode = QColor(124, 183, 214);
+
 
 
 public slots:

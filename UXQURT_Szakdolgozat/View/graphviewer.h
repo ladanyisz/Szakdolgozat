@@ -22,6 +22,7 @@
 #include "../Model/algorithm.h"
 #include "graphscene.h"
 #include "graphtexteditor.h"
+#include "algorithminfos.h"
 #include <tuple>
 
 
@@ -126,7 +127,9 @@ private:
     QFont tableFont;
     QFont tableDataFont;
     QLabel* queue;
-//    QTableWidget* algoValuesTable;
+
+    AlgorithmInfos* algoInfos;
+//    QVBoxLayout* algoInfoLayout;
 
 
     Graph* graph;

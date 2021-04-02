@@ -31,6 +31,12 @@ public:
     void updateEdges();                                 // újraszámlja a hozzá tartozó élek grafikáját
     void changeBrush(Algorithm::NodeType);                   // algoritmusokhoz - kitöltés színét változtatja
 
+    QColor static normalNode;
+    QColor static examined;
+    QColor static examineAdj;
+    QColor static processed;
+    QColor static grey;
+
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
 

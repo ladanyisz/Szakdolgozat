@@ -14,6 +14,7 @@ SOURCES += \
     Model/filemanagement.cpp \
     Model/graph.cpp \
     Model/node.cpp \
+    View/algorithminfos.cpp \
     View/edgegraphics.cpp \
     View/graphscene.cpp \
     View/graphtexteditor.cpp \
@@ -28,6 +29,7 @@ HEADERS += \
     Model/filemanagement.h \
     Model/graph.h \
     Model/node.h \
+    View/algorithminfos.h \
     View/edgegraphics.h \
     View/graphscene.h \
     View/graphtexteditor.h \
