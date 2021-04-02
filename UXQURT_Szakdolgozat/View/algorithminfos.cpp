@@ -72,4 +72,37 @@ void AlgorithmInfos::paintEvent(QPaintEvent *)
     painter.setBrush(NodeGraphics::processed);
     painter.drawEllipse(5, h-e, n,n);
     painter.drawText(t, h, tr("Feldolgozott csúcs"));
+
+    h += 30;
+    font.setUnderline(true);
+    painter.setFont(font);
+
+    painter.drawText(5, h, tr("Élek"));
+
+    font.setUnderline(false);
+    painter.setFont(font);
+
+    h += 25;
+
+    QPen pen;
+    pen.setWidth(2);
+    pen.setColor(EdgeGraphics::normal);
+    painter.setPen(pen);
+
+    painter.drawLine(5, h, 22, h - 10);
+    painter.drawText(t, h, tr("Feldolgozatlan él"));
+
+    h += 20;
+    pen.setColor(EdgeGraphics::needed);
+    painter.setPen(pen);
+    painter.drawLine(5, h, 22, h-10);
+    painter.setPen(Qt::black);
+    painter.drawText(t, h, tr("Számolt feszítőfa része"));
+
+    h += 20;
+    pen.setColor(EdgeGraphics::notNeeded);
+    painter.setPen(pen);
+    painter.drawLine(5, h, 22, h-10);
+    painter.setPen(Qt::black);
+    painter.drawText(t, h, tr("Nem kell a feszítőfába"));
 }
