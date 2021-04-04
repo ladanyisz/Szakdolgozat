@@ -6,18 +6,21 @@
 AlgorithmInfos::AlgorithmInfos(QWidget *parent) : QWidget(parent)
 {
     algo = Algorithm::Algorithms::None;
-QBrush(QColor(247, 230, 203));
-    this->setMinimumWidth(400);
 
 }
 
 void AlgorithmInfos::setAlgorithm(Algorithm::Algorithms a)
 {
     algo = a;
+    this->setMinimumWidth(400);
     if (algo == Algorithm::Algorithms::Szelessegi || algo == Algorithm::Algorithms::Prim)
         this->setMinimumHeight(520);
     else if (algo == Algorithm::Algorithms::Dijkstra)
         this->setMinimumHeight(550);
+    else if (algo == Algorithm::Algorithms::Melysegi) {
+        this->setMinimumHeight(420);
+        this->setMinimumWidth(640);
+    }
 }
 
 void AlgorithmInfos::setStep(int s) { algorithmStep =  s; }
@@ -52,6 +55,7 @@ void AlgorithmInfos::paintEvent(QPaintEvent *)
 //        h = 360;
         break;
     case Algorithm::Melysegi:
+        w = 10;
         h = paintMelysegi(w,h, painter);
         break;
     case Algorithm::Dijkstra:
@@ -468,5 +472,139 @@ int AlgorithmInfos::paintPrim(int w, int h, QPainter &painter)
 
 int AlgorithmInfos::paintMelysegi(int w, int h, QPainter &painter)
 {
-    return 0;
+    QFont font;
+    int pixSize = 14;
+    font.setPixelSize(pixSize);
+    painter.setFont(font);
+    painter.setPen(Qt::black);
+    int width = 300;
+    int rowHeight = 30;
+    int colWidth = 25;
+    int textMarginLeft = 15;
+    double textVert = 0.7;
+    QString str;
+    int orig_h = h;
+
+    QBrush brush = Qt::white;
+    QBrush c_brush = QColor(247, 230, 203);
+    painter.setBrush(brush);
+
+    if (rowsToColor ==  Init) painter.setBrush(c_brush);
+
+    // első ciklus
+    painter.drawRect(w, h, width, 2 * rowHeight);
+                    // forall                               in
+    str = QString::fromUtf8("\u2200") + "u" + QString::fromUtf8("\u2208") + "G.V";
+    painter.drawText(w + width / 2 - str.length()*pixSize / 2, textVert * rowHeight + h, str);
+    h += rowHeight;
+    painter.drawRect(w + colWidth, h, width-colWidth, rowHeight);
+
+    str = "color(u) := white";
+    painter.drawText(w + colWidth + textMarginLeft, textVert * rowHeight + h, str);
+
+    // értékadások
+    h += rowHeight;
+    painter.drawRect(w, h, width, rowHeight);
+    str = "time := 0";
+    painter.drawText(w + textMarginLeft, textVert * rowHeight + h, str);
+
+    painter.setBrush(brush);
+
+    // második ciklus
+    h += rowHeight;
+    painter.drawRect(w, h, width, rowHeight*4);
+    // forall                               in
+    str = QString::fromUtf8("\u2200") + "r" + QString::fromUtf8("\u2208") + "G.V";
+    painter.drawText(w + width / 2 - 45, textVert * rowHeight + h, str);
+
+    // elágazás
+    h += rowHeight;
+    painter.drawRect(w + colWidth, h, width-colWidth, rowHeight);
+    painter.drawLine(w + colWidth, h, w + colWidth + 10, h + rowHeight);
+    painter.drawLine(w + width, h, w + width - 10, h + rowHeight);
+    str = "color(r) = white";
+    painter.drawText(w + 2*colWidth + (width-2*colWidth) / 2 - 70, textVert * rowHeight + h, str);
+
+    h += rowHeight;
+
+    int w_l = (width-colWidth) * 0.75;
+    painter.drawRect(w + colWidth, h, w_l, rowHeight);
+                // pi                                           empty set
+    str = QString::fromUtf8("\u03C0") + "(v) := " + QString::fromUtf8("\u2205");
+    painter.drawText(w + colWidth + 4, textVert * rowHeight + h, str);
+
+    h+= rowHeight;
+    painter.drawRect(w + colWidth, h, w_l,rowHeight);
+    str = "DFSvisit(G, r, time)";
+    painter.drawText(w + colWidth + 4, textVert * rowHeight + h, str);
+
+//    painter.setBrush(brush);
+//    if(rowsToColor == IfFalse) painter.setBrush(c_brush);
+
+    painter.drawRect(w + colWidth + w_l, h-rowHeight, (width-colWidth)-w_l, 2*rowHeight);
+    str = "SKIP";
+    painter.drawText(w + colWidth + w_l + textMarginLeft , h, str);
+
+//    h += 2 * rowHeight;
+
+    h = orig_h - 15;
+    w = w + 320;
+
+    // DFS VISIT
+
+    painter.drawRoundedRect(w + 20, h, width - 40, rowHeight, 10,10);
+    str = "DFSvisit(G:Graph, u:Vertice, &time:" + QString::fromUtf8("\u2115");
+    painter.drawText(w + width/2 -115, textVert*rowHeight + h,  str);
+    painter.drawLine(w + width/2, h + rowHeight, w + width/2, h + 1.5*rowHeight);
+
+    h += rowHeight * 1.5;
+    painter.drawRect(w, h, width, rowHeight * 4);
+    str = "d(u) := ++time; color(u) := grey";
+    painter.drawText(w + textMarginLeft, textVert * rowHeight + h, str);
+
+    // DFS visit ciklus
+    h += rowHeight;
+    painter.drawRect(w , h, width, rowHeight * 4);
+    str = QString::fromUtf8("\u2200") + "v: (u,v)" + QString::fromUtf8("\u2208") + "G.E";
+    painter.drawText(w + (width)/2 - 55, textVert * rowHeight + h, str);
+
+    // elágazás
+    h += rowHeight;
+    painter.drawRect(w + colWidth, h, width-colWidth, rowHeight);
+    painter.drawLine(w + colWidth, h, w + colWidth + 10, h + rowHeight);
+    painter.drawLine(w + width, h, w + width - 10, h + rowHeight);
+    str = "color(v) = white";
+    painter.drawText(w + colWidth + (width-colWidth) / 2 - 60, textVert * rowHeight + h, str);
+
+    if (rowsToColor == IfTrue) painter.setBrush(c_brush);
+
+    h += rowHeight;
+    w_l = (width-colWidth) * 0.75;
+    painter.drawRect(w + colWidth, h, w_l, rowHeight);
+    str = QString::fromUtf8("\u03C0") + "(v) := u";
+    painter.drawText(w + colWidth + 4, textVert * rowHeight + h, str);
+
+    h+= rowHeight;
+    painter.drawRect(w + colWidth, h, w_l,rowHeight);
+    str = "DFSvisit(G, v, time)";
+    painter.drawText(w + colWidth + 4, textVert * rowHeight + h, str);
+
+    painter.setBrush(brush);
+    if(rowsToColor == IfFalse) painter.setBrush(c_brush);
+
+    painter.drawRect(w + colWidth + w_l, h-rowHeight, (width-colWidth)-w_l, 2*rowHeight);
+    str = "SKIP";
+    painter.drawText(w + colWidth + w_l + textMarginLeft , h, str);
+
+    painter.setBrush(brush);
+    if (rowsToColor == Outer) painter.setBrush(c_brush);
+
+    // második ciklus - utolsó értékadás
+    h += rowHeight;
+    painter.drawRect(w, h, width, rowHeight);
+    str = "f(u) := ++time; color(u) := black";
+    painter.drawText(w + textMarginLeft, textVert * rowHeight + h, str);
+
+
+    return h + rowHeight;
 }
