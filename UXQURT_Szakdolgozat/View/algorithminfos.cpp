@@ -6,20 +6,18 @@
 AlgorithmInfos::AlgorithmInfos(QWidget *parent) : QWidget(parent)
 {
     algo = Algorithm::Algorithms::None;
-
+    this->setMinimumWidth(400);
 }
 
 void AlgorithmInfos::setAlgorithm(Algorithm::Algorithms a)
 {
     algo = a;
-    this->setMinimumWidth(400);
     if (algo == Algorithm::Algorithms::Szelessegi || algo == Algorithm::Algorithms::Prim)
         this->setMinimumHeight(520);
     else if (algo == Algorithm::Algorithms::Dijkstra)
         this->setMinimumHeight(550);
     else if (algo == Algorithm::Algorithms::Melysegi) {
-        this->setMinimumHeight(420);
-        this->setMinimumWidth(640);
+        this->setMinimumHeight(670);
     }
 }
 
@@ -52,23 +50,18 @@ void AlgorithmInfos::paintEvent(QPaintEvent *)
         break;
     case Algorithm::Szelessegi:
         h = paintSzelessegi(w,h,painter);
-//        h = 360;
         break;
     case Algorithm::Melysegi:
-        w = 10;
         h = paintMelysegi(w,h, painter);
         break;
     case Algorithm::Dijkstra:
         h = paintDijkstra(w,h, painter);
-//        h = 420;
         break;
     case Algorithm::Prim:
         h = paintPrim(w, h, painter);
         break;
 
     }
-    qDebug() << h;
-//    w = 320;
     w = 10;
     h += 30;
     painter.setFont(font);
@@ -79,9 +72,6 @@ void AlgorithmInfos::paintEvent(QPaintEvent *)
 void AlgorithmInfos::paintColorHelp(int w, int h, QPainter &painter)
 {
     QFont font;
-//    font.setPixelSize(22);
-//    font.setBold(true);
-//    painter.setFont(font);
 
     int n = 16;
     int e = 13;
@@ -483,7 +473,6 @@ int AlgorithmInfos::paintMelysegi(int w, int h, QPainter &painter)
     int textMarginLeft = 15;
     double textVert = 0.7;
     QString str;
-    int orig_h = h;
 
     QBrush brush = Qt::white;
     QBrush c_brush = QColor(247, 230, 203);
@@ -545,10 +534,10 @@ int AlgorithmInfos::paintMelysegi(int w, int h, QPainter &painter)
     str = "SKIP";
     painter.drawText(w + colWidth + w_l + textMarginLeft , h, str);
 
-//    h += 2 * rowHeight;
+    h += 2 * rowHeight;
 
-    h = orig_h - 15;
-    w = w + 320;
+//    h = orig_h - 15;
+//    w = w + 320;
 
     // DFS VISIT
 
