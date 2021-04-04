@@ -6,7 +6,7 @@
 AlgorithmInfos::AlgorithmInfos(QWidget *parent) : QWidget(parent)
 {
     algo = Algorithm::Algorithms::None;
-
+QBrush(QColor(247, 230, 203));
     this->setMinimumWidth(400);
 
 }
@@ -25,6 +25,8 @@ void AlgorithmInfos::setStep(int s) { algorithmStep =  s; }
 void AlgorithmInfos::setColorPart(AlgorithmInfos::InAlgorithm b)
 {
     rowsToColor = b;
+    update();
+    qDebug() << "rowstocolor: " << rowsToColor;
 }
 
 
@@ -176,8 +178,11 @@ int AlgorithmInfos::paintSzelessegi(int w, int h, QPainter &painter)
     double textVert = 0.7;
     QString str;
 
-    painter.setBrush(QBrush(initBrush));
+    QBrush brush = Qt::white;
+    QBrush c_brush = QColor(247, 230, 203);
+    painter.setBrush(brush);
 
+    if (rowsToColor ==  Init) painter.setBrush(c_brush);
     // első ciklus
     painter.drawRect(w, h, width, 2 * rowHeight);
                     // forall                               in
@@ -199,7 +204,8 @@ int AlgorithmInfos::paintSzelessegi(int w, int h, QPainter &painter)
     str = "Q: Queue; Q.add(s)";
     painter.drawText(w + textMarginLeft, textVert * rowHeight + h, str);
 
-    painter.setBrush(Qt::white);
+    painter.setBrush(brush);
+
     // második ciklus
     h += rowHeight;
     painter.drawRect(w, h, width, rowHeight*6);
@@ -208,10 +214,13 @@ int AlgorithmInfos::paintSzelessegi(int w, int h, QPainter &painter)
     painter.drawText(w + width / 2 - 45, textVert * rowHeight + h, str);
 
     h += rowHeight;
-    painter.setBrush(outerCycleBrush);
+
+    if (rowsToColor == Outer) painter.setBrush(c_brush);
     painter.drawRect(w + colWidth, h, width-colWidth, rowHeight);
     str = "u := Q.rem()";
     painter.drawText(w + colWidth + textMarginLeft, textVert * rowHeight + h, str);
+
+    painter.setBrush(brush);
 
     // belső ciklus
     h += rowHeight;
@@ -229,7 +238,10 @@ int AlgorithmInfos::paintSzelessegi(int w, int h, QPainter &painter)
 
     h += rowHeight;
     int w_l = (width-2*colWidth) * 0.75;
-    painter.setBrush(ifTrueBrush);
+
+
+    if (rowsToColor == IfTrue) painter.setBrush(c_brush);
+
     painter.drawRect(w + 2*colWidth, h, w_l, rowHeight);
     str = "d(v) := d(u) + 1; " + QString::fromUtf8("\u03C0") + "(v) := u";
     painter.drawText(w + 2*colWidth + 4, textVert * rowHeight + h, str);
@@ -238,7 +250,9 @@ int AlgorithmInfos::paintSzelessegi(int w, int h, QPainter &painter)
     str = "Q.add(v)";
     painter.drawText(w + 2*colWidth + 4, textVert * rowHeight + h, str);
 
-    painter.setBrush(ifFalseBrush);
+    painter.setBrush(brush);
+    if (rowsToColor == IfFalse) painter.setBrush(c_brush);
+
     painter.drawRect(w + 2*colWidth + w_l, h-rowHeight, (width-2*colWidth)-w_l, 2*rowHeight);
     str = "SKIP";
     painter.drawText(w + 2* colWidth + w_l + textMarginLeft , h, str);
@@ -260,7 +274,11 @@ int AlgorithmInfos::paintDijkstra(int w, int h, QPainter &painter)
     double textVert = 0.7;
     QString str;
 
-    painter.setBrush(Qt::white);
+    QBrush brush = Qt::white;
+    QBrush c_brush = QColor(247, 230, 203);
+    painter.setBrush(brush);
+
+    if (rowsToColor ==  Init) painter.setBrush(c_brush);
 
     // első ciklus
     painter.drawRect(w, h, width, 2 * rowHeight);
@@ -287,6 +305,8 @@ int AlgorithmInfos::paintDijkstra(int w, int h, QPainter &painter)
     str = "u := s";
     painter.drawText(w + textMarginLeft, textVert * rowHeight + h, str);
 
+    painter.setBrush(brush);
+
     // második ciklus
     h += rowHeight;
     painter.drawRect(w, h, width, rowHeight*7);
@@ -308,6 +328,9 @@ int AlgorithmInfos::paintDijkstra(int w, int h, QPainter &painter)
     painter.drawLine(w + width, h, w + width - 10, h + rowHeight);
     str = "d(v) > d(u) + G.w(u,v)";
     painter.drawText(w + 2*colWidth + (width-2*colWidth) / 2 - 70, textVert * rowHeight + h, str);
+
+    if (rowsToColor == IfTrue) painter.setBrush(c_brush);
+
     h += rowHeight;
     int w_l = (width-2*colWidth) * 0.75;
     painter.drawRect(w + 2*colWidth, h, w_l, 2 * rowHeight);
@@ -321,8 +344,16 @@ int AlgorithmInfos::paintDijkstra(int w, int h, QPainter &painter)
     painter.drawRect(w + 2*colWidth, h, w_l,rowHeight);
     str = "Q.adjust()";
     painter.drawText(w + 2*colWidth + textMarginLeft, textVert * rowHeight + h, str);
+
+    painter.setBrush(brush);
+    if (rowsToColor == IfFalse) painter.setBrush(c_brush);
+
+    painter.drawRect(w + 2*colWidth + w_l, h-2*rowHeight, (width-2*colWidth)-w_l, 3*rowHeight);
     str = "SKIP";
     painter.drawText(w + 2* colWidth + w_l + textMarginLeft , h, str);
+
+    painter.setBrush(brush);
+    if (rowsToColor == Outer) painter.setBrush(c_brush);
 
     // második ciklus - utolsó értékadás
     h += rowHeight;
@@ -347,7 +378,11 @@ int AlgorithmInfos::paintPrim(int w, int h, QPainter &painter)
     double textVert = 0.7;
     QString str;
 
-    painter.setBrush(Qt::white);
+    QBrush brush = Qt::white;
+    QBrush c_brush = QColor(247, 230, 203);
+    painter.setBrush(brush);
+
+    if (rowsToColor ==  Init) painter.setBrush(c_brush);
 
     // első ciklus
     painter.drawRect(w, h, width, 2 * rowHeight);
@@ -374,6 +409,8 @@ int AlgorithmInfos::paintPrim(int w, int h, QPainter &painter)
     str = "u := s";
     painter.drawText(w + textMarginLeft, textVert * rowHeight + h, str);
 
+    painter.setBrush(brush);
+
     // második ciklus
     h += rowHeight;
     painter.drawRect(w, h, width, rowHeight*6);
@@ -396,6 +433,9 @@ int AlgorithmInfos::paintPrim(int w, int h, QPainter &painter)
                                                                 // logical and
     str = "v(e)" + QString::fromUtf8("\u2208") + "Q " + QString::fromUtf8("\u2227") +  "d(v) > G.w(u,v)";
     painter.drawText(w + 2*colWidth + (width-2*colWidth) / 2 - 85, textVert * rowHeight + h, str);
+
+    if (rowsToColor == IfTrue) painter.setBrush(c_brush);
+
     h += rowHeight;
     int w_l = (width-2*colWidth) * 0.75;
     painter.drawRect(w + 2*colWidth, h, w_l, rowHeight);
@@ -406,8 +446,16 @@ int AlgorithmInfos::paintPrim(int w, int h, QPainter &painter)
     painter.drawRect(w + 2*colWidth, h, w_l,rowHeight);
     str = "Q.adjust()";
     painter.drawText(w + 2*colWidth + 4, textVert * rowHeight + h, str);
+
+    painter.setBrush(brush);
+    if(rowsToColor == IfFalse) painter.setBrush(c_brush);
+
+    painter.drawRect(w + 2*colWidth + w_l, h-rowHeight, (width-2*colWidth)-w_l, 2*rowHeight);
     str = "SKIP";
     painter.drawText(w + 2* colWidth + w_l + textMarginLeft , h, str);
+
+    painter.setBrush(brush);
+    if (rowsToColor == Outer) painter.setBrush(c_brush);
 
     // második ciklus - utolsó értékadás
     h += rowHeight;

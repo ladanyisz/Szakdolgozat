@@ -12,7 +12,7 @@ class AlgorithmInfos : public QWidget
     Q_OBJECT
 public:
     explicit AlgorithmInfos(QWidget *parent = nullptr);
-    enum InAlgorithm { Init, Outer, IfTrue, IfFalse };
+    enum InAlgorithm { None, Init, Outer, IfTrue, IfFalse };
 
     void setAlgorithm(Algorithm::Algorithms a);
 

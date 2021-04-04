@@ -87,6 +87,9 @@ signals:
 
     void nodeStateChange(NodeType, int id);
     void edgeStateChange(EdgeType, int from_id, int to_id);
+    void outerCycle();
+    void ifTrue();
+    void ifFalse();
 
 
 public slots:

@@ -58,6 +58,12 @@ GraphViewer::GraphViewer(QWidget *parent)
     connect(algo, &Algorithm::queueChanged, this, &GraphViewer::queueChanged);
     connect(algo, &Algorithm::discoveryFinishChanged, this, &GraphViewer::discoveryFinishChanged);
     connect(algo, &Algorithm::step_start, this, &GraphViewer::clearColorsInAlgTable);
+    connect(algo, &Algorithm::outerCycle, algoInfos, [=]() { algoInfos->setColorPart(AlgorithmInfos::InAlgorithm::Outer); });
+    connect(algo, &Algorithm::ifTrue, algoInfos, [=]() { algoInfos->setColorPart(AlgorithmInfos::InAlgorithm::IfTrue); });
+    connect(algo, &Algorithm::ifFalse, algoInfos, [=]() { algoInfos->setColorPart(AlgorithmInfos::InAlgorithm::IfFalse); });
+    connect(algo, &Algorithm::algorithmEnded, algoInfos, [=]() { algoInfos->setColorPart(AlgorithmInfos::InAlgorithm::None); });
+
+
 
     connect(scene, &GraphScene::edgeSelected, this, &GraphViewer::showWeightGroup);
     connect(scene, &GraphScene::nodeAdded, this, &GraphViewer::enableAlgorithms);

@@ -368,11 +368,20 @@ bool Algorithm::stepDijkstra()
 
                 emit queueChanged(queueToVectorMin());                                      // Q.adjust miatt (helyes sorrend jelenjen meg)
 
+                // stuki kirajzolásához
+                emit ifTrue();
+
             } else if ((graph->getDirected() || parents[u] != adj_index)){                  // az újonnan talált él nem jobb az eddiginél, ezért nem kell
 
                 edgeTypes[u][adj_index] = EdgeType::NotNeededEdge;
                 if (!graph->getDirected()) edgeTypes[adj_index][u] = EdgeType::NotNeededEdge;
 
+                // stuki kirajzolásához
+                emit ifFalse();
+
+            } else {
+                // stuki kirajzolásához
+                emit ifFalse();
             }
             adj_ind_in_u++;                                                                 // a belső ciklust léptetjük (következő szomszédot vizsgáljuk)
 
@@ -385,7 +394,9 @@ bool Algorithm::stepDijkstra()
             u = remMin(queue);                                                              // kivesszük a sorból a minimumot (ehhez is a legjobb utat ismerjük)
             emit queueChanged(queueToVectorMin());
             emit nodeStateChange(ExamineAdj, graph->getId(u));
-//            ended = !(distances[u] < INT32_MAX && !queue.isEmpty());
+
+            // stuki kirajzolásához
+            emit outerCycle();
         }
     }
     return ended;
@@ -419,6 +430,9 @@ bool Algorithm::stepSzelessegi()
             emit queueChanged(queueToVector());
             emit nodeStateChange(ExamineAdj, graph->getId(u));
 
+            // stuki kirajzolásához
+            emit outerCycle();
+
         } else {                                                                        // belső ciklusmag
 
             int adj_index = graph->getAdjIndexInNodes(u,adj_ind_in_u);          // aktuálisan vizsgált szomszéd
@@ -438,10 +452,19 @@ bool Algorithm::stepSzelessegi()
                 queue.append(adj_index);                                        // hozzávesszü ezt a szomszédot a feldolgozandó csúcsokhoz
                 emit queueChanged(queueToVector());
 
+                // stuki kirajzolásához
+                emit ifTrue();
+
             } else if ((graph->getDirected() || parents[u] != adj_index)) {     // ha korábban már megtalált csúcs, akkor erre az élre nincs szükségünk
 
                 edgeTypes[u][adj_index] = NotNeededEdge;
                 if (!graph->getDirected()) edgeTypes[adj_index][u] = NotNeededEdge;
+
+                // stuki kirajzolásához
+                emit ifFalse();
+            } else {
+                // stuki kirajzolásához
+                emit ifFalse();
             }
 
             adj_ind_in_u++;                                                     // a belső ciklust léptetjük (következő szomszédot vizsgáljuk)
@@ -488,9 +511,19 @@ bool Algorithm::stepPrim()
 
                 emit queueChanged(queueToVectorMin());                                      // Q.adjust miatt (helyes sorrend jelenjen meg)
 
+                // stuki kirajzolásához
+                emit ifTrue();
+
             } else if (parents[u] != adj_index) {                                           // az újonnan talált él nem jobb az eddiginél, ezért nem kell
+
                 edgeTypes[u][adj_index] = NotNeededEdge;
                 edgeTypes[adj_ind_in_u][u] = NotNeededEdge;
+
+                // stuki kirajzolásához
+                emit ifFalse();
+            } else {
+                //stuki kirajzolásához
+                emit ifFalse();
             }
 
             adj_ind_in_u++;                                                                 // a belső ciklust léptetjük (következő szomszédot vizsgáljuk)
@@ -503,6 +536,9 @@ bool Algorithm::stepPrim()
             u = remMin(queue);                                                              // kivesszük a sorból a minimumot (könnyűél - a minimális feszítőfa (MST) része)
             emit queueChanged(queueToVectorMin());
             emit nodeStateChange(ExamineAdj, graph->getId(u));
+
+            // stuki kirajzolásához
+            emit outerCycle();
         }
     }
     return ended;
