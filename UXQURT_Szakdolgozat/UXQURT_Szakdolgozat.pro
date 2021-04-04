@@ -11,9 +11,9 @@ CONFIG += c++11
 SOURCES += \
     Model/adjnode.cpp \
     Model/algorithm.cpp \
-    Model/filemanagement.cpp \
     Model/graph.cpp \
     Model/node.cpp \
+    Persistence/filemanagement.cpp \
     View/algorithminfos.cpp \
     View/edgegraphics.cpp \
     View/graphscene.cpp \
@@ -26,9 +26,9 @@ SOURCES += \
 HEADERS += \
     Model/adjnode.h \
     Model/algorithm.h \
-    Model/filemanagement.h \
     Model/graph.h \
     Model/node.h \
+    Persistence/filemanagement.h \
     View/algorithminfos.h \
     View/edgegraphics.h \
     View/graphscene.h \
