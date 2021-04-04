@@ -52,6 +52,7 @@ GraphViewer::GraphViewer(QWidget *parent)
     connect(algo, &Algorithm::needsToBeUndirected, this, &GraphViewer::needsToBeUndirected);
     connect(algo, &Algorithm::needsToBeDirected, this, &GraphViewer::needToBeDirected);
     connect(algo, &Algorithm::initReady, this, &GraphViewer::algoInitReady);
+    connect(algo, &Algorithm::initReady, algoInfos, [=]() {algoInfos->setColorPart(AlgorithmInfos::InAlgorithm::Init); });
     connect(algo, &Algorithm::distChanged, this, &GraphViewer::distChanged);
     connect(algo, &Algorithm::parentChanged, this, &GraphViewer::parentChanged);
     connect(algo, &Algorithm::queueChanged, this, &GraphViewer::queueChanged);
@@ -403,14 +404,17 @@ void GraphViewer::nextPressed()
 {
     disableEdit();
     disableSelectors();
+    bool not_first = algo->getInitState();
     bool step_success = algo->stepAlgorithm();
     if (algo->getInitState()) {
         if (!step_success) nextButton->setEnabled(false);
         if (!previousButton->isEnabled()) previousButton->setEnabled(true);
         algoInfos->setAlgorithm(algo->getChosenAlgo());
         algoInfos->setVisible(true);
-        view->resize(view->width(), height() - 162);
-        updateSceneRect();
+        if (!not_first) {
+            view->resize(view->width(), height() - 162);
+            updateSceneRect();
+        }
     } else {
         enableEdit();
         enableSelectors();

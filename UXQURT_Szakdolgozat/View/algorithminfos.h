@@ -12,10 +12,15 @@ class AlgorithmInfos : public QWidget
     Q_OBJECT
 public:
     explicit AlgorithmInfos(QWidget *parent = nullptr);
+    enum InAlgorithm { Init, Outer, IfTrue, IfFalse };
 
     void setAlgorithm(Algorithm::Algorithms a);
 
-signals:
+
+public slots:
+    void setStep(int);
+    void setColorPart(InAlgorithm b);
+
 
 private:
     QLabel* proceccedNodeLabel;
@@ -25,10 +30,21 @@ private:
     QLabel* greyNodeLabel;
 
     Algorithm::Algorithms algo;
+    int algorithmStep;
 
-    // QWidget interface
+    void paintColorHelp(int w, int h, QPainter &painter);
+    int paintSzelessegi(int w, int h, QPainter &painter);       // a stuki magasságával tér vissza
+    int paintDijkstra(int w, int h, QPainter &painter);
+    int paintPrim(int w, int h, QPainter &painter);
+    int paintMelysegi(int w, int h, QPainter &painter);
+
+    InAlgorithm rowsToColor;
+
+
 protected:
     void paintEvent(QPaintEvent *event);
+
+
 };
 
 #endif // ALGORITHMINFOS_H
