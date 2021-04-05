@@ -370,6 +370,7 @@ bool Algorithm::stepDijkstra()
 
                 // stuki kirajzolásához
                 emit ifTrue();
+                sig = True;
 
             } else if ((graph->getDirected() || parents[u] != adj_index)){                  // az újonnan talált él nem jobb az eddiginél, ezért nem kell
 
@@ -382,6 +383,7 @@ bool Algorithm::stepDijkstra()
             } else {
                 // stuki kirajzolásához
                 emit ifFalse();
+                sig = False;
             }
             adj_ind_in_u++;                                                                 // a belső ciklust léptetjük (következő szomszédot vizsgáljuk)
 
@@ -397,6 +399,7 @@ bool Algorithm::stepDijkstra()
 
             // stuki kirajzolásához
             emit outerLoop();
+            sig = Outer;
         }
     }
     return ended;
@@ -432,6 +435,7 @@ bool Algorithm::stepSzelessegi()
 
             // stuki kirajzolásához
             emit outerLoop();
+            sig = Outer;
 
         } else {                                                                        // belső ciklusmag
 
@@ -454,6 +458,7 @@ bool Algorithm::stepSzelessegi()
 
                 // stuki kirajzolásához
                 emit ifTrue();
+                sig = True;
 
             } else if ((graph->getDirected() || parents[u] != adj_index)) {     // ha korábban már megtalált csúcs, akkor erre az élre nincs szükségünk
 
@@ -462,9 +467,11 @@ bool Algorithm::stepSzelessegi()
 
                 // stuki kirajzolásához
                 emit ifFalse();
+                sig = False;
             } else {
                 // stuki kirajzolásához
                 emit ifFalse();
+                sig = False;
             }
 
             adj_ind_in_u++;                                                     // a belső ciklust léptetjük (következő szomszédot vizsgáljuk)
@@ -513,6 +520,7 @@ bool Algorithm::stepPrim()
 
                 // stuki kirajzolásához
                 emit ifTrue();
+                sig = True;
 
             } else if (parents[u] != adj_index) {                                           // az újonnan talált él nem jobb az eddiginél, ezért nem kell
 
@@ -521,9 +529,11 @@ bool Algorithm::stepPrim()
 
                 // stuki kirajzolásához
                 emit ifFalse();
+                sig = False;
             } else {
                 //stuki kirajzolásához
                 emit ifFalse();
+                sig = False;
             }
 
             adj_ind_in_u++;                                                                 // a belső ciklust léptetjük (következő szomszédot vizsgáljuk)
@@ -577,6 +587,7 @@ qDebug() << "adj_ind_in_us: " << adj_ind_in_us;
 
                 // stuki kirajzolásához
                 emit outerLoop();
+                sig = Outer;
             }
 
         } else {                                        // DFS visit fv
@@ -599,6 +610,7 @@ void Algorithm::stepMelysegiVisit()
 
         // stuki kirajzolásához
         emit melysegiVisitFirst();
+        sig = First;
 
     } else if (adj_ind_in_us[u] > -1 && adj_ind_in_us[u] < graph->getAdjNum(u)) {       // cikluson belül
 
@@ -615,6 +627,7 @@ void Algorithm::stepMelysegiVisit()
 
             // stuki kirajzolásához
             emit ifTrue();
+            sig = True;
 
 
             prev_u = u;                                 // rekurzió
@@ -635,6 +648,7 @@ void Algorithm::stepMelysegiVisit()
 
             // stuki kirajzolásához
             emit ifFalse();
+            sig = False;
 
         }
         adj_ind_in_us[prev_u]++;
@@ -652,7 +666,9 @@ void Algorithm::stepMelysegiVisit()
         } else {
             emit nodeStateChange(ExamineAdj, graph->getId(u));
         }
+        // stuki kirajzolásához
         emit melysegiVisitLast();
+        sig = Last;
     }
 }
 
@@ -666,20 +682,40 @@ bool Algorithm::stepBackAlgorithm()
     qDebug() << "disc: " << discovery_time << " - state disc: " << state.discovery_time;
     qDebug() << "finish: " << finishing_time << " - state fini: " << state.finishing_time;
 
+
     for(int i=0; i< graph->getSize(); i++) {
 
         if (chosenAlgo != Melysegi) {
             if (distances.at(i) != state.distances.at(i))
                 emit distChanged(i, state.distances.at(i));
+
         } else {
             if (discovery_time.at(i) != state.discovery_time.at(i) || finishing_time.at(i) != state.finishing_time.at(i))
                 emit discoveryFinishChanged(i, state.discovery_time.at(i), state.finishing_time.at(i));
-                ;
         }
         if (parents.at(i) != state.parents.at(i)) {
             QChar n = state.parents.at(i) == -1 ? QChar() : graph->getName(graph->getId(state.parents.at(i)));
             emit parentChanged(i, n);
         }
+    }
+
+    switch (state.sig) {
+    case Algorithm::Outer:
+        emit outerLoop();
+        break;
+    case Algorithm::True:
+        emit ifTrue();
+        break;
+    case Algorithm::False:
+        emit ifFalse();
+        break;
+    case Algorithm::First:
+        emit melysegiVisitFirst();
+        break;
+    case Algorithm::Last:
+        emit melysegiVisitLast();
+        break;
+
     }
 
     int i=0;
@@ -753,7 +789,8 @@ int Algorithm::remMin(QVector<int> &q)
 void Algorithm::addState()
 {
     AlgorithmState state = AlgorithmState(distances, parents, queue, u, adj_ind_in_u, nodeTypes, edgeTypes,
-                                          discovery_time, finishing_time, adj_ind_in_us, r, time, prev_u, in_dfs_visit);
+                                          discovery_time, finishing_time, adj_ind_in_us, r, time, prev_u, in_dfs_visit,
+                                          sig);
     steps.push(state);
 }
 

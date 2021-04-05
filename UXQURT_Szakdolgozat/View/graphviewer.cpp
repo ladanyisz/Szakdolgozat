@@ -625,6 +625,7 @@ void GraphViewer::needsToBeUndirected()
 
 void GraphViewer::algoInitReady(int ind)
 {
+    if (ind == -1) return;
     int w = 30;
     queue->setVisible(true);
     if (algo->getChosenAlgo() != Algorithm::Algorithms::Melysegi){

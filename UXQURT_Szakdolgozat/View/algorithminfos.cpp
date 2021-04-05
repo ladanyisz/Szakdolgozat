@@ -39,7 +39,6 @@ void AlgorithmInfos::setColorPart(AlgorithmInfos::InAlgorithm b)
 {
     rowsToColor = b;
     update();
-    qDebug() << "rowstocolor: " << rowsToColor;
 }
 
 

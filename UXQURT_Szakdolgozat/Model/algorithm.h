@@ -16,12 +16,14 @@ public:
     enum NodeType { BaseNode, ExaminedNode , ProcessedNode, ExamineAdj, ReachedButNotProcessed };
     enum EdgeType { BaseEdge, NeededEdge, NotNeededEdge, ExaminedEdge, BackEdge, ForwardEdge, CrossEdge };
     enum Algorithms { None, Szelessegi, Melysegi, Dijkstra, Prim};
+    enum SignalForStuki { Outer, True, False, First, Last };
 
     struct AlgorithmState {
         AlgorithmState() {}
         AlgorithmState(QVector<int> d, QVector<int> p, QVector<int> q,
                        int u, int aiiu, QVector<NodeType> n, QVector<QVector<EdgeType>> e,
-                       QVector<int>disc, QVector<int>fin, QVector<int>aiiius, int r, int time, int prev_u, bool dfs_v) {
+                       QVector<int>disc, QVector<int>fin, QVector<int>aiiius, int r, int time, int prev_u, bool dfs_v,
+                       SignalForStuki s) {
             distances = QVector<int>(d);
             parents = QVector<int>(p);
             queue = QVector<int>(q);
@@ -37,6 +39,7 @@ public:
             this->time = time;
             this->prev_u = prev_u;
             this->in_dfs_visit = dfs_v;
+            sig = s;
         }
         QVector<int> distances;
         QVector<int> parents;
@@ -53,6 +56,7 @@ public:
         int time;
         int prev_u;
         bool in_dfs_visit;
+        SignalForStuki sig;
     };
 
 
@@ -135,6 +139,7 @@ private:
     QString queueToVector();
 
     QTimer* timer;
+    SignalForStuki sig;
 };
 
 #endif // ALGORITHM_H
