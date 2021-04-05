@@ -7,6 +7,18 @@ AlgorithmInfos::AlgorithmInfos(QWidget *parent) : QWidget(parent)
 {
     algo = Algorithm::Algorithms::None;
     this->setMinimumWidth(400);
+
+    width = 300;
+    rowHeight = 30;
+    colWidth = 25;
+    textMarginLeft = 12;
+    textVert = 0.7;
+    pixSize = 14;
+    int pixSize = 14;
+    font.setPixelSize(pixSize);
+    brush = Qt::white;
+    c_brush = QColor(247, 230, 203);
+
 }
 
 void AlgorithmInfos::setAlgorithm(Algorithm::Algorithms a)
@@ -36,14 +48,19 @@ void AlgorithmInfos::paintEvent(QPaintEvent *)
 //    if (algo == Algorithm::Algorithms::None) return;
 
     QPainter painter(this);
-    QFont font;
-    font.setPixelSize(16);
-    font.setBold(true);
-    painter.setFont(font);
+    QFont font_title;
+    font_title.setPixelSize(16);
+    font_title.setBold(true);
+    painter.setFont(font_title);
     painter.setRenderHint(QPainter::Antialiasing);
     painter.drawText(5,20, tr("Algoritmus"));
     int w = 45;
     int h = 30;
+
+    painter.setFont(font);
+    painter.setBrush(brush);
+//    painter.setPen(Qt::black);
+
     switch (algo) {
     case Algorithm::None:
         return;
@@ -64,7 +81,7 @@ void AlgorithmInfos::paintEvent(QPaintEvent *)
     }
     w = 10;
     h += 30;
-    painter.setFont(font);
+    painter.setFont(font_title);
     painter.drawText(5,h, tr("Színkódok"));
     paintColorHelp(w, h + 20, painter);
 }
@@ -160,440 +177,415 @@ void AlgorithmInfos::paintColorHelp(int w, int h, QPainter &painter)
 
 int AlgorithmInfos::paintSzelessegi(int w, int h, QPainter &painter)
 {
-    QFont font;
-    int pixSize = 14;
-    font.setPixelSize(pixSize);
-    painter.setFont(font);
-    painter.setPen(Qt::black);
-    int width = 300;
-    int rowHeight = 30;
-    int colWidth = 25;
-    int textMarginLeft = 15;
-    double textVert = 0.7;
     QString str;
 
-    QBrush brush = Qt::white;
-    QBrush c_brush = QColor(247, 230, 203);
-    painter.setBrush(brush);
-
     if (rowsToColor ==  Init) painter.setBrush(c_brush);
+
     // első ciklus
-    painter.drawRect(w, h, width, 2 * rowHeight);
                     // forall                               in
-    str = QString::fromUtf8("\u2200") + "u" + QString::fromUtf8("\u2208") + "G.V";
-    painter.drawText(w + width / 2 - str.length()*pixSize / 2, textVert * rowHeight + h, str);
+    str = QString::fromUtf8("\u2200") + "u " + QString::fromUtf8("\u2208") + " G.V";
+    paintLoop(painter,w, h, 0, 2, str);
+
     h += rowHeight;
-    painter.drawRect(w + colWidth, h, width-colWidth, rowHeight);
                                 // infinity                         pi                                          empty set
     str = "d(u) := " + QString::fromUtf8("\u221E") + "; " + QString::fromUtf8("\u03C0") + "(u) := " + QString::fromUtf8("\u2205");
-    painter.drawText(w + colWidth + textMarginLeft, textVert * rowHeight + h, str);
+    paintStatement(painter, w, h, 1, width-colWidth, 1, str);
 
     // értékadások
     h += rowHeight;
-    painter.drawRect(w, h, width, rowHeight);
     str = "d(s) := 0";
-    painter.drawText(w + textMarginLeft, textVert * rowHeight + h, str);
+    paintStatement(painter, w, h, 0, width, 1, str);
     h += rowHeight;
-    painter.drawRect(w, h, width, rowHeight);
     str = "Q: Queue; Q.add(s)";
-    painter.drawText(w + textMarginLeft, textVert * rowHeight + h, str);
+    paintStatement(painter, w, h, 0, width, 1, str);
 
     painter.setBrush(brush);
 
     // második ciklus
     h += rowHeight;
-    painter.drawRect(w, h, width, rowHeight*6);
                 // neg
     str = QString::fromUtf8("\u00AC") + "Q.isEmpty()";
-    painter.drawText(w + width / 2 - 45, textVert * rowHeight + h, str);
+    paintLoop(painter, w, h, 0, 6, str);
 
     h += rowHeight;
 
     if (rowsToColor == Outer) painter.setBrush(c_brush);
-    painter.drawRect(w + colWidth, h, width-colWidth, rowHeight);
     str = "u := Q.rem()";
-    painter.drawText(w + colWidth + textMarginLeft, textVert * rowHeight + h, str);
+    paintStatement(painter, w, h, 1, width-colWidth, 1, str);
 
     painter.setBrush(brush);
 
     // belső ciklus
     h += rowHeight;
-    painter.drawRect(w + colWidth, h, width-colWidth, rowHeight * 4);
-    str = QString::fromUtf8("\u2200") + "v: (u,v)" + QString::fromUtf8("\u2208") + "G.E";
-    painter.drawText(w + colWidth + (width-colWidth)/2 - 60, textVert * rowHeight + h, str);
+    str = QString::fromUtf8("\u2200") + "v: (u,v) " + QString::fromUtf8("\u2208") + " G.E";
+    paintLoop(painter, w, h, 1, 4, str);
 
     // elágazás
-    h += rowHeight;
-    painter.drawRect(w + 2*colWidth, h, width-2*colWidth, rowHeight);
-    painter.drawLine(w + 2*colWidth, h, w + 2*colWidth + 10, h + rowHeight);
-    painter.drawLine(w + width, h, w + width - 10, h + rowHeight);
-    str = "d(v) = " + QString::fromUtf8("\u221E");
-    painter.drawText(w + 2*colWidth + (width-2*colWidth) / 2 - 40, textVert * rowHeight + h, str);
+    QString cond = "d(v) = " + QString::fromUtf8("\u221E");
 
     h += rowHeight;
+    paintConditional(painter, w, h, 2, cond);
+
     int w_l = (width-2*colWidth) * 0.75;
-
-
-    if (rowsToColor == IfTrue) painter.setBrush(c_brush);
-
-    painter.drawRect(w + 2*colWidth, h, w_l, rowHeight);
-    str = "d(v) := d(u) + 1; " + QString::fromUtf8("\u03C0") + "(v) := u";
-    painter.drawText(w + 2*colWidth + 4, textVert * rowHeight + h, str);
     h += rowHeight;
-    painter.drawRect(w + 2*colWidth, h, w_l,rowHeight);
-    str = "Q.add(v)";
-    painter.drawText(w + 2*colWidth + 4, textVert * rowHeight + h, str);
-
-    painter.setBrush(brush);
-    if (rowsToColor == IfFalse) painter.setBrush(c_brush);
-
-    painter.drawRect(w + 2*colWidth + w_l, h-rowHeight, (width-2*colWidth)-w_l, 2*rowHeight);
+    int h_orig = h;
     str = "SKIP";
-    painter.drawText(w + 2* colWidth + w_l + textMarginLeft , h, str);
+    int w_f = w + w_l;
+    int width_f = (width-2*colWidth)-w_l;
+    if (rowsToColor == IfFalse) painter.setBrush(c_brush);
+    paintStatement(painter, w_f, h, 2, width_f, 2, str);
+    painter.setBrush(brush);
+
+    if (rowsToColor == IfTrue)  painter.setBrush(c_brush);
+    str = "d(v) := d(u) + 1; " + QString::fromUtf8("\u03C0") + "(v) := u";
+    h = h_orig;
+
+    paintStatement(painter, w, h, 2, w_l, 1, str);
+
+    h += rowHeight;
+    str = "Q.add(v)";
+    paintStatement(painter, w, h, 2, w_l, 1, str);
 
     return h + rowHeight;
 }
 
 int AlgorithmInfos::paintDijkstra(int w, int h, QPainter &painter)
 {
-    QFont font;
-    int pixSize = 14;
-    font.setPixelSize(pixSize);
-    painter.setFont(font);
-    painter.setPen(Qt::black);
-    int width = 300;
-    int rowHeight = 30;
-    int colWidth = 25;
-    int textMarginLeft = 15;
-    double textVert = 0.7;
-    QString str;
 
-    QBrush brush = Qt::white;
-    QBrush c_brush = QColor(247, 230, 203);
-    painter.setBrush(brush);
+    QString str;
 
     if (rowsToColor ==  Init) painter.setBrush(c_brush);
 
     // első ciklus
-    painter.drawRect(w, h, width, 2 * rowHeight);
                     // forall                               in
-    str = QString::fromUtf8("\u2200") + "u" + QString::fromUtf8("\u2208") + "G.V";
-    painter.drawText(w + width / 2 - str.length()*pixSize / 2, textVert * rowHeight + h, str);
+    str = QString::fromUtf8("\u2200") + "u " + QString::fromUtf8("\u2208") + " G.V";
+    paintLoop(painter, w, h, 0, 2, str);
     h += rowHeight;
-    painter.drawRect(w + colWidth, h, width-colWidth, rowHeight);
                                 // infinity                         pi                                          empty set
     str = "d(u) := " + QString::fromUtf8("\u221E") + "; " + QString::fromUtf8("\u03C0") + "(u) := " + QString::fromUtf8("\u2205");
-    painter.drawText(w + colWidth + textMarginLeft, textVert * rowHeight + h, str);
+    paintStatement(painter, w, h, 1, width-colWidth, 1, str);
 
     // értékadások
     h += rowHeight;
-    painter.drawRect(w, h, width, rowHeight);
     str = "d(s) := 0";
-    painter.drawText(w + textMarginLeft, textVert * rowHeight + h, str);
+    paintStatement(painter, w, h, 0, width, 1, str);
     h += rowHeight;
-    painter.drawRect(w, h, width, rowHeight);
-    str = "Q: minPrQ(G.V\{s}, d)";
-    painter.drawText(w + textMarginLeft, textVert * rowHeight + h, str);
+    str = "Q: minPrQ(G.V\\{s}, d)";
+    paintStatement(painter, w, h, 0, width, 1, str);
     h += rowHeight;
-    painter.drawRect(w, h, width, rowHeight);
     str = "u := s";
-    painter.drawText(w + textMarginLeft, textVert * rowHeight + h, str);
+    paintStatement(painter, w, h, 0, width, 1, str);
 
     painter.setBrush(brush);
 
+
     // második ciklus
     h += rowHeight;
-    painter.drawRect(w, h, width, rowHeight*7);
-                                                            // neg
-    str = "d(u) < " + QString::fromUtf8("\u221E") + QString::fromUtf8("\u00AC") + "Q.isEmpty()";
-    painter.drawText(w + width / 2 - 70, textVert * rowHeight + h, str);
+                                                            //   logical and                                neg
+    str = "d(u) < " + QString::fromUtf8("\u221E") + " " + QString::fromUtf8("\u2227") + " " + QString::fromUtf8("\u00AC") + "Q.isEmpty()";
+    paintLoop(painter, w, h, 0, 7, str);
 
 
     // belső ciklus
     h += rowHeight;
-    painter.drawRect(w + colWidth, h, width-colWidth, rowHeight * 5);
     str = QString::fromUtf8("\u2200") + "v: (u,v)" + QString::fromUtf8("\u2208") + "G.E";
-    painter.drawText(w + colWidth + (width-colWidth)/2 - 60, textVert * rowHeight + h, str);
+    paintLoop(painter, w, h, 1, 5, str);
 
     // elágazás
     h += rowHeight;
-    painter.drawRect(w + 2*colWidth, h, width-2*colWidth, rowHeight);
-    painter.drawLine(w + 2*colWidth, h, w + 2*colWidth + 10, h + rowHeight);
-    painter.drawLine(w + width, h, w + width - 10, h + rowHeight);
     str = "d(v) > d(u) + G.w(u,v)";
-    painter.drawText(w + 2*colWidth + (width-2*colWidth) / 2 - 70, textVert * rowHeight + h, str);
+    paintConditional(painter, w, h, 2, str);
+
+    int w_l = (width-2*colWidth) * 0.75;
+    h += rowHeight;
+    int h_orig = h;
+    str = "SKIP";
+    int w_f = w + w_l;
+    int width_f = (width-2*colWidth)-w_l;
+    if (rowsToColor == IfFalse) painter.setBrush(c_brush);
+    paintStatement(painter, w_f, h, 2, width_f, 3, str);
+
+    painter.setBrush(brush);
 
     if (rowsToColor == IfTrue) painter.setBrush(c_brush);
 
-    h += rowHeight;
-    int w_l = (width-2*colWidth) * 0.75;
-    painter.drawRect(w + 2*colWidth, h, w_l, 2 * rowHeight);
-    str = "d(v) := d(u) + d(u)";
-    painter.drawText(w + 2*colWidth + textMarginLeft, textVert * rowHeight + h, str);
-    h += rowHeight;
-    str = " + G.w(u,v); " + QString::fromUtf8("\u03C0") + "(v) := u";
-    painter.drawText(w + 2*colWidth + textMarginLeft + 3, (textVert * rowHeight) * 0.75 + h, str);
+    h = h_orig;
+    str = "d(v) := d(u) + G.w(u,v); " + QString::fromUtf8("\u03C0") + "(v) := u";
+    paintStatement(painter, w, h, 2, w_l, 1, str);
 
     h+= rowHeight;
-    painter.drawRect(w + 2*colWidth, h, w_l,rowHeight);
     str = "Q.adjust()";
-    painter.drawText(w + 2*colWidth + textMarginLeft, textVert * rowHeight + h, str);
+    paintStatement(painter, w, h, 2, w_l, 1, str);
 
     painter.setBrush(brush);
-    if (rowsToColor == IfFalse) painter.setBrush(c_brush);
 
-    painter.drawRect(w + 2*colWidth + w_l, h-2*rowHeight, (width-2*colWidth)-w_l, 3*rowHeight);
-    str = "SKIP";
-    painter.drawText(w + 2* colWidth + w_l + textMarginLeft , h, str);
-
-    painter.setBrush(brush);
-    if (rowsToColor == Outer) painter.setBrush(c_brush);
 
     // második ciklus - utolsó értékadás
+    if (rowsToColor == Outer) painter.setBrush(c_brush);
+
     h += rowHeight;
-    painter.drawRect(w + colWidth, h, width-colWidth, rowHeight);
     str = "u := Q.remMin()";
-    painter.drawText(w + colWidth + textMarginLeft, textVert * rowHeight + h, str);
+    paintStatement(painter, w, h, 1, width-colWidth, 1, str);
 
     return h + rowHeight;
 }
 
 int AlgorithmInfos::paintPrim(int w, int h, QPainter &painter)
 {
-    QFont font;
-    int pixSize = 14;
-    font.setPixelSize(pixSize);
-    painter.setFont(font);
-    painter.setPen(Qt::black);
-    int width = 300;
-    int rowHeight = 30;
-    int colWidth = 25;
-    int textMarginLeft = 15;
-    double textVert = 0.7;
+
     QString str;
 
-    QBrush brush = Qt::white;
-    QBrush c_brush = QColor(247, 230, 203);
-    painter.setBrush(brush);
 
     if (rowsToColor ==  Init) painter.setBrush(c_brush);
 
     // első ciklus
-    painter.drawRect(w, h, width, 2 * rowHeight);
                     // forall                               in
-    str = QString::fromUtf8("\u2200") + "u" + QString::fromUtf8("\u2208") + "G.V";
-    painter.drawText(w + width / 2 - str.length()*pixSize / 2, textVert * rowHeight + h, str);
+    str = QString::fromUtf8("\u2200") + "u " + QString::fromUtf8("\u2208") + " G.V";
+    paintLoop(painter, w, h, 0, 2, str);
     h += rowHeight;
-    painter.drawRect(w + colWidth, h, width-colWidth, rowHeight);
                                 // infinity                         pi                                          empty set
     str = "d(u) := " + QString::fromUtf8("\u221E") + "; " + QString::fromUtf8("\u03C0") + "(u) := " + QString::fromUtf8("\u2205");
-    painter.drawText(w + colWidth + textMarginLeft, textVert * rowHeight + h, str);
+    paintStatement(painter, w, h, 1, width-colWidth, 1, str);
+
 
     // értékadások
     h += rowHeight;
-    painter.drawRect(w, h, width, rowHeight);
     str = "d(s) := 0";
-    painter.drawText(w + textMarginLeft, textVert * rowHeight + h, str);
+    paintStatement(painter, w, h, 0, width, 1, str);
     h += rowHeight;
-    painter.drawRect(w, h, width, rowHeight);
-    str = "Q: minPrQ(G.V\{s}, d)";
-    painter.drawText(w + textMarginLeft, textVert * rowHeight + h, str);
+    str = "Q: minPrQ(G.V\\{s}, d)";
+    paintStatement(painter, w, h, 0, width, 1, str);
     h += rowHeight;
-    painter.drawRect(w, h, width, rowHeight);
     str = "u := s";
-    painter.drawText(w + textMarginLeft, textVert * rowHeight + h, str);
+    paintStatement(painter, w, h, 0, width, 1, str);
 
     painter.setBrush(brush);
 
     // második ciklus
     h += rowHeight;
-    painter.drawRect(w, h, width, rowHeight*6);
                                                             // neg
     str = QString::fromUtf8("\u00AC") + "Q.isEmpty()";
-    painter.drawText(w + width / 2 - 45, textVert * rowHeight + h, str);
+    paintLoop(painter, w, h, 0, 6, str);
 
 
     // belső ciklus
     h += rowHeight;
-    painter.drawRect(w + colWidth, h, width-colWidth, rowHeight * 4);
-    str = QString::fromUtf8("\u2200") + "v: (u,v)" + QString::fromUtf8("\u2208") + "G.E";
-    painter.drawText(w + colWidth + (width-colWidth)/2 - 60, textVert * rowHeight + h, str);
+    str = QString::fromUtf8("\u2200") + "v: (u,v) " + QString::fromUtf8("\u2208") + " G.E";
+    paintLoop(painter, w, h, 1, 4, str);
 
     // elágazás
     h += rowHeight;
-    painter.drawRect(w + 2*colWidth, h, width-2*colWidth, rowHeight);
-    painter.drawLine(w + 2*colWidth, h, w + 2*colWidth + 10, h + rowHeight);
-    painter.drawLine(w + width, h, w + width - 10, h + rowHeight);
                                                                 // logical and
-    str = "v(e)" + QString::fromUtf8("\u2208") + "Q " + QString::fromUtf8("\u2227") +  "d(v) > G.w(u,v)";
-    painter.drawText(w + 2*colWidth + (width-2*colWidth) / 2 - 85, textVert * rowHeight + h, str);
+    str = "v" + QString::fromUtf8("\u2208") + "Q " + QString::fromUtf8("\u2227") +  " d(v) > G.w(u,v)";
+    paintConditional(painter, w, h, 2, str);
+
+
+    int w_l = (width-2*colWidth) * 0.75;
+    h += rowHeight;
+    int h_orig = h;
+    str = "SKIP";
+    int w_f = w + w_l;
+    int width_f = (width-2*colWidth)-w_l;
+    if (rowsToColor == IfFalse) painter.setBrush(c_brush);
+    paintStatement(painter, w_f, h, 2, width_f, 2, str);
+
+    painter.setBrush(brush);
+
 
     if (rowsToColor == IfTrue) painter.setBrush(c_brush);
 
-    h += rowHeight;
-    int w_l = (width-2*colWidth) * 0.75;
-    painter.drawRect(w + 2*colWidth, h, w_l, rowHeight);
+    h = h_orig;
     str = "d(v) := G.w(u,v); " + QString::fromUtf8("\u03C0") + "(v) := u";
-    painter.drawText(w + 2*colWidth + 4, textVert * rowHeight + h, str);
+    paintStatement(painter, w, h, 2, w_l, 1, str);
 
     h+= rowHeight;
-    painter.drawRect(w + 2*colWidth, h, w_l,rowHeight);
     str = "Q.adjust()";
-    painter.drawText(w + 2*colWidth + 4, textVert * rowHeight + h, str);
+    paintStatement(painter, w, h, 2, w_l, 1, str);
 
     painter.setBrush(brush);
-    if(rowsToColor == IfFalse) painter.setBrush(c_brush);
-
-    painter.drawRect(w + 2*colWidth + w_l, h-rowHeight, (width-2*colWidth)-w_l, 2*rowHeight);
-    str = "SKIP";
-    painter.drawText(w + 2* colWidth + w_l + textMarginLeft , h, str);
-
-    painter.setBrush(brush);
-    if (rowsToColor == Outer) painter.setBrush(c_brush);
 
     // második ciklus - utolsó értékadás
+    if (rowsToColor == Outer) painter.setBrush(c_brush);
     h += rowHeight;
-    painter.drawRect(w + colWidth, h, width-colWidth, rowHeight);
     str = "u := Q.remMin()";
-    painter.drawText(w + colWidth + textMarginLeft, textVert * rowHeight + h, str);
+    paintStatement(painter, w, h, 1, width-colWidth, 1, str);
 
     return h + rowHeight;
 }
 
 int AlgorithmInfos::paintMelysegi(int w, int h, QPainter &painter)
 {
-    QFont font;
-    int pixSize = 14;
-    font.setPixelSize(pixSize);
-    painter.setFont(font);
-    painter.setPen(Qt::black);
-    int width = 300;
-    int rowHeight = 30;
-    int colWidth = 25;
-    int textMarginLeft = 15;
-    double textVert = 0.7;
+
     QString str;
 
-    QBrush brush = Qt::white;
-    QBrush c_brush = QColor(247, 230, 203);
-    painter.setBrush(brush);
 
     if (rowsToColor ==  Init) painter.setBrush(c_brush);
 
     // első ciklus
-    painter.drawRect(w, h, width, 2 * rowHeight);
                     // forall                               in
-    str = QString::fromUtf8("\u2200") + "u" + QString::fromUtf8("\u2208") + "G.V";
-    painter.drawText(w + width / 2 - str.length()*pixSize / 2, textVert * rowHeight + h, str);
-    h += rowHeight;
-    painter.drawRect(w + colWidth, h, width-colWidth, rowHeight);
+    str = QString::fromUtf8("\u2200") + "u " + QString::fromUtf8("\u2208") + " G.V";
+    paintLoop(painter, w, h, 0, 2, str);
 
+    h += rowHeight;
     str = "color(u) := white";
-    painter.drawText(w + colWidth + textMarginLeft, textVert * rowHeight + h, str);
+    paintStatement(painter, w, h, 1, width-colWidth, 1, str);
 
     // értékadások
     h += rowHeight;
-    painter.drawRect(w, h, width, rowHeight);
     str = "time := 0";
-    painter.drawText(w + textMarginLeft, textVert * rowHeight + h, str);
+    paintStatement(painter, w, h, 0, width, 1, str);
 
     painter.setBrush(brush);
 
     // második ciklus
+    if (rowsToColor == Outer) painter.setBrush(c_brush);
     h += rowHeight;
-    painter.drawRect(w, h, width, rowHeight*4);
     // forall                               in
-    str = QString::fromUtf8("\u2200") + "r" + QString::fromUtf8("\u2208") + "G.V";
-    painter.drawText(w + width / 2 - 45, textVert * rowHeight + h, str);
+    str = QString::fromUtf8("\u2200") + "r " + QString::fromUtf8("\u2208") + " G.V";
+    paintLoop(painter, w, h, 0, 4, str);
 
     // elágazás
     h += rowHeight;
-    painter.drawRect(w + colWidth, h, width-colWidth, rowHeight);
-    painter.drawLine(w + colWidth, h, w + colWidth + 10, h + rowHeight);
-    painter.drawLine(w + width, h, w + width - 10, h + rowHeight);
     str = "color(r) = white";
-    painter.drawText(w + 2*colWidth + (width-2*colWidth) / 2 - 70, textVert * rowHeight + h, str);
-
-    h += rowHeight;
+    paintConditional(painter, w, h, 1, str);
 
     int w_l = (width-colWidth) * 0.75;
-    painter.drawRect(w + colWidth, h, w_l, rowHeight);
-                // pi                                           empty set
-    str = QString::fromUtf8("\u03C0") + "(v) := " + QString::fromUtf8("\u2205");
-    painter.drawText(w + colWidth + 4, textVert * rowHeight + h, str);
-
-    h+= rowHeight;
-    painter.drawRect(w + colWidth, h, w_l,rowHeight);
-    str = "DFSvisit(G, r, time)";
-    painter.drawText(w + colWidth + 4, textVert * rowHeight + h, str);
-
-//    painter.setBrush(brush);
-//    if(rowsToColor == IfFalse) painter.setBrush(c_brush);
-
-    painter.drawRect(w + colWidth + w_l, h-rowHeight, (width-colWidth)-w_l, 2*rowHeight);
+    h += rowHeight;
+    int h_orig = h;
     str = "SKIP";
-    painter.drawText(w + colWidth + w_l + textMarginLeft , h, str);
+    int w_f = w + w_l;
+    int width_f = (width-colWidth)-w_l;
+
+    paintStatement(painter, w_f, h, 1, width_f, 2, str);
+
+
+    h = h_orig;
+        // pi                                           empty set
+    str = QString::fromUtf8("\u03C0") + "(r) := " + QString::fromUtf8("\u2205");
+    paintStatement(painter, w, h, 1, w_l, 1, str);
+    h+= rowHeight;
+    str = "DFSvisit(G, r, time)";
+    paintStatement(painter, w, h, 1, w_l, 1, str);
+
+    painter.setBrush(brush);
+
 
     h += 2 * rowHeight;
 
-//    h = orig_h - 15;
-//    w = w + 320;
 
     // DFS VISIT
 
     painter.drawRoundedRect(w + 20, h, width - 40, rowHeight, 10,10);
-    str = "DFSvisit(G:Graph, u:Vertice, &time:" + QString::fromUtf8("\u2115");
+    str = "DFSvisit(G:Graph, u:Vertex, &time:" + QString::fromUtf8("\u2115");
     painter.drawText(w + width/2 -115, textVert*rowHeight + h,  str);
     painter.drawLine(w + width/2, h + rowHeight, w + width/2, h + 1.5*rowHeight);
 
+    if (rowsToColor == MelysegiFirst) painter.setBrush(c_brush);
+
     h += rowHeight * 1.5;
-    painter.drawRect(w, h, width, rowHeight * 4);
     str = "d(u) := ++time; color(u) := grey";
-    painter.drawText(w + textMarginLeft, textVert * rowHeight + h, str);
+    paintStatement(painter, w, h, 0, width, 1, str);
+
+    painter.setBrush(brush);
 
     // DFS visit ciklus
+
     h += rowHeight;
-    painter.drawRect(w , h, width, rowHeight * 4);
     str = QString::fromUtf8("\u2200") + "v: (u,v)" + QString::fromUtf8("\u2208") + "G.E";
-    painter.drawText(w + (width)/2 - 55, textVert * rowHeight + h, str);
+    paintLoop(painter, w, h, 0, 4, str);
+
 
     // elágazás
     h += rowHeight;
-    painter.drawRect(w + colWidth, h, width-colWidth, rowHeight);
-    painter.drawLine(w + colWidth, h, w + colWidth + 10, h + rowHeight);
-    painter.drawLine(w + width, h, w + width - 10, h + rowHeight);
     str = "color(v) = white";
-    painter.drawText(w + colWidth + (width-colWidth) / 2 - 60, textVert * rowHeight + h, str);
+    paintConditional(painter, w, h, 1, str);
+
+    w_l = (width-colWidth) * 0.75;
+    h += rowHeight;
+    h_orig = h;
+    str = "SKIP";
+    w_f = w + w_l;
+    width_f = (width-colWidth)-w_l;
+    if (rowsToColor == IfFalse) painter.setBrush(c_brush);
+    paintStatement(painter, w_f, h, 1, width_f, 2, str);
+
+    painter.setBrush(brush);
+
 
     if (rowsToColor == IfTrue) painter.setBrush(c_brush);
 
-    h += rowHeight;
-    w_l = (width-colWidth) * 0.75;
-    painter.drawRect(w + colWidth, h, w_l, rowHeight);
+    h = h_orig;
     str = QString::fromUtf8("\u03C0") + "(v) := u";
-    painter.drawText(w + colWidth + 4, textVert * rowHeight + h, str);
+    paintStatement(painter, w, h, 1, w_l, 1, str);
 
     h+= rowHeight;
-    painter.drawRect(w + colWidth, h, w_l,rowHeight);
     str = "DFSvisit(G, v, time)";
-    painter.drawText(w + colWidth + 4, textVert * rowHeight + h, str);
+    paintStatement(painter, w, h, 1, w_l, 1, str);
 
     painter.setBrush(brush);
-    if(rowsToColor == IfFalse) painter.setBrush(c_brush);
-
-    painter.drawRect(w + colWidth + w_l, h-rowHeight, (width-colWidth)-w_l, 2*rowHeight);
-    str = "SKIP";
-    painter.drawText(w + colWidth + w_l + textMarginLeft , h, str);
-
-    painter.setBrush(brush);
-    if (rowsToColor == Outer) painter.setBrush(c_brush);
 
     // második ciklus - utolsó értékadás
+    if (rowsToColor == MelysegiLast) painter.setBrush(c_brush);
     h += rowHeight;
-    painter.drawRect(w, h, width, rowHeight);
     str = "f(u) := ++time; color(u) := black";
-    painter.drawText(w + textMarginLeft, textVert * rowHeight + h, str);
-
+    paintStatement(painter, w, h, 0, width, 1, str);
 
     return h + rowHeight;
+}
+
+void AlgorithmInfos::paintStatement(QPainter &painter, int &w, int &h, int indent, int width, int row_count, QString s)
+{
+    QFontMetrics fm(font);
+    QStringList rows;
+    rows.append(s);
+    while (fm.horizontalAdvance(rows.last()) > (width - textMarginLeft - 1)) {        // amíg nem fér bele a megadott dobozba új sorokba töredljük
+        int ind = rows.length()-1;
+        QStringList new_rows = rows.at(ind).split(" ");
+        rows.removeLast();
+        while(!new_rows.isEmpty()) {
+            QString new_row = "";
+
+            while (!new_rows.isEmpty() &&
+                   (fm.horizontalAdvance(new_row + new_rows.first() + QString(" ")) < width - textMarginLeft - 1
+                                || new_rows.length() == 1)) {      // a tördelt szavakból maximális hosszúságú sorokat képezünk
+                new_row += new_rows.takeFirst() + " ";
+            }
+            rows.append(new_row);
+        }
+    }
+    painter.drawRect(w + indent*colWidth, h, width, rows.length() * rowHeight * row_count);
+    double i = 1.0;// értékadás doboza
+    foreach(QString str, rows) {
+        painter.drawText(w + indent*colWidth + textMarginLeft, textVert * rowHeight * i + h, str);
+        i = 0.75;
+        h += rowHeight;
+    }
+    h -= rowHeight;
+}
+
+void AlgorithmInfos::paintLoop(QPainter &painter, int &w, int &h, int indent, int rows_num, QString condition)
+{
+    QFontMetrics fm(font);
+    painter.drawRect(w + indent*colWidth, h, width - indent*colWidth, rowHeight * rows_num);            // akkora magasságú doboz, ahány sort tartalmaz a ciklus (feltétellel együtt)
+    painter.drawText(w + indent*colWidth + (width-indent*colWidth)/2 - fm.horizontalAdvance(condition)/2, textVert * rowHeight + h, condition);    // feltétel szövege
+
+}
+
+void AlgorithmInfos::paintConditional(QPainter &painter, int &w, int &h, int indent, QString condition/*, QStringList trueStatements, QStringList falseStatements, bool paintTrue, bool paintFalse*/)
+{
+    QFontMetrics fm(font);
+    painter.drawRect(w + indent*colWidth, h, width - indent*colWidth, rowHeight);                   // feltétel doboza
+    painter.drawLine(w + indent*colWidth, h , w + indent*colWidth + 10, h + rowHeight);             // feltételt jelző ferde vonalak
+    painter.drawLine(w + width, h, w + width-10, h + rowHeight);
+    painter.drawText(w + indent*colWidth + (width-indent*colWidth)/2 - fm.horizontalAdvance(condition)/2, textVert * rowHeight + h, condition);     // feltétel szövege
+}
+
+int AlgorithmInfos::findMaxLengthString(QStringList strs)
+{
+    QFontMetrics fm(font);
+    int max = 0;
+    foreach(QString str, strs) {
+        if (fm.horizontalAdvance(str) > max) max = fm.horizontalAdvance(str);
+    }
+    return max;
 }

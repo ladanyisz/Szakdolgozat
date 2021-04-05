@@ -396,7 +396,7 @@ bool Algorithm::stepDijkstra()
             emit nodeStateChange(ExamineAdj, graph->getId(u));
 
             // stuki kirajzolásához
-            emit outerCycle();
+            emit outerLoop();
         }
     }
     return ended;
@@ -431,7 +431,7 @@ bool Algorithm::stepSzelessegi()
             emit nodeStateChange(ExamineAdj, graph->getId(u));
 
             // stuki kirajzolásához
-            emit outerCycle();
+            emit outerLoop();
 
         } else {                                                                        // belső ciklusmag
 
@@ -538,7 +538,7 @@ bool Algorithm::stepPrim()
             emit nodeStateChange(ExamineAdj, graph->getId(u));
 
             // stuki kirajzolásához
-            emit outerCycle();
+            emit outerLoop();
         }
     }
     return ended;
@@ -573,7 +573,10 @@ qDebug() << "adj_ind_in_us: " << adj_ind_in_us;
                     adj_ind_in_us[i] = -1;
                 }
                 in_dfs_visit = true;                    // mostantól rekurzív fv-hívás
-                stepMelysegiVisit();
+//                stepMelysegiVisit();
+
+                // stuki kirajzolásához
+                emit outerLoop();
             }
 
         } else {                                        // DFS visit fv
@@ -594,6 +597,9 @@ void Algorithm::stepMelysegiVisit()
         emit nodeStateChange(ExamineAdj, graph->getId(u));
         adj_ind_in_us[u]++;
 
+        // stuki kirajzolásához
+        emit melysegiVisitFirst();
+
     } else if (adj_ind_in_us[u] > -1 && adj_ind_in_us[u] < graph->getAdjNum(u)) {       // cikluson belül
 
         int adj_index = graph->getAdjIndexInNodes(u, adj_ind_in_us[u]);
@@ -606,6 +612,9 @@ void Algorithm::stepMelysegiVisit()
             emit parentChanged(adj_index, graph->getName(graph->getId(u)));
             edgeTypes[u][adj_index] = EdgeType::NeededEdge;
 //            emit edgeStateChange(NeededEdge, graph->getId(u), graph->getId(adj_index));
+
+            // stuki kirajzolásához
+            emit ifTrue();
 
 
             prev_u = u;                                 // rekurzió
@@ -624,7 +633,8 @@ void Algorithm::stepMelysegiVisit()
             }
             prev_u = u;
 
-
+            // stuki kirajzolásához
+            emit ifFalse();
 
         }
         adj_ind_in_us[prev_u]++;
@@ -642,6 +652,7 @@ void Algorithm::stepMelysegiVisit()
         } else {
             emit nodeStateChange(ExamineAdj, graph->getId(u));
         }
+        emit melysegiVisitLast();
     }
 }
 

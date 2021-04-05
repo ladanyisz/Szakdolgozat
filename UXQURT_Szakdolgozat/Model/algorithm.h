@@ -87,9 +87,11 @@ signals:
 
     void nodeStateChange(NodeType, int id);
     void edgeStateChange(EdgeType, int from_id, int to_id);
-    void outerCycle();
+    void outerLoop();
     void ifTrue();
     void ifFalse();
+    void melysegiVisitFirst();
+    void melysegiVisitLast();
 
 
 public slots:
