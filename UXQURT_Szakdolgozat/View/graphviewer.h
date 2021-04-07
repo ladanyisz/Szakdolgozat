@@ -129,12 +129,12 @@ private:
     QLabel* queue;
 
     AlgorithmInfos* algoInfos;
-//    QVBoxLayout* algoInfoLayout;
 
 
     Graph* graph;
     Algorithm* algo;
 
+    void algoConnections();
     void setStyles();
     void initMenu();
     void initEditToolbar();

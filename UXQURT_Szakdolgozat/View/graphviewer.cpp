@@ -38,6 +38,17 @@ GraphViewer::GraphViewer(QWidget *parent)
 
     connect(graph, &Graph::nodesFull,this, &GraphViewer::nodesFull);
     connect(graph, &Graph::newEdge, scene, &GraphScene::addNewEdge);
+
+    connect(scene, &GraphScene::edgeSelected, this, &GraphViewer::showWeightGroup);
+    connect(scene, &GraphScene::nodeAdded, this, &GraphViewer::enableAlgorithms);
+    connect(scene, &GraphScene::allNodesDeleted, this, &GraphViewer::disableAlgorithms);
+    connect(scene, &GraphScene::nodesChanged, this, &GraphViewer::enableAlgorithms);
+    setStyles();
+
+}
+
+void GraphViewer::algoConnections()
+{
     connect(algo, &Algorithm::nodeStateChange, scene, &GraphScene::changeNodeState);
     connect(algo, &Algorithm::edgeStateChange, scene, &GraphScene::changeEdgeState);
     connect(algo, &Algorithm::algorithmEnded, this, [=]() {
@@ -64,15 +75,6 @@ GraphViewer::GraphViewer(QWidget *parent)
     connect(algo, &Algorithm::melysegiVisitFirst, algoInfos, [=]() { algoInfos->setColorPart(AlgorithmInfos::InAlgorithm::MelysegiFirst); });
     connect(algo, &Algorithm::melysegiVisitLast, algoInfos, [=]() { algoInfos->setColorPart(AlgorithmInfos::InAlgorithm::MelysegiLast); });
     connect(algo, &Algorithm::algorithmEnded, algoInfos, [=]() { algoInfos->setColorPart(AlgorithmInfos::InAlgorithm::None); });
-
-
-
-    connect(scene, &GraphScene::edgeSelected, this, &GraphViewer::showWeightGroup);
-    connect(scene, &GraphScene::nodeAdded, this, &GraphViewer::enableAlgorithms);
-    connect(scene, &GraphScene::allNodesDeleted, this, &GraphViewer::disableAlgorithms);
-    connect(scene, &GraphScene::nodesChanged, this, &GraphViewer::enableAlgorithms);
-    setStyles();
-
 }
 
 void GraphViewer::setStyles()
@@ -111,7 +113,6 @@ void GraphViewer::initMenu()
     //setupGraphAction = new QAction(QIcon(":/img/circle.png"), tr("Gráf szöveges megadása"));
     setupGraphAction = new QAction(tr("Szöveges megadás"));
     menuBar()->addAction(setupGraphAction);
-    //graphMenu->addAction(setupGraphAction);
     connect(setupGraphAction, &QAction::triggered, this, &GraphViewer::showGraphTextEditor);
 
     resetLayout = new QAction(tr("Rendezés"));
@@ -633,7 +634,6 @@ void GraphViewer::algoInitReady(int ind)
         QLabel* d = new QLabel("d");
         d->setFixedWidth(w);
         d->setFont(tableFont);
-//        d->setAlignment(Qt::AlignCenter);
         algoValues->addWidget(d, 1,0, Qt::AlignLeft);
 
     } else {
@@ -642,14 +642,12 @@ void GraphViewer::algoInitReady(int ind)
         QLabel* df = new QLabel("d/f");
         df->setFixedWidth(60);
         df->setFont(tableFont);
-//        df->setAlignment(Qt::AlignCenter);
         algoValues->addWidget(df, 1,0, Qt::AlignLeft);
     }
 
     QLabel* p = new QLabel("p");
     p->setFixedWidth(w);
     p->setFont(tableFont);
-//    p->setAlignment(Qt::AlignCenter);
     algoValues->addWidget(p, 2,0, Qt::AlignLeft);
 
     QStringList names = graph->getNames();
