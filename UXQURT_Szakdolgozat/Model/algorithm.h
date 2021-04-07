@@ -16,7 +16,7 @@ public:
     enum NodeType { BaseNode, ExaminedNode , ProcessedNode, ExamineAdj, ReachedButNotProcessed };
     enum EdgeType { BaseEdge, NeededEdge, NotNeededEdge, ExaminedEdge, BackEdge, ForwardEdge, CrossEdge };
     enum Algorithms { None, Szelessegi, Melysegi, Dijkstra, Prim};
-    enum SignalForStuki { Outer, True, False, First, Last };
+    enum SignalForStuki { Init, Outer, True, False, First, Last };
 
     struct AlgorithmState {
         AlgorithmState() {}

@@ -45,7 +45,8 @@ public:
     void deleteNodes(int n);                        // n db csúcs törlése
     void deleteAll();                               // összes csúcs törlése
     void serializeGraph();
-    void sortAllChildren();
+    void sortAllChildren();                         // az algoritmusok inicializálásakor vannak hívva, hogy abc-rendben nézze végig a csúcsokat és a szomszédokat
+    void sortNodes();
 
     bool saveGraph(QString path, QVector<QPointF> positions);   // előkészíti az adatokat a mentés számára (sikeres mentés esetén true)
     QVector<std::tuple<int, QChar, QPointF>> loadGraph(QString path);

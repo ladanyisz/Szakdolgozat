@@ -39,6 +39,8 @@ GraphViewer::GraphViewer(QWidget *parent)
     connect(graph, &Graph::nodesFull,this, &GraphViewer::nodesFull);
     connect(graph, &Graph::newEdge, scene, &GraphScene::addNewEdge);
 
+    algoConnections();
+
     connect(scene, &GraphScene::edgeSelected, this, &GraphViewer::showWeightGroup);
     connect(scene, &GraphScene::nodeAdded, this, &GraphViewer::enableAlgorithms);
     connect(scene, &GraphScene::allNodesDeleted, this, &GraphViewer::disableAlgorithms);
@@ -229,8 +231,7 @@ void GraphViewer::initAlgorithmToolbar()
     connect(nextButton, &QToolButton::clicked, this, &GraphViewer::nextPressed);
     connect(previousButton, &QToolButton::clicked, this, &GraphViewer::previousPressed);
     connect(algorithmSelector, &QComboBox::currentTextChanged, this, &GraphViewer::algorithmSelected);
-    connect(nodeSelector, &QComboBox::currentTextChanged, this, &GraphViewer::nodeSelected);
-
+    connect(nodeSelector, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){ nodeSelected(index); });
 
 }
 
@@ -314,6 +315,16 @@ void GraphViewer::initWarningLabel()
     warningLabel->setHidden(true);
 }
 
+void GraphViewer::updateNodeSelector()
+{
+    QString name = nodeSelector->currentText();
+    nodeSelector->clear();
+    QStringList names = graph->getNames();
+    names.sort();
+    nodeSelector->addItems(names);
+    if (nodeSelector->findText(name) != -1) nodeSelector->setCurrentText(name);
+}
+
 void GraphViewer::nodesFull()
 {
     warningLabel->setText("Elérted a maximálisan elhelyezhető csúcsok számát! (" +  QString::number(graph->getMaxNodeNum()) + ")");
@@ -350,10 +361,10 @@ void GraphViewer::algorithmSelected(QString selectedAlgorithm)
     algo->selectAlgorithm(selectedAlgo);
 }
 
-void GraphViewer::nodeSelected(QString selectedNode)
+void GraphViewer::nodeSelected(int selectedIndex)
 {
-    int index = graph->getIndex(selectedNode);
-    if (index != -1) algo->selectStartNode(index);
+
+    if (selectedIndex != -1) algo->selectStartNode(selectedIndex);
 }
 
 void GraphViewer::algorithmStopped()
@@ -383,6 +394,7 @@ void GraphViewer::algorithmStarted()
 {
     disableEdit();
     disableSelectors();
+//    nodeSelected(nodeSelector->currentText());
     pointerButton->click();
     algo->startAlgorithm();
     if (algo->getInitState()) {
@@ -488,7 +500,7 @@ void GraphViewer::openFile()
         dir = path;
 //    QString fileName = QFileDialog::getOpenFileName(this, tr("Gráf betöltése"), QDir::currentPath(), tr("Gráfok (*.graph)"));
     QString fileName = QFileDialog::getOpenFileName(this, tr("Gráf betöltése"), dir, tr("Gráfok (*.graph)"));
-    QRectF rect = view->rect();
+//    QRectF rect = view->rect();
     if (fileName != "" && fileName != QString()) {
         path = QFileInfo(fileName).path();
         QVector<std::tuple<int, QChar, QPointF>> nodes_data = graph->loadGraph(fileName);
@@ -511,8 +523,8 @@ void GraphViewer::openFile()
         algo->reset();
         if (graph->getSize() > 0) enableAlgorithms();
         algorithmStopped();
-        view->resize(rect.width(), rect.height());
-        updateSceneRect();
+//        view->resize(rect.width(), rect.height());
+//        updateSceneRect();
         pointerButton->click();
     }
 }
@@ -525,15 +537,10 @@ void GraphViewer::enableAlgorithms()
     nextButton->setEnabled(true);
     stopButton->setEnabled(true);
 
-    QString name = nodeSelector->currentText();
-    nodeSelector->clear();
-    QStringList names = graph->getNames();
-    names.sort();
-    nodeSelector->addItems(names);
-    if (nodeSelector->findText(name) != -1) nodeSelector->setCurrentText(name);
+    updateNodeSelector();
 
     algorithmSelected(algorithmSelector->currentText());
-    nodeSelected(nodeSelector->currentText());
+    nodeSelected(nodeSelector->currentIndex());
 }
 
 void GraphViewer::disableAlgorithms()
@@ -645,7 +652,10 @@ void GraphViewer::algoInitReady(int ind)
         algoValues->addWidget(df, 1,0, Qt::AlignLeft);
     }
 
-    QLabel* p = new QLabel("p");
+    QLabel* p = new QLabel(/*"p"*/);
+    QPixmap pixmap(":/img/pi.png");
+
+    p->setPixmap(pixmap.scaledToHeight(18));
     p->setFixedWidth(w);
     p->setFont(tableFont);
     algoValues->addWidget(p, 2,0, Qt::AlignLeft);

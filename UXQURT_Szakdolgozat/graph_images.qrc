@@ -20,5 +20,6 @@
         <file>img/stop.png</file>
         <file>img/empty-set.png</file>
         <file>img/infinity.png</file>
+        <file>img/pi.png</file>
     </qresource>
 </RCC>

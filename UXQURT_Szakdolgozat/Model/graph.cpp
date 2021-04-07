@@ -252,6 +252,20 @@ void Graph::sortAllChildren()
         node->sortChildren();
 }
 
+void Graph::sortNodes()
+{
+    for(int i=0; i<nodes.size(); i++) {
+        for(int j=0; j<nodes.size()-i-1; j++) {
+            if (nodes[j]->getName() > nodes[j+1]->getName()) {
+                Node* tmp = nodes[j];
+                nodes[j] = nodes[j+1];
+                nodes[j+1] = tmp;
+            }
+        }
+    }
+    sortAllChildren();
+}
+
 bool Graph::saveGraph(QString path, QVector<QPointF> positions)
 {
     QVector<QString> graph_representation;

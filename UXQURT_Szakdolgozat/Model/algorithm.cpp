@@ -81,7 +81,7 @@ Algorithm::Algorithms Algorithm::getChosenAlgo()
 
 void Algorithm::init()                                  // ( 1 )
 {
-    graph->sortAllChildren();
+    graph->sortNodes();
     bool can_start = false;
     steps.clear();
     queue.clear();
@@ -213,7 +213,9 @@ void Algorithm::init()                                  // ( 1 )
     if (can_start) {
         init_ready = true;
         if (start_node_ind != -1) initNode();
+        sig = SignalForStuki::Init;
         addState();
+
         emit initReady(start_node_ind);
     }
 }
@@ -379,6 +381,7 @@ bool Algorithm::stepDijkstra()
 
                 // stuki kirajzolásához
                 emit ifFalse();
+                sig = False;
 
             } else {
                 // stuki kirajzolásához
@@ -698,8 +701,11 @@ bool Algorithm::stepBackAlgorithm()
             emit parentChanged(i, n);
         }
     }
-
+    qDebug() << "state.sig: " <<  state.sig;
     switch (state.sig) {
+    case Algorithm::Init:
+        emit initReady(-1);
+        break;
     case Algorithm::Outer:
         emit outerLoop();
         break;
@@ -792,6 +798,7 @@ void Algorithm::addState()
                                           discovery_time, finishing_time, adj_ind_in_us, r, time, prev_u, in_dfs_visit,
                                           sig);
     steps.push(state);
+    qDebug() << "sig added: " << sig;
 }
 
 QString Algorithm::queueToVectorMin()

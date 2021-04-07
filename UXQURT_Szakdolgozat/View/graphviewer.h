@@ -39,7 +39,7 @@ public slots:
     void edgesFull();
     void deleteGraph();
     void algorithmSelected(QString selectedAlgorithm);
-    void nodeSelected(QString selectedNode);
+    void nodeSelected(int/*QString selectedNode*/);
     void algorithmStopped();
     void algorithmStarted();
     void algorithmPaused();
@@ -143,10 +143,10 @@ private:
     void initAlgoViews();
     void initWeightGroup();
     void initWarningLabel();
+    void updateNodeSelector();
     void showWarningLabel();
     void updateSceneRect();
 
-//    QWidget * QMainWindow;
 
 
 
