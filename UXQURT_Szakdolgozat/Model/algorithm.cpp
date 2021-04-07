@@ -323,7 +323,6 @@ bool Algorithm::stepAlgorithm()                         // ( 3 )
         qDebug() << "algorithm ended";
         timer->stop();
         emit algorithmEnded();
-        emit
         return false;
     }
     return true;
@@ -552,6 +551,7 @@ bool Algorithm::stepPrim()
 
             // stuki kirajzolásához
             emit outerLoop();
+            sig = Outer;
         }
     }
     return ended;
@@ -701,7 +701,7 @@ bool Algorithm::stepBackAlgorithm()
             emit parentChanged(i, n);
         }
     }
-    qDebug() << "state.sig: " <<  state.sig;
+
     switch (state.sig) {
     case Algorithm::Init:
         emit initReady(-1);
@@ -750,17 +750,24 @@ bool Algorithm::stepBackAlgorithm()
         }
     }
 
-    emit nodeStateChange(NodeType::ExamineAdj, u);
+    qDebug() << "u: " << u;
+    qDebug() << "prev_u: " << prev_u;
+    qDebug() << "adj_ind_in_us: " << adj_ind_in_us;
     int aiiu;
+    int from_u;
     if (chosenAlgo != Melysegi) {
+        if (u != -1) emit nodeStateChange(NodeType::ExamineAdj, graph->getId(u));
         aiiu = adj_ind_in_u;
+        from_u = u;
     } else {
+        if (prev_u != -1) emit nodeStateChange(NodeType::ExamineAdj, graph->getId(prev_u));
         aiiu = u == -1 ? -1 : adj_ind_in_us[u];
+        from_u = prev_u;
     }
     if ((aiiu-1) != -1 && aiiu != -1) {
         int adj_index = graph->getAdjIndexInNodes(u,(aiiu-1));
         emit nodeStateChange(NodeType::ExaminedNode, graph->getId(adj_index));
-        emit edgeStateChange(EdgeType::ExaminedEdge, graph->getId(u), graph->getId(adj_index));
+        emit edgeStateChange(EdgeType::ExaminedEdge, graph->getId(from_u), graph->getId(adj_index));
     }
 
     discovery_time = state.discovery_time;

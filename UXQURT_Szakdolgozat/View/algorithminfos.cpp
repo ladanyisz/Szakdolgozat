@@ -437,12 +437,12 @@ int AlgorithmInfos::paintMelysegi(int w, int h, QPainter &painter)
     painter.setBrush(brush);
 
     // második ciklus
-    if (rowsToColor == Outer) painter.setBrush(c_brush);
     h += rowHeight;
     // forall                               in
     str = QString::fromUtf8("\u2200") + "r " + QString::fromUtf8("\u2208") + " G.V";
     paintLoop(painter, w, h, 0, 4, str);
 
+    if (rowsToColor == Outer) painter.setBrush(c_brush);
     // elágazás
     h += rowHeight;
     str = "color(r) = white";
