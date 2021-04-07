@@ -559,6 +559,7 @@ bool Algorithm::stepPrim()
 
 bool Algorithm::stepMelysegi()
 {
+    qDebug() << "r: " << r;
     bool ended = (r >= graph->getSize());
 qDebug() << "melysegi";
 
@@ -577,8 +578,8 @@ qDebug() << "melysegi";
 
             while (r < graph->getSize() && nodeTypes[r] != BaseNode)           // a false ágon lévő skip miatt
                 r++;
-
-            if (r < graph->getSize()) {             // jártunk-e már ennél a csúcsnál?
+            ended = r >= graph->getSize();
+            if (!ended) {             // jártunk-e már ennél a csúcsnál?
                 parents[r] = -1;
                 u = r;
                 emit nodeStateChange(ExamineAdj, graph->getId(u));
@@ -591,6 +592,8 @@ qDebug() << "melysegi";
                 // stuki kirajzolásához
                 emit outerLoop();
                 sig = Outer;
+            } else {
+
             }
 
         } else {                                        // DFS visit fv
@@ -762,7 +765,7 @@ bool Algorithm::stepBackAlgorithm()
         aiiu = adj_ind_in_u;
         from_u = u;
     } else {
-        if (u != -1 && adj_ind_in_us[u] == 0 && graph->getAdjNum(u) == 0 && sig == First) emit nodeStateChange(NodeType::ExamineAdj, graph->getId(u));
+        if (u != -1 && ((adj_ind_in_us[u] == 0 && graph->getAdjNum(u) == 0 && sig == First) || sig == Last)) emit nodeStateChange(NodeType::ExamineAdj, graph->getId(u));
         else if (prev_u != -1) emit nodeStateChange(NodeType::ExamineAdj, graph->getId(prev_u));
         else if (u != -1) emit nodeStateChange(NodeType::ExamineAdj, graph->getId(u));
 
