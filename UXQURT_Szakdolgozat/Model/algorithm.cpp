@@ -766,6 +766,7 @@ bool Algorithm::stepBackAlgorithm()
         from_u = u;
     } else {
         if (u != -1 && ((adj_ind_in_us[u] == 0 && graph->getAdjNum(u) == 0 && sig == First) || sig == Last)) emit nodeStateChange(NodeType::ExamineAdj, graph->getId(u));
+        else if (u == -1 && sig == Last) ;
         else if (prev_u != -1) emit nodeStateChange(NodeType::ExamineAdj, graph->getId(prev_u));
         else if (u != -1) emit nodeStateChange(NodeType::ExamineAdj, graph->getId(u));
 
@@ -781,7 +782,6 @@ bool Algorithm::stepBackAlgorithm()
 
     discovery_time = state.discovery_time;
     finishing_time = state.finishing_time;
-//    adj_ind_in_us = state.adj_ind_in_us;
     r = state.r;
     time = state.time;
     prev_u = state.prev_u;
