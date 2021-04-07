@@ -307,7 +307,7 @@ bool Algorithm::stepAlgorithm()                         // ( 3 )
     qDebug() << "distances: " << distances;
     qDebug() << "discoverty_times: " << discovery_time;
     qDebug() << "finishing times: " << finishing_time;
-    qDebug() << "u: " << u;
+    qDebug() << "u: " << u << ", prev_u: " << prev_u;
     qDebug() << "adj_ind_in_us: " << adj_ind_in_us;
     addState();
     if (ended) {
@@ -561,8 +561,8 @@ bool Algorithm::stepMelysegi()
 {
     bool ended = (r >= graph->getSize());
 qDebug() << "melysegi";
-qDebug() << "u: " << u << ", prev_u: " << prev_u;
-qDebug() << "adj_ind_in_us: " << adj_ind_in_us;
+
+
 
     if (prev_u != -1 && adj_ind_in_us[prev_u] > 0) {
         int prev_ind = graph->getAdjIndexInNodes(prev_u, adj_ind_in_us[prev_u]-1);
@@ -640,7 +640,7 @@ void Algorithm::stepMelysegiVisit()
 
             if (nodeTypes[adj_index] == ReachedButNotProcessed) {
                 edgeTypes[u][adj_index] = BackEdge;                             // vissza-él
-            } else if (nodeTypes[adj_index == ProcessedNode]) {
+            } else if (nodeTypes[adj_index] == ProcessedNode) {
                 if (discovery_time[u] < discovery_time[adj_index]) {
                     edgeTypes[u][adj_index] = ForwardEdge;                      // előre-él
                 } else if (discovery_time[u] > discovery_time[adj_index]) {
@@ -701,7 +701,7 @@ bool Algorithm::stepBackAlgorithm()
             emit parentChanged(i, n);
         }
     }
-
+    sig = state.sig;
     switch (state.sig) {
     case Algorithm::Init:
         emit initReady(-1);
@@ -740,6 +740,7 @@ bool Algorithm::stepBackAlgorithm()
     }
     u = state.u;
     adj_ind_in_u = state.adj_ind_in_u;
+    adj_ind_in_us = state.adj_ind_in_us;
     nodeTypes = state.nodeTypes;
     edgeTypes = state.edgeTypes;
     for(int i=0; i<graph->getSize(); i++) {
@@ -753,6 +754,7 @@ bool Algorithm::stepBackAlgorithm()
     qDebug() << "u: " << u;
     qDebug() << "prev_u: " << prev_u;
     qDebug() << "adj_ind_in_us: " << adj_ind_in_us;
+    qDebug() << "sig: " << sig;
     int aiiu;
     int from_u;
     if (chosenAlgo != Melysegi) {
@@ -760,19 +762,23 @@ bool Algorithm::stepBackAlgorithm()
         aiiu = adj_ind_in_u;
         from_u = u;
     } else {
-        if (prev_u != -1) emit nodeStateChange(NodeType::ExamineAdj, graph->getId(prev_u));
-        aiiu = u == -1 ? -1 : adj_ind_in_us[u];
+        if (u != -1 && adj_ind_in_us[u] == 0 && graph->getAdjNum(u) == 0 && sig == First) emit nodeStateChange(NodeType::ExamineAdj, graph->getId(u));
+        else if (prev_u != -1) emit nodeStateChange(NodeType::ExamineAdj, graph->getId(prev_u));
+        else if (u != -1) emit nodeStateChange(NodeType::ExamineAdj, graph->getId(u));
+
+        aiiu = (prev_u == -1) || (sig == First) || sig == Last ? -1 : adj_ind_in_us[prev_u];
         from_u = prev_u;
     }
+    qDebug() << "aiiu: " << aiiu;
     if ((aiiu-1) != -1 && aiiu != -1) {
-        int adj_index = graph->getAdjIndexInNodes(u,(aiiu-1));
+        int adj_index = graph->getAdjIndexInNodes(from_u,(aiiu-1));
         emit nodeStateChange(NodeType::ExaminedNode, graph->getId(adj_index));
         emit edgeStateChange(EdgeType::ExaminedEdge, graph->getId(from_u), graph->getId(adj_index));
     }
 
     discovery_time = state.discovery_time;
     finishing_time = state.finishing_time;
-    adj_ind_in_us = state.adj_ind_in_us;
+//    adj_ind_in_us = state.adj_ind_in_us;
     r = state.r;
     time = state.time;
     prev_u = state.prev_u;
