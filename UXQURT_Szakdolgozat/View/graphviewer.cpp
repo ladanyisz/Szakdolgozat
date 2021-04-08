@@ -10,6 +10,7 @@
 #include <QCheckBox>
 #include <QDir>
 #include <QItemSelectionModel>
+#include <QShortcut>
 
 GraphViewer::GraphViewer(QWidget *parent)
     : QMainWindow(parent)
@@ -131,18 +132,28 @@ void GraphViewer::initEditToolbar()
     pointerButton->setCheckable(true);
     pointerButton->setChecked(true);
     pointerButton->setIcon(QIcon(":/img/up-sign.png"));
+    pointerButton->setToolTip(tr("Csúcsok mozgatása | Ctrl+P"));
+    pointerButton->setShortcut(QKeySequence("Ctrl+P"));
     nodeButton = new QToolButton();
     nodeButton->setCheckable(true);
     nodeButton->setIcon(QIcon(":/img/circle.png"));
+    nodeButton->setToolTip(tr("Csúcsok hozzáadása | Ctrl+N"));
+    nodeButton->setShortcut(QKeySequence("Ctrl+N"));
     edgeButton = new QToolButton();
     edgeButton->setCheckable(true);
     edgeButton->setIcon(QIcon(":/img/arrow.png"));
+    edgeButton->setToolTip(tr("Élek hozzáadása | Ctrl+E"));
+    edgeButton->setShortcut(QKeySequence("Ctrl+E"));
     weightButton = new QToolButton();
     weightButton->setCheckable(true);
     weightButton->setIcon(QIcon(":/img/weight.png"));
+    weightButton->setToolTip(tr("Súlyok beállítása | Ctrl+W"));
+    weightButton->setShortcut(QKeySequence("Ctrl+W"));
     deleteButton = new QToolButton();
     deleteButton->setCheckable(true);
     deleteButton->setIcon(QIcon(":/img/delete.png"));
+    deleteButton->setToolTip(tr("Csúcsok, élek törlése | Ctrl+D"));
+    deleteButton->setShortcut(QKeySequence("Ctrl+D"));
 
     editButtonGroup = new QButtonGroup(this);
     editButtonGroup->addButton(pointerButton);
@@ -167,12 +178,16 @@ void GraphViewer::initEditToolbar()
 
     directedCheckBox = new QCheckBox(tr("Irányíott"));
     directedCheckBox->setChecked(true);
+    directedCheckBox->setToolTip("Ctrl+A");
+    directedCheckBox->setShortcut(QKeySequence("Ctrl+A"));
     editToolbar->addWidget(directedCheckBox);
     connect(directedCheckBox, &QCheckBox::toggled, graph, &Graph::changeDirected);
 
 
     weightedCheckBox = new QCheckBox(tr("Súlyozott"));
     weightedCheckBox->setChecked(true);
+    weightedCheckBox->setToolTip("Ctrl+Q");
+    weightedCheckBox->setShortcut(QKeySequence("Ctrl+Q"));
     editToolbar->addWidget(weightedCheckBox);
     connect(weightedCheckBox, &QCheckBox::toggled, graph, &Graph::changeWeighted);
     connect(weightedCheckBox, &QCheckBox::toggled, this, [=](bool d) {
