@@ -99,9 +99,11 @@ void GraphViewer::initMenu()
 {
     fileMenu = menuBar()->addMenu(tr("&Fájl"));
     saveFileAction = new QAction(QIcon(":/img/save.png"),tr("Mentés"));
+    saveFileAction->setShortcut(QKeySequence::Save);
     fileMenu->addAction(saveFileAction);
     connect(saveFileAction, &QAction::triggered, this, &GraphViewer::saveFile);
     openFileAction = new QAction(QIcon(":/img/open.png"), tr("Megnyitás"));
+    openFileAction->setShortcut(QKeySequence::Open);
     fileMenu->addAction(openFileAction);
     connect(openFileAction, &QAction::triggered, this, &GraphViewer::openFile);
     //graphMenu = menuBar()->addMenu(tr("&Szereksztés"));

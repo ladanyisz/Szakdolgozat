@@ -99,6 +99,7 @@ bool Graph::checkAllEdgesNonnegative()
 
 bool Graph::checkConnectivity()
 {
+    if (nodes.size() <= 1) return true;
     if (isDirected) {
         foreach(Node* node, nodes) {
             if (node->getAdjNum() == 0) {
@@ -113,7 +114,6 @@ bool Graph::checkConnectivity()
         }
         return true;
     } else {
-        if (nodes.size() <= 1) return true;
         foreach(Node* node, nodes) {
             if (node->getAdjNum() == 0) return false;
         }
