@@ -16,8 +16,6 @@ GraphViewer::GraphViewer(QWidget *parent)
     : QMainWindow(parent)
 {
     setWindowTitle("Gráfok");
-//    setMinimumSize(800,500);
-//    setBaseSize(800,500);
 
     graph = new Graph();
     algo = new Algorithm(graph);
@@ -107,15 +105,10 @@ void GraphViewer::initMenu()
     openFileAction->setShortcut(QKeySequence::Open);
     fileMenu->addAction(openFileAction);
     connect(openFileAction, &QAction::triggered, this, &GraphViewer::openFile);
-    //graphMenu = menuBar()->addMenu(tr("&Szereksztés"));
-
-//    deleteGraphAction = new QAction(QIcon(":/img/delete.png"),tr("Gráf törlése"));
-//    graphMenu->addAction(deleteGraphAction);
     deleteGraphAction = new QAction(tr("Gráf törlése"));
     menuBar()->addAction(deleteGraphAction);
     connect(deleteGraphAction, &QAction::triggered, this, &GraphViewer::deleteGraph);
 
-    //setupGraphAction = new QAction(QIcon(":/img/circle.png"), tr("Gráf szöveges megadása"));
     setupGraphAction = new QAction(tr("Szöveges megadás"));
     menuBar()->addAction(setupGraphAction);
     connect(setupGraphAction, &QAction::triggered, this, &GraphViewer::showGraphTextEditor);
@@ -158,8 +151,8 @@ void GraphViewer::initEditToolbar()
     pointerButton->setCheckable(true);
     pointerButton->setChecked(true);
     pointerButton->setIcon(QIcon(":/img/up-sign.png"));
-    pointerButton->setToolTip(tr("Csúcsok mozgatása | Ctrl+P"));
-    pointerButton->setShortcut(QKeySequence("Ctrl+P"));
+    pointerButton->setToolTip(tr("Csúcsok mozgatása | Ctrl+M"));
+    pointerButton->setShortcut(QKeySequence("Ctrl+M"));
     nodeButton = new QToolButton();
     nodeButton->setCheckable(true);
     nodeButton->setIcon(QIcon(":/img/circle.png"));
@@ -353,7 +346,6 @@ void GraphViewer::initWeightGroup()
 void GraphViewer::initWarningLabel()
 {
     warningLabel = new QLabel(this);
-//    int w = width();
     warningLabel->setGeometry(20,70,500,30);
     warningLabel->setHidden(true);
 }
@@ -437,7 +429,6 @@ void GraphViewer::algorithmStarted()
 {
     disableEdit();
     disableSelectors();
-//    nodeSelected(nodeSelector->currentText());
     pointerButton->click();
     algo->startAlgorithm();
     if (algo->getInitState()) {
@@ -541,9 +532,7 @@ void GraphViewer::openFile()
         dir = QDir::rootPath();
     else
         dir = path;
-//    QString fileName = QFileDialog::getOpenFileName(this, tr("Gráf betöltése"), QDir::currentPath(), tr("Gráfok (*.graph)"));
     QString fileName = QFileDialog::getOpenFileName(this, tr("Gráf betöltése"), dir, tr("Gráfok (*.graph)"));
-//    QRectF rect = view->rect();
     if (fileName != "" && fileName != QString()) {
         path = QFileInfo(fileName).path();
         QVector<std::tuple<int, QChar, QPointF>> nodes_data = graph->loadGraph(fileName);
@@ -566,8 +555,6 @@ void GraphViewer::openFile()
         algo->reset();
         if (graph->getSize() > 0) enableAlgorithms();
         algorithmStopped();
-//        view->resize(rect.width(), rect.height());
-//        updateSceneRect();
         pointerButton->click();
     }
 }
@@ -695,7 +682,7 @@ void GraphViewer::algoInitReady(int ind)
         algoValues->addWidget(df, 1,0, Qt::AlignLeft);
     }
 
-    QLabel* p = new QLabel(/*"p"*/);
+    QLabel* p = new QLabel();
     QPixmap pixmap(":/img/pi.png");
 
     p->setPixmap(pixmap.scaledToHeight(18));
@@ -837,7 +824,6 @@ void GraphViewer::showWarningLabel()
 
 void GraphViewer::clearColorsInAlgTable()
 {
-    qDebug() << "clear color";
     for(int i=1; i<graph->getSize() + 1; i++) {
         for(int j=1; j<algoValues->rowCount(); j++) {
             QLayoutItem* item = algoValues->itemAtPosition(j,i);
