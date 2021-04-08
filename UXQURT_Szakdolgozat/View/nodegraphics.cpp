@@ -99,8 +99,6 @@ QVariant NodeGraphics::itemChange(QGraphicsItem::GraphicsItemChange change, cons
         // value is the new position.
         QPointF newPos = value.toPointF();
         QRectF rect = scene()->sceneRect();
-        QGraphicsView* view = scene()->views().at(0);
-//        QRectF rect = view->rect();
         int s = NodeGraphics::getSize();
         if (!rect.contains(newPos) || newPos.x() >= rect.right()-s || newPos.y() >= rect.bottom() -s) {
             // Keep the item inside the scene rect.

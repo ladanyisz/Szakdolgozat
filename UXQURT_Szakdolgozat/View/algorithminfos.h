@@ -41,6 +41,14 @@ private:
     QBrush brush;
     QBrush c_brush;
 
+    QString static const pi;
+    QString static const element_of;
+    QString static const for_all;
+    QString static const infinity;
+    QString static const empty_set;
+    QString static const logical_and;
+    QString static const neg;
+
     Algorithm::Algorithms algo;
     int algorithmStep;
 

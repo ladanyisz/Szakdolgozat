@@ -123,6 +123,32 @@ void GraphViewer::initMenu()
     resetLayout = new QAction(tr("Rendezés"));
     menuBar()->addAction(resetLayout);
     connect(resetLayout, &QAction::triggered, scene, &GraphScene::resetNodeLayout);
+
+    QMenu* algoHelpMenu = menuBar()->addMenu("&Algoritmus segítség");
+    szelessegiHelpAction = new QAction(tr("Szélességi gráfkeresés"));
+    algoHelpMenu->addAction(szelessegiHelpAction);
+    connect(szelessegiHelpAction, &QAction::triggered, this, [=]() {
+        AlgorithmHelp* a = new AlgorithmHelp(Algorithm::Algorithms::Szelessegi);
+        a->show();
+    });
+    melysegiHelpAction = new QAction(tr("Mélységi gráfkeresés"));
+    algoHelpMenu->addAction(melysegiHelpAction);
+    connect(melysegiHelpAction, &QAction::triggered, this, [=]() {
+        AlgorithmHelp* a = new AlgorithmHelp(Algorithm::Algorithms::Melysegi);
+        a->show();
+    });
+    primHelpAction = new QAction(tr("Prim algoritmus"));
+    algoHelpMenu->addAction(primHelpAction);
+    connect(primHelpAction, &QAction::triggered, this, [=]() {
+        AlgorithmHelp* a = new AlgorithmHelp(Algorithm::Algorithms::Prim);
+        a->show();
+    });
+    dijkstraHelpAction = new QAction(tr("Dijkstra algoritmus"));
+    algoHelpMenu->addAction(dijkstraHelpAction);
+    connect(dijkstraHelpAction, &QAction::triggered, this, [=]() {
+        AlgorithmHelp* a = new AlgorithmHelp(Algorithm::Algorithms::Dijkstra);
+        a->show();
+    });
 }
 
 void GraphViewer::initEditToolbar()

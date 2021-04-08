@@ -14,6 +14,7 @@ SOURCES += \
     Model/graph.cpp \
     Model/node.cpp \
     Persistence/filemanagement.cpp \
+    View/algorithmhelp.cpp \
     View/algorithminfos.cpp \
     View/edgegraphics.cpp \
     View/graphscene.cpp \
@@ -29,6 +30,7 @@ HEADERS += \
     Model/graph.h \
     Model/node.h \
     Persistence/filemanagement.h \
+    View/algorithmhelp.h \
     View/algorithminfos.h \
     View/edgegraphics.h \
     View/graphscene.h \

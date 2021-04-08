@@ -3,6 +3,15 @@
 #include <QPainter>
 #include <QVBoxLayout>
 
+//QString const AlgorithmInfos::pi = QString::fromUtf8("\u1d6d1");
+QString const AlgorithmInfos::pi = QString::fromUtf8("\u03C0");
+QString const AlgorithmInfos::element_of = QString::fromUtf8("\u2208");
+QString const AlgorithmInfos::for_all = QString::fromUtf8("\u2200");
+QString const AlgorithmInfos::infinity = QString::fromUtf8("\u221E");
+QString const AlgorithmInfos::empty_set = QString::fromUtf8("\u2205");
+QString const AlgorithmInfos::logical_and =  QString::fromUtf8("\u2227");
+QString const AlgorithmInfos::neg = QString::fromUtf8("\u00AC");
+
 AlgorithmInfos::AlgorithmInfos(QWidget *parent) : QWidget(parent)
 {
     algo = Algorithm::Algorithms::None;
@@ -181,13 +190,11 @@ int AlgorithmInfos::paintSzelessegi(int w, int h, QPainter &painter)
     if (rowsToColor ==  Init) painter.setBrush(c_brush);
 
     // első ciklus
-                    // forall                               in
-    str = QString::fromUtf8("\u2200") + "u " + QString::fromUtf8("\u2208") + " G.V";
+    str = for_all + "u " + element_of + " G.V";
     paintLoop(painter,w, h, 0, 2, str);
 
     h += rowHeight;
-                                // infinity                         pi                                          empty set
-    str = "d(u) := " + QString::fromUtf8("\u221E") + "; " + QString::fromUtf8("\u03C0") + "(u) := " + QString::fromUtf8("\u2205");
+    str = "d(u) := " + infinity + "; " + pi + "(u) := " + empty_set;
     paintStatement(painter, w, h, 1, width-colWidth, 1, str);
 
     // értékadások
@@ -202,8 +209,7 @@ int AlgorithmInfos::paintSzelessegi(int w, int h, QPainter &painter)
 
     // második ciklus
     h += rowHeight;
-                // neg
-    str = QString::fromUtf8("\u00AC") + "Q.isEmpty()";
+    str = neg + "Q.isEmpty()";
     paintLoop(painter, w, h, 0, 6, str);
 
     h += rowHeight;
@@ -216,11 +222,11 @@ int AlgorithmInfos::paintSzelessegi(int w, int h, QPainter &painter)
 
     // belső ciklus
     h += rowHeight;
-    str = QString::fromUtf8("\u2200") + "v: (u,v) " + QString::fromUtf8("\u2208") + " G.E";
+    str = for_all + "v: (u,v) " + element_of + " G.E";
     paintLoop(painter, w, h, 1, 4, str);
 
     // elágazás
-    QString cond = "d(v) = " + QString::fromUtf8("\u221E");
+    QString cond = "d(v) = " + infinity;
 
     h += rowHeight;
     paintConditional(painter, w, h, 2, cond);
@@ -236,7 +242,7 @@ int AlgorithmInfos::paintSzelessegi(int w, int h, QPainter &painter)
     painter.setBrush(brush);
 
     if (rowsToColor == IfTrue)  painter.setBrush(c_brush);
-    str = "d(v) := d(u) + 1; " + QString::fromUtf8("\u03C0") + "(v) := u";
+    str = "d(v) := d(u) + 1; " + pi + "(v) := u";
     h = h_orig;
 
     paintStatement(painter, w, h, 2, w_l, 1, str);
@@ -256,12 +262,10 @@ int AlgorithmInfos::paintDijkstra(int w, int h, QPainter &painter)
     if (rowsToColor ==  Init) painter.setBrush(c_brush);
 
     // első ciklus
-                    // forall                               in
-    str = QString::fromUtf8("\u2200") + "u " + QString::fromUtf8("\u2208") + " G.V";
+    str = for_all + "u " + element_of + " G.V";
     paintLoop(painter, w, h, 0, 2, str);
     h += rowHeight;
-                                // infinity                         pi                                          empty set
-    str = "d(u) := " + QString::fromUtf8("\u221E") + "; " + QString::fromUtf8("\u03C0") + "(u) := " + QString::fromUtf8("\u2205");
+    str = "d(u) := " + infinity + "; " + pi + "(u) := " + empty_set;
     paintStatement(painter, w, h, 1, width-colWidth, 1, str);
 
     // értékadások
@@ -280,14 +284,13 @@ int AlgorithmInfos::paintDijkstra(int w, int h, QPainter &painter)
 
     // második ciklus
     h += rowHeight;
-                                                            //   logical and                                neg
-    str = "d(u) < " + QString::fromUtf8("\u221E") + " " + QString::fromUtf8("\u2227") + " " + QString::fromUtf8("\u00AC") + "Q.isEmpty()";
+    str = "d(u) < " + infinity + " " + logical_and + " " + neg + "Q.isEmpty()";
     paintLoop(painter, w, h, 0, 7, str);
 
 
     // belső ciklus
     h += rowHeight;
-    str = QString::fromUtf8("\u2200") + "v: (u,v)" + QString::fromUtf8("\u2208") + "G.E";
+    str = for_all + "v: (u,v)" + element_of + "G.E";
     paintLoop(painter, w, h, 1, 5, str);
 
     // elágazás
@@ -309,7 +312,7 @@ int AlgorithmInfos::paintDijkstra(int w, int h, QPainter &painter)
     if (rowsToColor == IfTrue) painter.setBrush(c_brush);
 
     h = h_orig;
-    str = "d(v) := d(u) + G.w(u,v); " + QString::fromUtf8("\u03C0") + "(v) := u";
+    str = "d(v) := d(u) + G.w(u,v); " + pi + "(v) := u";
     paintStatement(painter, w, h, 2, w_l, 1, str);
 
     h+= rowHeight;
@@ -338,12 +341,10 @@ int AlgorithmInfos::paintPrim(int w, int h, QPainter &painter)
     if (rowsToColor ==  Init) painter.setBrush(c_brush);
 
     // első ciklus
-                    // forall                               in
-    str = QString::fromUtf8("\u2200") + "u " + QString::fromUtf8("\u2208") + " G.V";
+    str = for_all + "u " + element_of + " G.V";
     paintLoop(painter, w, h, 0, 2, str);
     h += rowHeight;
-                                // infinity                         pi                                          empty set
-    str = "d(u) := " + QString::fromUtf8("\u221E") + "; " + QString::fromUtf8("\u03C0") + "(u) := " + QString::fromUtf8("\u2205");
+    str = "d(u) := " + infinity + "; " + pi + "(u) := " + empty_set;
     paintStatement(painter, w, h, 1, width-colWidth, 1, str);
 
 
@@ -362,20 +363,18 @@ int AlgorithmInfos::paintPrim(int w, int h, QPainter &painter)
 
     // második ciklus
     h += rowHeight;
-                                                            // neg
-    str = QString::fromUtf8("\u00AC") + "Q.isEmpty()";
+    str = neg + "Q.isEmpty()";
     paintLoop(painter, w, h, 0, 6, str);
 
 
     // belső ciklus
     h += rowHeight;
-    str = QString::fromUtf8("\u2200") + "v: (u,v) " + QString::fromUtf8("\u2208") + " G.E";
+    str = for_all + "v: (u,v) " + element_of + " G.E";
     paintLoop(painter, w, h, 1, 4, str);
 
     // elágazás
     h += rowHeight;
-                                                                // logical and
-    str = "v" + QString::fromUtf8("\u2208") + "Q " + QString::fromUtf8("\u2227") +  " d(v) > G.w(u,v)";
+    str = "v" + element_of + "Q " +logical_and +  " d(v) > G.w(u,v)";
     paintConditional(painter, w, h, 2, str);
 
 
@@ -394,7 +393,7 @@ int AlgorithmInfos::paintPrim(int w, int h, QPainter &painter)
     if (rowsToColor == IfTrue) painter.setBrush(c_brush);
 
     h = h_orig;
-    str = "d(v) := G.w(u,v); " + QString::fromUtf8("\u03C0") + "(v) := u";
+    str = "d(v) := G.w(u,v); " + pi + "(v) := u";
     paintStatement(painter, w, h, 2, w_l, 1, str);
 
     h+= rowHeight;
@@ -421,8 +420,7 @@ int AlgorithmInfos::paintMelysegi(int w, int h, QPainter &painter)
     if (rowsToColor ==  Init) painter.setBrush(c_brush);
 
     // első ciklus
-                    // forall                               in
-    str = QString::fromUtf8("\u2200") + "u " + QString::fromUtf8("\u2208") + " G.V";
+    str = for_all + "u " + element_of + " G.V";
     paintLoop(painter, w, h, 0, 2, str);
 
     h += rowHeight;
@@ -438,8 +436,7 @@ int AlgorithmInfos::paintMelysegi(int w, int h, QPainter &painter)
 
     // második ciklus
     h += rowHeight;
-    // forall                               in
-    str = QString::fromUtf8("\u2200") + "r " + QString::fromUtf8("\u2208") + " G.V";
+    str = for_all + "r " + element_of + " G.V";
     paintLoop(painter, w, h, 0, 4, str);
 
     if (rowsToColor == Outer) painter.setBrush(c_brush);
@@ -459,8 +456,7 @@ int AlgorithmInfos::paintMelysegi(int w, int h, QPainter &painter)
 
 
     h = h_orig;
-        // pi                                           empty set
-    str = QString::fromUtf8("\u03C0") + "(r) := " + QString::fromUtf8("\u2205");
+    str = pi + "(r) := " + empty_set;
     paintStatement(painter, w, h, 1, w_l, 1, str);
     h+= rowHeight;
     str = "DFSvisit(G, r, time)";
@@ -490,7 +486,7 @@ int AlgorithmInfos::paintMelysegi(int w, int h, QPainter &painter)
     // DFS visit ciklus
 
     h += rowHeight;
-    str = QString::fromUtf8("\u2200") + "v: (u,v)" + QString::fromUtf8("\u2208") + "G.E";
+    str = for_all + "v: (u,v)" + element_of + "G.E";
     paintLoop(painter, w, h, 0, 4, str);
 
 
@@ -514,7 +510,7 @@ int AlgorithmInfos::paintMelysegi(int w, int h, QPainter &painter)
     if (rowsToColor == IfTrue) painter.setBrush(c_brush);
 
     h = h_orig;
-    str = QString::fromUtf8("\u03C0") + "(v) := u";
+    str = pi + "(v) := u";
     paintStatement(painter, w, h, 1, w_l, 1, str);
 
     h+= rowHeight;

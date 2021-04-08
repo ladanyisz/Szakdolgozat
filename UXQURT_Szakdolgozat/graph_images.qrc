@@ -21,5 +21,10 @@
         <file>img/empty-set.png</file>
         <file>img/infinity.png</file>
         <file>img/pi.png</file>
+        <file>img/dijkstra.png</file>
+        <file>img/melysegi.PNG</file>
+        <file>img/melysegi_visit.PNG</file>
+        <file>img/prim.PNG</file>
+        <file>img/szelessegi.PNG</file>
     </qresource>
 </RCC>

@@ -23,6 +23,7 @@
 #include "graphscene.h"
 #include "graphtexteditor.h"
 #include "algorithminfos.h"
+#include "algorithmhelp.h"
 #include <tuple>
 
 
@@ -84,6 +85,11 @@ private:
     QAction* deleteGraphAction;
     QAction* resetLayout;
     QAction* setupGraphAction;
+
+    QAction* szelessegiHelpAction;
+    QAction* melysegiHelpAction;
+    QAction* primHelpAction;
+    QAction* dijkstraHelpAction;
 
 
     QToolBar* editToolbar;
