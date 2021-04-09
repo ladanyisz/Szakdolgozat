@@ -18,8 +18,8 @@ public:
     QChar getName();
     int getAdjNum();                    // gyerekek számát adja meg
     int getWeight(Node* to);            // él súlya a megfelelő Node-hoz
-    QChar getAjdNodeName(int i);        // serializeGraph-ban használt
-    int getAdjNodeWeight(int i);        // serializeGraph-ban használt
+    QChar getAdjNodeName(int i);        // i. indexű gyereke neve
+    int getAdjNodeWeight(int i);        // i. indexű gyereke élsúlya
 
     bool setEdge(Node *to, int w);      // ha új él, akkor igazzal, ha nem, akkor hamissal tér vissza
     void setReversedEdge();             // ha valamelyik csúcsba megy ebből él, akkor a csúcsból ebbe is beállít egy élt (irányított -> irányítatlan váltás)

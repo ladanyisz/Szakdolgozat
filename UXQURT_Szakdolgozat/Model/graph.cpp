@@ -65,7 +65,7 @@ int Graph::getWeight(int fromId, int toId)
 
 int Graph::getAdjNum(int ind) { return nodes.at(ind)->getAdjNum(); }
 
-QChar Graph::getAdjName(int ind_this, int ind_ajd) { return nodes.at(ind_this)->getAjdNodeName(ind_ajd); }
+QChar Graph::getAdjName(int ind_this, int ind_ajd) { return nodes.at(ind_this)->getAdjNodeName(ind_ajd); }
 
 int Graph::getAdjWeight(int ind_this, int ind_ajd) { return nodes.at(ind_this)->getAdjNodeWeight(ind_ajd); }
 
@@ -74,7 +74,7 @@ int Graph::getAdjIndexInNodes(int from_index, int to_adj_index)
     Node* node = nodes.at(from_index);
     for(int i=0; i<nodes.length(); i++) {
         if (i != from_index) {
-            if (node->getAjdNodeName(to_adj_index) == nodes.at(i)->getName()) return i;
+            if (node->getAdjNodeName(to_adj_index) == nodes.at(i)->getName()) return i;
         }
     }
     return -1;
@@ -239,7 +239,7 @@ void Graph::serializeGraph()
         QString msg = "";
         msg += QString(node->getName()) + "     |     ";
         for(int i=0; i<node->getAdjNum(); i++) {
-            msg += "(" + QString(node->getAjdNodeName(i)) + "," + QString::number(node->getAdjNodeWeight(i)) + "), ";
+            msg += "(" + QString(node->getAdjNodeName(i)) + "," + QString::number(node->getAdjNodeWeight(i)) + "), ";
         }
         qDebug() << msg;
     }
@@ -274,9 +274,9 @@ bool Graph::saveGraph(QString path, QVector<QPointF> positions)
         int adj_num = node->getAdjNum();
         if (adj_num >= 1) {
             for(int i=0; i<adj_num-1; i++) {
-                gr += QString(node->getAjdNodeName(i)) + "," + QString::number(node->getAdjNodeWeight(i)) + ";";
+                gr += QString(node->getAdjNodeName(i)) + "," + QString::number(node->getAdjNodeWeight(i)) + ";";
             }
-            gr += QString(node->getAjdNodeName(adj_num-1)) + "," + QString::number(node->getAdjNodeWeight(adj_num-1));
+            gr += QString(node->getAdjNodeName(adj_num-1)) + "," + QString::number(node->getAdjNodeWeight(adj_num-1));
         }
         graph_representation.append(gr);
     }
