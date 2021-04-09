@@ -3,7 +3,6 @@
 
 #include <QSizePolicy>
 #include <QTimer>
-#include <QDebug>
 #include <QMatrix>
 #include <QGraphicsItem>
 #include<QMenuBar>
@@ -48,6 +47,505 @@ GraphViewer::GraphViewer(QWidget *parent)
 
 }
 
+
+// SLOTS
+
+
+void GraphViewer::deleteGraph()
+{
+    graph->deleteAll();
+    algorithmSelector->setEnabled(false);
+    nodeSelector->setEnabled(false);
+}
+
+// algoritmus kezelése
+
+void GraphViewer::algorithmSelected(QString selectedAlgorithm)
+{
+    nodeSelector->setEnabled(true);
+    Algorithm::Algorithms selectedAlgo = Algorithm::Algorithms::None;
+    if (selectedAlgorithm == "Szélességi bejárás")
+        selectedAlgo = Algorithm::Algorithms::Szelessegi;
+    else if (selectedAlgorithm == "Mélységi bejárás") {
+        selectedAlgo = Algorithm::Algorithms::Melysegi;
+        nodeSelector->setEnabled(false);
+    }
+    else if (selectedAlgorithm == "Prim-algoritmus")
+        selectedAlgo = Algorithm::Algorithms::Prim;
+    else if (selectedAlgorithm == "Dijkstra-algoritmus")
+        selectedAlgo = Algorithm::Algorithms::Dijkstra;
+    algo->selectAlgorithm(selectedAlgo);
+}
+
+void GraphViewer::nodeSelected(int selectedIndex)
+{
+
+    if (selectedIndex != -1) algo->selectStartNode(selectedIndex);
+}
+
+void GraphViewer::algorithmStopped()
+{
+    enableEdit();
+    enableAlgorithms();
+    algo->reset();
+    previousButton->setEnabled(false);
+    pauseButton->setEnabled(false);
+
+    algoInfos->setVisible(false);
+
+    while (algoValues->layout()->count() > 0) {
+        QLayoutItem* i = algoValues->itemAt(0);
+        if (i->widget()) {
+            algoValues->removeWidget(i->widget());
+            delete i->widget();
+        }
+    }
+    if (queue->isVisible()) view->resize(view->width(), view->height() + 92);
+    queue->setVisible(false);
+    view->resize(width()-18, view->height());
+    updateSceneRect();
+}
+
+void GraphViewer::algorithmStarted()
+{
+    disableEdit();
+    disableSelectors();
+    pointerButton->click();
+    algo->startAlgorithm();
+    if (algo->getInitState()) {
+        playButton->setEnabled(false);
+        pauseButton->setEnabled(true);
+        previousButton->setEnabled(true);
+        algoInfos->setAlgorithm(algo->getChosenAlgo());
+        algoInfos->setVisible(true);
+        view->resize(view->width(), height()-162);
+        updateSceneRect();
+    } else {
+        pauseButton->setEnabled(true);
+        pauseButton->click();
+        enableEdit();
+        enableSelectors();
+    }
+
+}
+
+void GraphViewer::algorithmPaused()
+{
+    algo->pauseAlgrotithm();
+    playButton->setEnabled(true);
+    pauseButton->setEnabled(false);
+}
+
+void GraphViewer::nextPressed()
+{
+    disableEdit();
+    disableSelectors();
+    bool not_first = algo->getInitState();
+    bool step_success = algo->stepAlgorithm();
+    if (algo->getInitState()) {
+        if (!step_success) nextButton->setEnabled(false);
+        if (!previousButton->isEnabled()) previousButton->setEnabled(true);
+        algoInfos->setAlgorithm(algo->getChosenAlgo());
+        algoInfos->setVisible(true);
+        if (!not_first) {
+            view->resize(view->width(), height() - 162);
+            updateSceneRect();
+        }
+    } else {
+        enableEdit();
+        enableSelectors();
+    }
+}
+
+void GraphViewer::previousPressed()
+{
+    if (!algo->stepBackAlgorithm()) previousButton->setEnabled(false);
+    if (!nextButton->isEnabled()) nextButton->setEnabled(true);
+}
+
+
+// szerkesztő-elemek megjelenítése / elrejtése
+
+void GraphViewer::showGraphTextEditor()
+{
+    graphTextEditor->initEditor();
+    graphTextEditor->setHidden(false);
+    disableEdit();
+    disableAlgorithms();
+    setupGraphAction->setEnabled(false);
+    updateSceneRect();
+}
+
+void GraphViewer::hideGraphTextEditor()
+{
+    graphTextEditor->setHidden(true);
+    enableEdit();
+    setupGraphAction->setEnabled(true);
+    if (graph->getSize() >= 1) enableAlgorithms();
+    view->resize(width()-18, view->height());
+    updateSceneRect();
+}
+
+void GraphViewer::showWeightGroup()
+{
+    weightLineEdit->setText("");
+    weightLineEdit->setFocus();
+    weightGroupBox->setVisible(true);
+}
+
+
+// mentés-betöltés
+
+void GraphViewer::saveFile()
+{
+    QString dir;
+    if (path == "")
+        dir = QDir::rootPath();
+    else
+        dir = path;
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Gráf mentése"), dir, tr("Gráfok (*.graph)"));
+
+    if (fileName != "") {
+        path = QFileInfo(fileName).path();
+        QVector<QPointF> positions = scene->nodePositions();
+        graph->saveGraph(fileName, positions);
+    }
+}
+
+void GraphViewer::openFile()
+{
+    QString dir;
+    if (path == "")
+        dir = QDir::rootPath();
+    else
+        dir = path;
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Gráf betöltése"), dir, tr("Gráfok (*.graph)"));
+    if (fileName != "" && fileName != QString()) {
+        path = QFileInfo(fileName).path();
+        QVector<std::tuple<int, QChar, QPointF>> nodes_data = graph->loadGraph(fileName);
+        for(int i=0; i<graph->getSize(); i++) {
+            std::tuple<int, QChar, QPointF> node_data = nodes_data.at(i);
+            qreal w = scene->sceneRect().width();
+            qreal h = scene->sceneRect().height();
+            QPointF point;
+            point.setX(std::get<2>(node_data).x()*w);
+            point.setY(std::get<2>(node_data).y()*h);
+            scene->addNode(std::get<0>(node_data), std::get<1>(node_data), point);
+        }
+        for(int i=0; i<graph->getSize(); i++) {
+            for(int j=0; j<graph->getAdjNum(i); j++) {
+                scene->addNewEdge(graph->getName(graph->getId(i)), graph->getAdjName(i,j), graph->getAdjWeight(i,j));
+            }
+        }
+        if (graph->getDirected() != directedCheckBox->isChecked()) directedCheckBox->click();
+        if (graph->getWeighted() != weightedCheckBox->isChecked()) weightedCheckBox->click();
+        algo->reset();
+        if (graph->getSize() > 0) enableAlgorithms();
+        algorithmStopped();
+        pointerButton->click();
+    }
+}
+
+
+// eszközsáv elemeinek engedélyezése / letiltása
+
+void GraphViewer::enableAlgorithms()
+{
+    enableSelectors();
+    playButton->setEnabled(true);
+    nextButton->setEnabled(true);
+    stopButton->setEnabled(true);
+
+    updateNodeSelector();
+
+    algorithmSelected(algorithmSelector->currentText());
+    nodeSelected(nodeSelector->currentIndex());
+}
+
+void GraphViewer::disableAlgorithms()
+{
+    disableSelectors();
+    playButton->setEnabled(false);
+    pauseButton->setEnabled(false);
+    previousButton->setEnabled(false);
+    nextButton->setEnabled(false);
+    stopButton->setEnabled(false);
+}
+
+void GraphViewer::enableSelectors()
+{
+    nodeSelector->setEnabled(true);
+    algorithmSelector->setEnabled(true);
+}
+
+void GraphViewer::disableSelectors()
+{
+    nodeSelector->setEnabled(false);
+    algorithmSelector->setEnabled(false);
+}
+
+void GraphViewer::enableEdit()
+{
+    nodeButton->setEnabled(true);
+    edgeButton->setEnabled(true);
+    if (graph->getWeighted()) weightButton->setEnabled(true);
+    deleteButton->setEnabled(true);
+
+    deleteGraphAction->setEnabled(true);
+    directedCheckBox->setEnabled(true);
+    weightedCheckBox->setEnabled(true);
+    setupGraphAction->setEnabled(true);
+}
+
+void GraphViewer::disableEdit()
+{
+    nodeButton->setEnabled(false);
+    edgeButton->setEnabled(false);
+    weightButton->setEnabled(false);
+    deleteButton->setEnabled(false);
+    deleteGraphAction->setEnabled(false);
+    directedCheckBox->setEnabled(false);
+    weightedCheckBox->setEnabled(false);
+    setupGraphAction->setEnabled(false);
+
+    weightLineEdit->setText("");
+    weightGroupBox->setVisible(false);
+    pointerButton->click();
+}
+
+
+// figyelmeztetések
+
+void GraphViewer::nodesFull()
+{
+    warningLabel->setText("Elérted a maximálisan elhelyezhető csúcsok számát! (" +  QString::number(graph->getMaxNodeNum()) + ")");
+    showWarningLabel();
+}
+
+void GraphViewer::edgesFull()
+{
+    warningLabel->setText("Nincs több lehetséges él!");
+    showWarningLabel();
+}
+
+void GraphViewer::needWeights()
+{
+    warningLabel->setText("Az algoritmus csak élsúlyozott gráfon futtatható!");
+    showWarningLabel();
+}
+
+void GraphViewer::noWeights()
+{
+    warningLabel->setText("Az algoritmus csak élsúlyozatlan gráfon futtatható!");
+    showWarningLabel();
+}
+
+void GraphViewer::needOnlyNonnegativeEdges()
+{
+    warningLabel->setText("Az algoritmus csak olyan gráfon futtatható, aminek minden élköltsége nemnegatív!");
+    showWarningLabel();
+}
+
+void GraphViewer::needsToBeConnected()
+{
+    warningLabel->setText("Az algoritmus csak összefüggő gráfon futtatható!");
+    showWarningLabel();
+}
+
+void GraphViewer::needToBeDirected()
+{
+    warningLabel->setText("Az algoritmus csak irányított gráfon futtatható!");
+    showWarningLabel();
+}
+
+void GraphViewer::needsToBeUndirected()
+{
+    warningLabel->setText("Az algoritmus csak irányítatlan gráfon futtatható!");
+    showWarningLabel();
+}
+
+
+// algoritmus változásai
+
+void GraphViewer::algoInitReady(int ind)
+{
+    if (ind == -1) return;
+    int w = 30;
+    queue->setVisible(true);
+    if (algo->getChosenAlgo() != Algorithm::Algorithms::Melysegi){
+
+        QLabel* d = new QLabel("d");
+        d->setFixedWidth(w);
+        d->setFont(tableFont);
+        algoValues->addWidget(d, 1,0, Qt::AlignLeft);
+
+    } else {
+        queue->setText("");
+
+        QLabel* df = new QLabel("d/f");
+        df->setFixedWidth(60);
+        df->setFont(tableFont);
+        algoValues->addWidget(df, 1,0, Qt::AlignLeft);
+    }
+
+    QLabel* p = new QLabel();
+    QPixmap pixmap(":/img/pi.png");
+
+    p->setPixmap(pixmap.scaledToHeight(18));
+    p->setFixedWidth(w);
+    p->setFont(tableFont);
+    algoValues->addWidget(p, 2,0, Qt::AlignLeft);
+
+    QStringList names = graph->getNames();
+    names.sort();
+    int i = 1;
+    foreach(QString name, names) {
+        QLabel* n = new QLabel(name);
+        n->setFont(tableFont);
+        n->setFixedWidth(w);
+        n->setAlignment(Qt::AlignCenter);
+        algoValues->addWidget(n, 0, i, Qt::AlignHCenter);
+
+        int index = graph->getIndex(name);
+
+        if (algo->getChosenAlgo() != Algorithm::Algorithms::Melysegi) {
+            QLabel* d = new QLabel();
+            d->setFont(tableDataFont);
+            d->setFixedWidth(w);
+            d->setAlignment(Qt::AlignCenter);
+            if (index == ind) d->setText("0");
+            else {
+                QPixmap pmap(":/img/infinity.png");
+                d->setPixmap(pmap);
+            }
+            algoValues->addWidget(d, 1, i, Qt::AlignHCenter);
+
+        } else {
+
+            QLabel* df = new QLabel();
+            df->setFont(tableDataFont);
+            df->setFixedWidth(60);
+            df->setAlignment(Qt::AlignCenter);
+            df->setText("0/0");
+            algoValues->addWidget(df, 1, i, Qt::AlignHCenter);
+
+        }
+
+        QLabel* p = new QLabel();
+        QPixmap pix(":/img/empty-set.png");
+        p->setAlignment(Qt::AlignCenter);
+        p->setPixmap(pix);
+        p->setFixedWidth(w);
+        p->setFont(tableDataFont);
+        algoValues->addWidget(p, 2, i, Qt::AlignHCenter);
+        i++;
+    }
+
+
+    algoValues->setSpacing(0);
+    algoValues->setHorizontalSpacing(12);
+    view->resize(view->width(), height() - 162);
+    updateSceneRect();
+}
+
+void GraphViewer::parentChanged(int ind, QChar n)
+{
+    QChar name = graph->getName(graph->getId(ind));
+    bool found = false;
+    int i = 1;
+    while (i < graph->getSize() + 1 && !found) {
+        QLayoutItem* item = algoValues->itemAtPosition(0,i);
+        QLabel* label = qobject_cast<QLabel*>(item->widget());
+        if (label && label->text() == QString(name)) {
+            found = true;
+            QLayoutItem* item = algoValues->itemAtPosition(2,i);
+            QLabel* label = qobject_cast<QLabel*>(item->widget());
+            label->setStyleSheet("background-color: rgb(255, 174, 0);");
+            if (n == QChar()) {
+                QPixmap pix(":/img/empty-set.png");
+                label->setPixmap(pix);
+                label->setText("");
+            } else
+                label->setText(n);
+        }
+        i++;
+    }
+}
+
+void GraphViewer::distChanged(int ind, int d)
+{
+    QChar name = graph->getName(graph->getId(ind));
+    bool found = false;
+    int i = 1;
+    while (i < graph->getSize() + 1 && !found) {
+        QLayoutItem* item = algoValues->itemAtPosition(0,i);
+        QLabel* label = qobject_cast<QLabel*>(item->widget());
+        if (label && label->text() == QString(name)) {
+            found = true;
+            QLayoutItem* item = algoValues->itemAtPosition(1,i);
+            QLabel* label = qobject_cast<QLabel*>(item->widget());
+            label->setStyleSheet("background-color: rgb(255, 174, 0);");
+            if (d != INT32_MAX)
+                label->setText(QString::number(d));
+            else {
+                QPixmap pmap(":/img/infinity.png");
+                label->setPixmap(pmap);
+                label->setText("");
+            }
+        }
+        i++;
+    }
+}
+
+void GraphViewer::queueChanged(QString q)
+{
+    queue->setText("Q - " + q);
+}
+
+void GraphViewer::discoveryFinishChanged(int ind, int d, int f)
+{
+    QChar name = graph->getName(graph->getId(ind));
+    bool found = false;
+    int i = 1;
+    while (i < graph->getSize() + 1 && !found) {
+        QLayoutItem* item = algoValues->itemAtPosition(0,i);
+        QLabel* label = qobject_cast<QLabel*>(item->widget());
+        if (label && label->text() == QString(name)) {
+            found = true;
+            QLayoutItem* item = algoValues->itemAtPosition(1,i);
+            QLabel* label = qobject_cast<QLabel*>(item->widget());
+            label->setStyleSheet("background-color: rgb(255, 174, 0);");
+            label->setText(QString::number(d) + "/" + QString::number(f));
+        }
+        i++;
+    }
+}
+
+void GraphViewer::showWarningLabel()
+{
+    warningLabel->setHidden(false);
+    timer.setSingleShot(true);
+    timer.start(5000);
+}
+
+void GraphViewer::clearColorsInAlgTable()
+{
+    for(int i=1; i<graph->getSize() + 1; i++) {
+        for(int j=1; j<algoValues->rowCount(); j++) {
+            QLayoutItem* item = algoValues->itemAtPosition(j,i);
+            QLabel* label = qobject_cast<QLabel*>(item->widget());
+            label->setStyleSheet("background-color: none;");
+        }
+    }
+
+}
+
+// ---------------
+
+
+// PRIVATE FUNCTIONS
+
+
 void GraphViewer::algoConnections()
 {
     connect(algo, &Algorithm::nodeStateChange, scene, &GraphScene::changeNodeState);
@@ -80,7 +578,7 @@ void GraphViewer::algoConnections()
 
 void GraphViewer::setStyles()
 {
-    this->setStyleSheet(/*"QToolBar {spacing: 6px; padding: 6px 3px;}"*/
+    this->setStyleSheet(
                         "QComboBox {"
                          "font-size: 14px;"
                          "padding: 2px 4px;"
@@ -285,14 +783,12 @@ void GraphViewer::initViews()
     view = new QGraphicsView(scene);
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-//    view->resize(width()-18, view->height());
     updateSceneRect();
 
 
     QWidget *widget = new QWidget;
     setCentralWidget(widget);
     layout = new QHBoxLayout();
-//    layout->addWidget(view);
     widget->setLayout(layout);
     v_layout = new QVBoxLayout();
     v_layout->addWidget(view);
@@ -368,480 +864,6 @@ void GraphViewer::updateNodeSelector()
     if (nodeSelector->findText(name) != -1) nodeSelector->setCurrentText(name);
 }
 
-void GraphViewer::nodesFull()
-{
-    warningLabel->setText("Elérted a maximálisan elhelyezhető csúcsok számát! (" +  QString::number(graph->getMaxNodeNum()) + ")");
-    showWarningLabel();
-}
-
-void GraphViewer::edgesFull()
-{
-    warningLabel->setText("Nincs több lehetséges él!");
-    showWarningLabel();
-}
-
-void GraphViewer::deleteGraph()
-{
-    graph->deleteAll();
-    algorithmSelector->setEnabled(false);
-    nodeSelector->setEnabled(false);
-}
-
-void GraphViewer::algorithmSelected(QString selectedAlgorithm)
-{
-    nodeSelector->setEnabled(true);
-    Algorithm::Algorithms selectedAlgo = Algorithm::Algorithms::None;
-    if (selectedAlgorithm == "Szélességi bejárás")
-        selectedAlgo = Algorithm::Algorithms::Szelessegi;
-    else if (selectedAlgorithm == "Mélységi bejárás") {
-        selectedAlgo = Algorithm::Algorithms::Melysegi;
-        nodeSelector->setEnabled(false);
-    }
-    else if (selectedAlgorithm == "Prim-algoritmus")
-        selectedAlgo = Algorithm::Algorithms::Prim;
-    else if (selectedAlgorithm == "Dijkstra-algoritmus")
-        selectedAlgo = Algorithm::Algorithms::Dijkstra;
-    algo->selectAlgorithm(selectedAlgo);
-}
-
-void GraphViewer::nodeSelected(int selectedIndex)
-{
-
-    if (selectedIndex != -1) algo->selectStartNode(selectedIndex);
-}
-
-void GraphViewer::algorithmStopped()
-{
-    enableEdit();
-    enableAlgorithms();
-    algo->reset();
-    previousButton->setEnabled(false);
-    pauseButton->setEnabled(false);
-
-    algoInfos->setVisible(false);
-
-    while (algoValues->layout()->count() > 0) {
-        QLayoutItem* i = algoValues->itemAt(0);
-        if (i->widget()) {
-            algoValues->removeWidget(i->widget());
-            delete i->widget();
-        }
-    }
-    if (queue->isVisible()) view->resize(view->width(), view->height() + 92);
-    queue->setVisible(false);
-    view->resize(width()-18, view->height());
-    updateSceneRect();
-}
-
-void GraphViewer::algorithmStarted()
-{
-    disableEdit();
-    disableSelectors();
-    pointerButton->click();
-    algo->startAlgorithm();
-    if (algo->getInitState()) {
-        playButton->setEnabled(false);
-        pauseButton->setEnabled(true);
-        previousButton->setEnabled(true);
-        algoInfos->setAlgorithm(algo->getChosenAlgo());
-        algoInfos->setVisible(true);
-        view->resize(view->width(), height()-162);
-        updateSceneRect();
-    } else {
-        pauseButton->setEnabled(true);
-        pauseButton->click();
-        enableEdit();
-        enableSelectors();
-    }
-
-}
-
-void GraphViewer::algorithmPaused()
-{
-    algo->pauseAlgrotithm();
-    playButton->setEnabled(true);
-    pauseButton->setEnabled(false);
-}
-
-void GraphViewer::nextPressed()
-{
-    disableEdit();
-    disableSelectors();
-    bool not_first = algo->getInitState();
-    bool step_success = algo->stepAlgorithm();
-    if (algo->getInitState()) {
-        if (!step_success) nextButton->setEnabled(false);
-        if (!previousButton->isEnabled()) previousButton->setEnabled(true);
-        algoInfos->setAlgorithm(algo->getChosenAlgo());
-        algoInfos->setVisible(true);
-        if (!not_first) {
-            view->resize(view->width(), height() - 162);
-            updateSceneRect();
-        }
-    } else {
-        enableEdit();
-        enableSelectors();
-    }
-}
-
-void GraphViewer::previousPressed()
-{
-    if (!algo->stepBackAlgorithm()) previousButton->setEnabled(false);
-    if (!nextButton->isEnabled()) nextButton->setEnabled(true);
-}
-
-void GraphViewer::showGraphTextEditor()
-{
-    graphTextEditor->initEditor();
-    graphTextEditor->setHidden(false);
-    disableEdit();
-    disableAlgorithms();
-    setupGraphAction->setEnabled(false);
-    updateSceneRect();
-}
-
-void GraphViewer::hideGraphTextEditor()
-{
-    graphTextEditor->setHidden(true);
-    enableEdit();
-    setupGraphAction->setEnabled(true);
-    if (graph->getSize() >= 1) enableAlgorithms();
-    view->resize(width()-18, view->height());
-    updateSceneRect();
-}
-
-void GraphViewer::showWeightGroup()
-{
-    weightLineEdit->setText("");
-    weightLineEdit->setFocus();
-    weightGroupBox->setVisible(true);
-}
-
-void GraphViewer::saveFile()
-{
-    QString dir;
-    if (path == "")
-        dir = QDir::rootPath();
-    else
-        dir = path;
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Gráf mentése"), dir, tr("Gráfok (*.graph)"));
-
-    if (fileName != "") {
-        path = QFileInfo(fileName).path();
-        QVector<QPointF> positions = scene->nodePositions();
-        graph->saveGraph(fileName, positions);
-    }
-}
-
-void GraphViewer::openFile()
-{
-    QString dir;
-    if (path == "")
-        dir = QDir::rootPath();
-    else
-        dir = path;
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Gráf betöltése"), dir, tr("Gráfok (*.graph)"));
-    if (fileName != "" && fileName != QString()) {
-        path = QFileInfo(fileName).path();
-        QVector<std::tuple<int, QChar, QPointF>> nodes_data = graph->loadGraph(fileName);
-        for(int i=0; i<graph->getSize(); i++) {
-            std::tuple<int, QChar, QPointF> node_data = nodes_data.at(i);
-            qreal w = scene->sceneRect().width();
-            qreal h = scene->sceneRect().height();
-            QPointF point;
-            point.setX(std::get<2>(node_data).x()*w);
-            point.setY(std::get<2>(node_data).y()*h);
-            scene->addNode(std::get<0>(node_data), std::get<1>(node_data), point);
-        }
-        for(int i=0; i<graph->getSize(); i++) {
-            for(int j=0; j<graph->getAdjNum(i); j++) {
-                scene->addNewEdge(graph->getName(graph->getId(i)), graph->getAdjName(i,j), graph->getAdjWeight(i,j));
-            }
-        }
-        if (graph->getDirected() != directedCheckBox->isChecked()) directedCheckBox->click();
-        if (graph->getWeighted() != weightedCheckBox->isChecked()) weightedCheckBox->click();
-        algo->reset();
-        if (graph->getSize() > 0) enableAlgorithms();
-        algorithmStopped();
-        pointerButton->click();
-    }
-}
-
-void GraphViewer::enableAlgorithms()
-{
-    nodeSelector->setEnabled(true);
-    algorithmSelector->setEnabled(true);
-    playButton->setEnabled(true);
-    nextButton->setEnabled(true);
-    stopButton->setEnabled(true);
-
-    updateNodeSelector();
-
-    algorithmSelected(algorithmSelector->currentText());
-    nodeSelected(nodeSelector->currentIndex());
-}
-
-void GraphViewer::disableAlgorithms()
-{
-    nodeSelector->setEnabled(false);
-    algorithmSelector->setEnabled(false);
-    playButton->setEnabled(false);
-    pauseButton->setEnabled(false);
-    previousButton->setEnabled(false);
-    nextButton->setEnabled(false);
-    stopButton->setEnabled(false);
-}
-
-void GraphViewer::enableSelectors()
-{
-    nodeSelector->setEnabled(true);
-    algorithmSelector->setEnabled(true);
-}
-
-void GraphViewer::disableSelectors()
-{
-    nodeSelector->setEnabled(false);
-    algorithmSelector->setEnabled(false);
-}
-
-void GraphViewer::enableEdit()
-{
-    nodeButton->setEnabled(true);
-    edgeButton->setEnabled(true);
-    if (graph->getWeighted()) weightButton->setEnabled(true);
-    deleteButton->setEnabled(true);
-
-    deleteGraphAction->setEnabled(true);
-    directedCheckBox->setEnabled(true);
-    weightedCheckBox->setEnabled(true);
-    setupGraphAction->setEnabled(true);
-}
-
-void GraphViewer::disableEdit()
-{
-    nodeButton->setEnabled(false);
-    edgeButton->setEnabled(false);
-    weightButton->setEnabled(false);
-    deleteButton->setEnabled(false);
-    deleteGraphAction->setEnabled(false);
-    directedCheckBox->setEnabled(false);
-    weightedCheckBox->setEnabled(false);
-    setupGraphAction->setEnabled(false);
-
-    weightLineEdit->setText("");
-    weightGroupBox->setVisible(false);
-    pointerButton->click();
-}
-
-void GraphViewer::needWeights()
-{
-    warningLabel->setText("Az algoritmus csak súlyozott gráfon futtatható!");
-    showWarningLabel();
-}
-
-void GraphViewer::needOnlyNonnegativeEdges()
-{
-    warningLabel->setText("Az algoritmus csak olyan gráfon futtatható, aminek minden élköltsége nemnegatív!");
-    showWarningLabel();
-}
-
-void GraphViewer::noWeights()
-{
-    warningLabel->setText("Az algoritmus csak súlyozatlan gráfon futtatható!");
-    showWarningLabel();
-}
-
-void GraphViewer::needsToBeConnected()
-{
-    warningLabel->setText("Az algoritmus csak összefüggő gráfon futtatható!");
-    showWarningLabel();
-}
-
-void GraphViewer::needToBeDirected()
-{
-    warningLabel->setText("Az algoritmus csak irányított gráfon futtatható!");
-    showWarningLabel();
-}
-
-void GraphViewer::needsToBeUndirected()
-{
-    warningLabel->setText("Az algoritmus csak irányítatlan gráfon futtatható!");
-    showWarningLabel();
-}
-
-void GraphViewer::algoInitReady(int ind)
-{
-    if (ind == -1) return;
-    int w = 30;
-    queue->setVisible(true);
-    if (algo->getChosenAlgo() != Algorithm::Algorithms::Melysegi){
-
-        QLabel* d = new QLabel("d");
-        d->setFixedWidth(w);
-        d->setFont(tableFont);
-        algoValues->addWidget(d, 1,0, Qt::AlignLeft);
-
-    } else {
-        queue->setText("");
-
-        QLabel* df = new QLabel("d/f");
-        df->setFixedWidth(60);
-        df->setFont(tableFont);
-        algoValues->addWidget(df, 1,0, Qt::AlignLeft);
-    }
-
-    QLabel* p = new QLabel();
-    QPixmap pixmap(":/img/pi.png");
-
-    p->setPixmap(pixmap.scaledToHeight(18));
-    p->setFixedWidth(w);
-    p->setFont(tableFont);
-    algoValues->addWidget(p, 2,0, Qt::AlignLeft);
-
-    QStringList names = graph->getNames();
-    names.sort();
-    int i = 1;
-    foreach(QString name, names) {
-        QLabel* n = new QLabel(name);
-        n->setFont(tableFont);
-        n->setFixedWidth(w);
-        n->setAlignment(Qt::AlignCenter);
-        algoValues->addWidget(n, 0, i, Qt::AlignHCenter);
-
-        int index = graph->getIndex(name);
-
-        if (algo->getChosenAlgo() != Algorithm::Algorithms::Melysegi) {
-            QLabel* d = new QLabel();
-            d->setFont(tableDataFont);
-            d->setFixedWidth(w);
-            d->setAlignment(Qt::AlignCenter);
-            if (index == ind) d->setText("0");
-            else {
-                QPixmap pmap(":/img/infinity.png");
-                d->setPixmap(pmap);
-            }
-            algoValues->addWidget(d, 1, i, Qt::AlignHCenter);
-
-        } else {
-
-            QLabel* df = new QLabel();
-            df->setFont(tableDataFont);
-            df->setFixedWidth(60);
-            df->setAlignment(Qt::AlignCenter);
-            df->setText("0/0");
-            algoValues->addWidget(df, 1, i, Qt::AlignHCenter);
-
-        }
-
-        QLabel* p = new QLabel();
-        QPixmap pix(":/img/empty-set.png");
-        p->setAlignment(Qt::AlignCenter);
-        p->setPixmap(pix);
-        p->setFixedWidth(w);
-        p->setFont(tableDataFont);
-        algoValues->addWidget(p, 2, i, Qt::AlignHCenter);
-        i++;
-    }
-
-
-    algoValues->setSpacing(0);
-    algoValues->setHorizontalSpacing(12);
-    view->resize(view->width(), height() - 162);
-    updateSceneRect();
-}
-
-void GraphViewer::parentChanged(int ind, QChar n)
-{
-    QChar name = graph->getName(graph->getId(ind));
-    bool found = false;
-    int i = 1;
-    while (i < graph->getSize() + 1 && !found) {
-        QLayoutItem* item = algoValues->itemAtPosition(0,i);
-        QLabel* label = qobject_cast<QLabel*>(item->widget());
-        if (label && label->text() == QString(name)) {
-            found = true;
-            QLayoutItem* item = algoValues->itemAtPosition(2,i);
-            QLabel* label = qobject_cast<QLabel*>(item->widget());
-            label->setStyleSheet("background-color: rgb(255, 174, 0);");
-            if (n == QChar()) {
-                QPixmap pix(":/img/empty-set.png");
-                label->setPixmap(pix);
-                label->setText("");
-            } else
-                label->setText(n);
-        }
-        i++;
-    }
-}
-
-void GraphViewer::distChanged(int ind, int d)
-{
-    QChar name = graph->getName(graph->getId(ind));
-    bool found = false;
-    int i = 1;
-    while (i < graph->getSize() + 1 && !found) {
-        QLayoutItem* item = algoValues->itemAtPosition(0,i);
-        QLabel* label = qobject_cast<QLabel*>(item->widget());
-        if (label && label->text() == QString(name)) {
-            found = true;
-            QLayoutItem* item = algoValues->itemAtPosition(1,i);
-            QLabel* label = qobject_cast<QLabel*>(item->widget());
-            label->setStyleSheet("background-color: rgb(255, 174, 0);");
-            if (d != INT32_MAX)
-                label->setText(QString::number(d));
-            else {
-                QPixmap pmap(":/img/infinity.png");
-                label->setPixmap(pmap);
-                label->setText("");
-            }
-        }
-        i++;
-    }
-}
-
-void GraphViewer::queueChanged(QString q)
-{
-    queue->setText("Q - " + q);
-}
-
-void GraphViewer::discoveryFinishChanged(int ind, int d, int f)
-{
-    QChar name = graph->getName(graph->getId(ind));
-    bool found = false;
-    int i = 1;
-    while (i < graph->getSize() + 1 && !found) {
-        QLayoutItem* item = algoValues->itemAtPosition(0,i);
-        QLabel* label = qobject_cast<QLabel*>(item->widget());
-        if (label && label->text() == QString(name)) {
-            found = true;
-            QLayoutItem* item = algoValues->itemAtPosition(1,i);
-            QLabel* label = qobject_cast<QLabel*>(item->widget());
-            label->setStyleSheet("background-color: rgb(255, 174, 0);");
-            label->setText(QString::number(d) + "/" + QString::number(f));
-        }
-        i++;
-    }
-}
-
-void GraphViewer::showWarningLabel()
-{
-    warningLabel->setHidden(false);
-    timer.setSingleShot(true);
-    timer.start(5000);
-}
-
-void GraphViewer::clearColorsInAlgTable()
-{
-    for(int i=1; i<graph->getSize() + 1; i++) {
-        for(int j=1; j<algoValues->rowCount(); j++) {
-            QLayoutItem* item = algoValues->itemAtPosition(j,i);
-            QLabel* label = qobject_cast<QLabel*>(item->widget());
-            label->setStyleSheet("background-color: none;");
-        }
-    }
-
-}
-
 void GraphViewer::updateSceneRect()
 {
     QList<QPointF> positions = scene->originalPositions();
@@ -853,6 +875,10 @@ void GraphViewer::updateSceneRect()
     scene->updatePositions(positions, w_new/w_old, h_new/h_old);
     view->fitInView(scene->sceneRect(), Qt::IgnoreAspectRatio);
 }
+
+// ---------------
+
+// PROTECTED FUNCTIONS
 
 void GraphViewer::resizeEvent(QResizeEvent *)
 {
