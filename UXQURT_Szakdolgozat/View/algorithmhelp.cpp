@@ -1,9 +1,15 @@
 #include "algorithmhelp.h"
 
 QString const AlgorithmHelp::pi = QString::fromUtf8("\u03C0");
+bool AlgorithmHelp::SzelessegiWindow = true;
+bool AlgorithmHelp::MelysegiWindow = true;
+bool AlgorithmHelp::PrimWindow = true;
+bool AlgorithmHelp::DijkstraWindow = true;
 
 AlgorithmHelp::AlgorithmHelp(Algorithm::Algorithms a, QWidget *parent) : QWidget(parent)
 {
+
+    this->a = a;
 
     setWindowTitle("Algoritmus segítség");
     layout = new QVBoxLayout();
@@ -61,6 +67,7 @@ AlgorithmHelp::AlgorithmHelp(Algorithm::Algorithms a, QWidget *parent) : QWidget
 
 void AlgorithmHelp::createSzelessegi()
 {
+    SzelessegiWindow = false;
     label->setText("Szélességi gráfkeresés");
     label->setFont(titleFont);
 
@@ -77,7 +84,7 @@ void AlgorithmHelp::createSzelessegi()
 
 void AlgorithmHelp::createMelysegi()
 {
-
+    MelysegiWindow = false;
     label->setText("Mélységi gráfkeresés");
 
     graphLabel->setText("A mélységi gráfkeresés <b>irányított</b>, <b>élsúlyozatlan</b> gráfokon alkalmazható.<br/>"
@@ -97,6 +104,7 @@ void AlgorithmHelp::createMelysegi()
 
 void AlgorithmHelp::createPrim()
 {
+    PrimWindow = false;
     label->setText("Prim algoritmus");
 
     graphLabel->setText("Az algoritmus <b>összefüggő</b>, <b>élsúlyozott</b>, <b>irányítalan</b> gráfokon futtatható.<br/>"
@@ -112,6 +120,7 @@ void AlgorithmHelp::createPrim()
 
 void AlgorithmHelp::createDijkstra()
 {
+    DijkstraWindow = false;
     label->setText("Dijkstra algoritmus");
 
     graphLabel->setText("Az algoritmus olyan <b>élsúlyozott</b> gráfon futtatható, melynek minden súlya nemnegatív. A gráf lehet <b>irányítalan</b> és <b>irányított</b> is.<br/>"
@@ -121,4 +130,26 @@ void AlgorithmHelp::createDijkstra()
 
     QPixmap pixmap(":/img/dijkstra.png");
     stukiLabel->setPixmap(pixmap);
+}
+
+void AlgorithmHelp::closeEvent(QCloseEvent *event)
+{
+    switch (a) {
+    case Algorithm::None:
+        break;
+    case Algorithm::Szelessegi:
+        SzelessegiWindow = true;
+        break;
+    case Algorithm::Melysegi:
+        MelysegiWindow = true;
+        break;
+    case Algorithm::Dijkstra:
+        DijkstraWindow = true;
+        break;
+    case Algorithm::Prim:
+        PrimWindow = true;
+        break;
+
+    }
+    QWidget::closeEvent(event);
 }

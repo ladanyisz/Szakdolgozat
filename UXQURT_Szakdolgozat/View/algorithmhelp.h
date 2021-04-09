@@ -13,12 +13,20 @@ class AlgorithmHelp : public QWidget
 public:
     explicit AlgorithmHelp(Algorithm::Algorithms a, QWidget *parent = nullptr);
 
+    static bool SzelessegiWindow;
+    static bool MelysegiWindow;
+    static bool PrimWindow;
+    static bool DijkstraWindow;
+
 signals:
 
 public slots:
 
 
 private:
+
+    Algorithm::Algorithms a;
+
     QVBoxLayout* layout;
     QFont titleFont;
     QFont normalFont;
@@ -34,6 +42,11 @@ private:
     void createMelysegi();
     void createPrim();
     void createDijkstra();
+
+
+
+protected:
+    void closeEvent(QCloseEvent *event);
 };
 
 #endif // ALGORITHMHELP_H
