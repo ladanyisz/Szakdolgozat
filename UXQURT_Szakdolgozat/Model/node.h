@@ -42,7 +42,6 @@ private:
     int id;
     QChar name;
     QVector<AdjNode*> adjNodes;
-//    NodeType type;
 
     int findAdjNode(Node* to);
 };
