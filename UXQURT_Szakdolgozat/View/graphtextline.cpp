@@ -22,7 +22,7 @@ GraphTextLine::GraphTextLine(bool weighted, QWidget *parent) : QWidget(parent)
     editButton->setMinimumHeight(22);
     editButton->setHidden(true);
 
-    deleteButton = new QPushButton(/*QIcon(":/img/red_trash.png"), ""*/);
+    deleteButton = new QPushButton();
     deleteButton->setStyleSheet("border-image:url(:/img/red_trash.png);");
     deleteButton->setCursor(QCursor(Qt::PointingHandCursor));
     deleteButton->setMinimumHeight(22);

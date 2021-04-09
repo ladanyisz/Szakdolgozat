@@ -1,7 +1,5 @@
 #include "edgegraphics.h"
 #include "math.h"
-#include <QDebug>
-#include <QMatrix>
 #include <QMatrix>
 
 

@@ -1,5 +1,4 @@
 #include "graphtexteditor.h"
-#include <QDebug>
 
 GraphTextEditor::GraphTextEditor(Graph* graph, QWidget *parent) : QWidget(parent)
 {
@@ -50,7 +49,6 @@ GraphTextEditor::GraphTextEditor(Graph* graph, QWidget *parent) : QWidget(parent
 
 void GraphTextEditor::initEditor()
 {
-    graph->serializeGraph();
     nodeSpinBox->setValue(graph->getSize());
     updateNames();
 
@@ -118,7 +116,6 @@ void GraphTextEditor::deleteEdgeLine()
         graph->deleteEdge(line->fromComboBox->currentText(), line->toComboBox->currentText());
         emit edgeDeleted(line->fromComboBox->currentText(), line->toComboBox->currentText());
     }
-    graph->serializeGraph();
     edgeLines.removeAll(line);
     delete line;
 }

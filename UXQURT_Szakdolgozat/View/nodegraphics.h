@@ -29,7 +29,7 @@ public:
     void addEdge(EdgeGraphics* edge);                   // felveszi az él grafikáját az élek listájába
     void removeEdge(EdgeGraphics* edge);                // leveszi az él grafikáját az élek listájából
     void updateEdges();                                 // újraszámlja a hozzá tartozó élek grafikáját
-    void changeBrush(Algorithm::NodeType);                   // algoritmusokhoz - kitöltés színét változtatja
+    void changeBrush(Algorithm::NodeType);              // algoritmusokhoz - kitöltés színét változtatja
 
     QColor static normalNode;
     QColor static examined;

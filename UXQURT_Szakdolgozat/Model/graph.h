@@ -31,8 +31,8 @@ public:
     int getAdjIndexInNodes(int from_index, int to_adj_index);
     QStringList getNames();                         // használt nevek
 
-    bool checkAllEdgesNonnegative();    // összes súly nemnegatív
-    bool checkConnectivity();           // összefüggő
+    bool checkAllEdgesNonnegative();                // összes súly nemnegatív
+    bool checkConnectivity();                       // összefüggő-e
 
     int addNode();
     int addNode(QChar name);                        // name nevű csúcs létrehozása
@@ -48,7 +48,7 @@ public:
     void sortAllChildren();                         // az algoritmusok inicializálásakor vannak hívva, hogy abc-rendben nézze végig a csúcsokat és a szomszédokat
     void sortNodes();
 
-    bool saveGraph(QString path, QVector<QPointF> positions);   // előkészíti az adatokat a mentés számára (sikeres mentés esetén true)
+    bool saveGraph(QString path, QVector<QPointF> positions);           // előkészíti az adatokat a mentés számára (sikeres mentés esetén true)
     QVector<std::tuple<int, QChar, QPointF>> loadGraph(QString path);
 
 public slots:
@@ -56,7 +56,7 @@ public slots:
     void changeWeighted(bool w);
 
 signals:
-    void nodesFull();                               // a csúcsok száma elérte a maxNodeNum-ot
+    void nodesFull();                                   // a csúcsok száma elérte a maxNodeNum-ot
     void directedChanged(bool d);
     void weightedChanged(bool w);
     void newEdge(QString from, QString to, int w);

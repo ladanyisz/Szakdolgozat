@@ -22,7 +22,6 @@ public:
 private:
 
     int weight;     // az él súlya
-//    EdgeType type;
 
 };
 

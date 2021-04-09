@@ -1,5 +1,4 @@
 #include "algorithm.h"
-#include <QDebug>
 
 Algorithm::Algorithm(Graph *graph)
 {
@@ -301,14 +300,6 @@ bool Algorithm::stepAlgorithm()                         // ( 3 )
     default:
         break;
     }
-    qDebug() << "-----ODA----";
-    qDebug() << "queue: " << queue;
-    qDebug() << "parents: " << parents;
-    qDebug() << "distances: " << distances;
-    qDebug() << "discoverty_times: " << discovery_time;
-    qDebug() << "finishing times: " << finishing_time;
-    qDebug() << "u: " << u << ", prev_u: " << prev_u;
-    qDebug() << "adj_ind_in_us: " << adj_ind_in_us;
     addState();
     if (ended) {
         for(int i=0; i<graph->getSize(); i++) {
@@ -320,7 +311,6 @@ bool Algorithm::stepAlgorithm()                         // ( 3 )
                 }
             }
         }
-        qDebug() << "algorithm ended";
         timer->stop();
         emit algorithmEnded();
         return false;
@@ -559,11 +549,7 @@ bool Algorithm::stepPrim()
 
 bool Algorithm::stepMelysegi()
 {
-    qDebug() << "r: " << r;
     bool ended = (r >= graph->getSize());
-qDebug() << "melysegi";
-
-
 
     if (prev_u != -1 && adj_ind_in_us[prev_u] > 0) {
         int prev_ind = graph->getAdjIndexInNodes(prev_u, adj_ind_in_us[prev_u]-1);
@@ -684,9 +670,6 @@ bool Algorithm::stepBackAlgorithm()
     if (steps.isEmpty() || steps.length() == 1) return false;
     steps.pop();                                                // utolsó állapot, nem kell - ami épp látszik
     AlgorithmState state = steps.top();
-    qDebug() << "step back: ";
-    qDebug() << "disc: " << discovery_time << " - state disc: " << state.discovery_time;
-    qDebug() << "finish: " << finishing_time << " - state fini: " << state.finishing_time;
 
 
     for(int i=0; i< graph->getSize(); i++) {
@@ -754,10 +737,6 @@ bool Algorithm::stepBackAlgorithm()
         }
     }
 
-    qDebug() << "u: " << u;
-    qDebug() << "prev_u: " << prev_u;
-    qDebug() << "adj_ind_in_us: " << adj_ind_in_us;
-    qDebug() << "sig: " << sig;
     int aiiu;
     int from_u;
     if (chosenAlgo != Melysegi) {
@@ -773,7 +752,6 @@ bool Algorithm::stepBackAlgorithm()
         aiiu = (prev_u == -1) || (sig == First) || sig == Last ? -1 : adj_ind_in_us[prev_u];
         from_u = prev_u;
     }
-    qDebug() << "aiiu: " << aiiu;
     if ((aiiu-1) != -1 && aiiu != -1) {
         int adj_index = graph->getAdjIndexInNodes(from_u,(aiiu-1));
         emit nodeStateChange(NodeType::ExaminedNode, graph->getId(adj_index));
@@ -814,7 +792,6 @@ void Algorithm::addState()
                                           discovery_time, finishing_time, adj_ind_in_us, r, time, prev_u, in_dfs_visit,
                                           sig);
     steps.push(state);
-    qDebug() << "sig added: " << sig;
 }
 
 QString Algorithm::queueToVectorMin()
@@ -823,7 +800,6 @@ QString Algorithm::queueToVectorMin()
     QVector<int> q = QVector<int>(queue);
     while (!q.isEmpty()) {
         int min_ind = remMin(q);
-        qDebug() << "min: " << min_ind;
         str += QString(graph->getName(graph->getId(min_ind))) + ", ";
     }
     if (str.length() > 4) str.remove(str.length()-2, 2);
@@ -839,10 +815,8 @@ QString Algorithm::queueToVector()
         str += QString(graph->getName(graph->getId(q.first()))) + ", ";
         q.removeFirst();
     }
-    qDebug() << "str length: " << str.length();
     if (str.length() > 4) str.remove(str.length()-2,2);
     str += " >";
-    qDebug() << "str: " << str;
     return str;
 }
 

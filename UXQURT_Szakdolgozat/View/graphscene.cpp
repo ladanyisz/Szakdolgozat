@@ -1,7 +1,6 @@
 #include "graphscene.h"
 
 #include <QPixmap>
-#include <QDebug>
 #include <QGraphicsView>
 #include <QMatrix>
 
@@ -90,35 +89,33 @@ void GraphScene::setMode(GraphScene::GraphMode mode)
 {
     resetCurrFrom();
     resetCurrEdge();
-//    if (this->mode != mode) {
-        if (mode == GraphMode::AddEdge || mode ==GraphMode::Move || mode == GraphMode::SetWeight) {
+    if (mode == GraphMode::AddEdge || mode ==GraphMode::Move || mode == GraphMode::SetWeight) {
 
-            QList<QGraphicsItem*> scene_items = items();
-            NodeGraphics* node;
-            foreach(QGraphicsItem* item ,scene_items) {
-                node = qgraphicsitem_cast<NodeGraphics*>(item);
-                if (node || mode == GraphMode::SetWeight)
-                    item->setCursor(Qt::PointingHandCursor);
-                else
-                    item->unsetCursor();
-            }
-        } else if (this->mode != GraphMode::AddNode && mode == GraphMode::AddNode) {
-
-            QList<QGraphicsItem*> scene_items = items();
-            foreach(QGraphicsItem* item ,scene_items) {
-                item->setCursor(Qt::ArrowCursor);
-            }
-        } else if (this->mode != GraphMode::Delete && mode == GraphMode::Delete) {
-
-            QList<QGraphicsItem*> scene_items = items();
-            foreach(QGraphicsItem* item ,scene_items) {
-                QPixmap delete_cursor_pic = QPixmap(":/img/delete-cursor.png");
-                QCursor delete_cursor = QCursor(delete_cursor_pic, 0,0);
-                item->setCursor(delete_cursor);
-            }
+        QList<QGraphicsItem*> scene_items = items();
+        NodeGraphics* node;
+        foreach(QGraphicsItem* item ,scene_items) {
+            node = qgraphicsitem_cast<NodeGraphics*>(item);
+            if (node || mode == GraphMode::SetWeight)
+                item->setCursor(Qt::PointingHandCursor);
+            else
+                item->unsetCursor();
         }
-        this->mode = mode;
-//    }
+    } else if (this->mode != GraphMode::AddNode && mode == GraphMode::AddNode) {
+
+        QList<QGraphicsItem*> scene_items = items();
+        foreach(QGraphicsItem* item ,scene_items) {
+            item->setCursor(Qt::ArrowCursor);
+        }
+    } else if (this->mode != GraphMode::Delete && mode == GraphMode::Delete) {
+
+        QList<QGraphicsItem*> scene_items = items();
+        foreach(QGraphicsItem* item ,scene_items) {
+            QPixmap delete_cursor_pic = QPixmap(":/img/delete-cursor.png");
+            QCursor delete_cursor = QCursor(delete_cursor_pic, 0,0);
+            item->setCursor(delete_cursor);
+        }
+    }
+    this->mode = mode;
 }
 
 void GraphScene::updateNodes()
@@ -362,7 +359,6 @@ void GraphScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             }
         }
     }
-    graph->serializeGraph();
 }
 
 
