@@ -29,7 +29,7 @@ int Node::getWeight(Node *to)
     return adjNodes.at(i)->getWeight();
 }
 
-QChar Node::getAjdNodeName(int i) {return adjNodes.at(i)->node->getName();}
+QChar Node::getAdjNodeName(int i) {return adjNodes.at(i)->node->getName();}
 
 int Node::getAdjNodeWeight(int i) {return adjNodes.at(i)->getWeight();}
 
