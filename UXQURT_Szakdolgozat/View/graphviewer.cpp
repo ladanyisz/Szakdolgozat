@@ -10,6 +10,7 @@
 #include <QDir>
 #include <QItemSelectionModel>
 #include <QShortcut>
+#include <QMessageBox>
 
 GraphViewer::GraphViewer(QWidget *parent)
     : QMainWindow(parent)
@@ -647,6 +648,34 @@ void GraphViewer::initMenu()
             AlgorithmHelp* a = new AlgorithmHelp(Algorithm::Algorithms::Dijkstra);
             a->show();
         }
+    });
+
+    aboutMenu = new QAction(tr("Névjegy"));
+    menuBar()->addAction(aboutMenu);
+
+
+//    aboutWidget = new QWidget();
+//    QVBoxLayout* aboutLayout = new QVBoxLayout();
+//    aboutWidget->setLayout(aboutLayout);
+//    aboutLayout->setAlignment(Qt::AlignHCenter);
+//    QFont font;
+//    font.setPointSize(18);
+//    aboutLabel = new QLabel("A programot készítette: <b>Ladányi Szandra</b>. Szakdolgozat címe: <b><i>Gráfalgorimtusok grafikus szimulációja</i></b>");
+//    aboutLabel->setWordWrap(true);
+//    aboutLabel->setFont(font);
+//    font.setPointSize(13);
+//    dateLabel = new QLabel("2021");
+//    dateLabel->setFont(font);
+//    aboutLayout->addWidget(aboutLabel);
+//    aboutLayout->addWidget(dateLabel);
+
+//    connect(aboutMenu, &QAction::triggered, aboutWidget, &QWidget::);
+    connect(aboutMenu, &QAction::triggered, this, [=]() {
+        QMessageBox::information(this, "Névjegy",
+                                 "<p style='font-size: 18px'><b>Gráfalgorimtusok grafikus szimulációja</i></p>"
+                                 "<p style='font-size: 16px'>A programot készítette: <b>Ladányi Szandra</b></p>"
+                                 "<p>Eötvös Loránd Tudományegyetem<br>Programtevező informatikus Bsc.<br>2021</p>"
+                                );
     });
 }
 
