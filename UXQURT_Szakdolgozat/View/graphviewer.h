@@ -99,9 +99,6 @@ private:
     QAction* dijkstraHelpAction;
 
     QAction* aboutMenu;
-    QWidget* aboutWidget;
-    QLabel* aboutLabel;
-    QLabel* dateLabel;
 
 
     // ESZKÖZSÁV

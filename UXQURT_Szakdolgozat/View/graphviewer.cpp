@@ -209,7 +209,7 @@ void GraphViewer::saveFile()
     if (fileName != "") {
         path = QFileInfo(fileName).path();
         QVector<QPointF> positions = scene->nodePositions();
-        graph->saveGraph(fileName, positions);
+        if (!graph->saveGraph(fileName, positions)) QMessageBox::warning(this, "Gráf mentése", "A gráf mentése sikertelen!");
     }
 }
 
@@ -224,6 +224,7 @@ void GraphViewer::openFile()
     if (fileName != "" && fileName != QString()) {
         path = QFileInfo(fileName).path();
         QVector<std::tuple<int, QChar, QPointF>> nodes_data = graph->loadGraph(fileName);
+        if (nodes_data.isEmpty()) QMessageBox::warning(this, "Gráf betöltése", "Gráf betöltése sikertelen!");
         for(int i=0; i<graph->getSize(); i++) {
             std::tuple<int, QChar, QPointF> node_data = nodes_data.at(i);
             qreal w = scene->sceneRect().width();
@@ -605,6 +606,7 @@ void GraphViewer::initMenu()
     fileMenu->addAction(openFileAction);
     connect(openFileAction, &QAction::triggered, this, &GraphViewer::openFile);
     deleteGraphAction = new QAction(tr("Gráf törlése"));
+
     menuBar()->addAction(deleteGraphAction);
     connect(deleteGraphAction, &QAction::triggered, this, &GraphViewer::deleteGraph);
 
@@ -653,23 +655,6 @@ void GraphViewer::initMenu()
     aboutMenu = new QAction(tr("Névjegy"));
     menuBar()->addAction(aboutMenu);
 
-
-//    aboutWidget = new QWidget();
-//    QVBoxLayout* aboutLayout = new QVBoxLayout();
-//    aboutWidget->setLayout(aboutLayout);
-//    aboutLayout->setAlignment(Qt::AlignHCenter);
-//    QFont font;
-//    font.setPointSize(18);
-//    aboutLabel = new QLabel("A programot készítette: <b>Ladányi Szandra</b>. Szakdolgozat címe: <b><i>Gráfalgorimtusok grafikus szimulációja</i></b>");
-//    aboutLabel->setWordWrap(true);
-//    aboutLabel->setFont(font);
-//    font.setPointSize(13);
-//    dateLabel = new QLabel("2021");
-//    dateLabel->setFont(font);
-//    aboutLayout->addWidget(aboutLabel);
-//    aboutLayout->addWidget(dateLabel);
-
-//    connect(aboutMenu, &QAction::triggered, aboutWidget, &QWidget::);
     connect(aboutMenu, &QAction::triggered, this, [=]() {
         QMessageBox::information(this, "Névjegy",
                                  "<p style='font-size: 18px'><b>Gráfalgorimtusok grafikus szimulációja</i></p>"
