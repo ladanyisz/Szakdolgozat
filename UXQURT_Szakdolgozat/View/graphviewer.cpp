@@ -55,8 +55,7 @@ GraphViewer::GraphViewer(QWidget *parent)
 void GraphViewer::deleteGraph()
 {
     graph->deleteAll();
-    algorithmSelector->setEnabled(false);
-    nodeSelector->setEnabled(false);
+    disableAlgorithms();
 }
 
 // algoritmus kezelése
