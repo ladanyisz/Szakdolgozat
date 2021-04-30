@@ -157,7 +157,7 @@ void Algorithm::init()                                  // ( 1 )
 
         // gráf ellenőrzése - súlyozott és nemnegatív súlyok
         if (!graph->getWeighted()) emit needWeights();
-        if (!graph->checkAllEdgesNonnegative()) emit needOnlyNonnegativeEdges();
+        else if (!graph->checkAllEdgesNonnegative()) emit needOnlyNonnegativeEdges();
 
         // ha futtatható a gráfon az algoritmus, elindíthatjuk
         if(graph->getWeighted() && graph->checkAllEdgesNonnegative()) {

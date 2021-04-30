@@ -360,7 +360,7 @@ void GraphViewer::noWeights()
 
 void GraphViewer::needOnlyNonnegativeEdges()
 {
-    warningLabel->setText("Az algoritmus csak olyan gráfon futtatható, aminek minden élköltsége nemnegatív!");
+    warningLabel->setText("Az algoritmus csak nemnegatív élköltségű gráfon futtatható!");
     showWarningLabel();
 }
 
