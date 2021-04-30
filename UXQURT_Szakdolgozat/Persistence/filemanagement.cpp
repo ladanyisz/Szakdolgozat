@@ -44,6 +44,7 @@ bool FileManagement::loadGraph(QString path, graph_data &data)
         tmp = stream.readLine();
         QStringList node_data = tmp.split(';');
         if (node_data.length() != 2) return false;
+        if (node_data.at(0).length() != 1) return false;
         data.names.append(node_data.at(0));
         QStringList points = node_data.at(1).split(",");
         if (points.length() != 2) return false;
