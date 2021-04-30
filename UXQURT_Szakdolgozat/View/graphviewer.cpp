@@ -205,7 +205,13 @@ void GraphViewer::saveFile()
         dir = path;
     QString fileName = QFileDialog::getSaveFileName(this, tr("Gráf mentése"), dir, tr("Gráfok (*.graph)"));
 
-    if (fileName != "") {
+    if (fileName != "" && fileName != QString()) {
+
+        if (QFileInfo(fileName).suffix() != "graph") {
+            QMessageBox::warning(this, "Gráf mentése", "Helytelen kiterjesztés miatt a fájl mentése sikertelen.");
+            return;
+        }
+
         path = QFileInfo(fileName).path();
         QVector<QPointF> positions = scene->nodePositions();
         if (!graph->saveGraph(fileName, positions)) QMessageBox::warning(this, "Gráf mentése", "A gráf mentése sikertelen!");
