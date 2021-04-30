@@ -20,7 +20,7 @@ public:
     int getSize();                                  // csúcsok száma
     QChar getName(int id);                          // Node id-ja alapján
     int getVectorPosition(int id);
-    int getMaxNodeNum();
+    static int getMaxNodeNum();
     int getId(int i);                               // a listában az i-ik csúcs id-ja
     int getIndex(Node* node);
     int getIndex(QString name);

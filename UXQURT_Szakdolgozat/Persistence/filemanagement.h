@@ -5,7 +5,6 @@
 #include <QPointF>
 #include <QStringList>
 
-
 struct  graph_data {
     int size;
     int isDirected;
@@ -15,9 +14,9 @@ struct  graph_data {
     QVector<QPointF> positions;
 };
 
-class FileManagement
-{ 
 
+class FileManagement
+{
 public:
     FileManagement();
 

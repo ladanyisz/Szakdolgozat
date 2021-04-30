@@ -221,9 +221,20 @@ void GraphViewer::openFile()
         dir = path;
     QString fileName = QFileDialog::getOpenFileName(this, tr("Gráf betöltése"), dir, tr("Gráfok (*.graph)"));
     if (fileName != "" && fileName != QString()) {
+
+        if (QFileInfo(fileName).suffix() != "graph") {
+            QMessageBox::warning(this, "Gráf betöltése", "Helytelen kiterjesztés miatt a fájl megnyitása sikertelen.");
+            return;
+        }
+
         path = QFileInfo(fileName).path();
         QVector<std::tuple<int, QChar, QPointF>> nodes_data = graph->loadGraph(fileName);
-        if (nodes_data.isEmpty()) QMessageBox::warning(this, "Gráf betöltése", "Gráf betöltése sikertelen!");
+
+        if (nodes_data.isEmpty()) {
+            QMessageBox::warning(this, "Gráf betöltése", "Gráf betöltése sikertelen!");
+            return;
+        }
+
         for(int i=0; i<graph->getSize(); i++) {
             std::tuple<int, QChar, QPointF> node_data = nodes_data.at(i);
             qreal w = scene->sceneRect().width();
@@ -319,7 +330,7 @@ void GraphViewer::disableEdit()
 
 void GraphViewer::nodesFull()
 {
-    warningLabel->setText("Elérted a maximálisan elhelyezhető csúcsok számát! (" +  QString::number(graph->getMaxNodeNum()) + ")");
+    warningLabel->setText("Elérted a maximálisan elhelyezhető csúcsok számát! (" +  QString::number(Graph::getMaxNodeNum()) + ")");
     showWarningLabel();
 }
 
@@ -580,7 +591,7 @@ void GraphViewer::algoConnections()
 void GraphViewer::setStyles()
 {
     this->setStyleSheet(
-                        "QComboBox {"
+                "QComboBox {"
                          "font-size: 14px;"
                          "padding: 2px 4px;"
                         "}"

@@ -17,7 +17,7 @@ GraphTextEditor::GraphTextEditor(Graph* graph, QWidget *parent) : QWidget(parent
     nodeSpinBox = new QSpinBox();
     nodeSpinBox->setValue(0);
     nodeSpinBox->setMinimum(0);
-    nodeSpinBox->setMaximum(graph->getMaxNodeNum());
+    nodeSpinBox->setMaximum(Graph::getMaxNodeNum());
     nodeSpinBox->setMaximumWidth(60);
     nodeSpinBox->setSingleStep(1);
     nodeLayout = new QHBoxLayout();

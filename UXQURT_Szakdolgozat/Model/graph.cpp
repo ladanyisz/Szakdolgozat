@@ -314,7 +314,6 @@ QVector<std::tuple<int, QChar, QPointF> > Graph::loadGraph(QString path)
             }
         }
     }
-    serializeGraph();
     return nodes_data;
 }
 

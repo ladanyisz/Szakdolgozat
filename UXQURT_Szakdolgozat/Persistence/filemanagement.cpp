@@ -35,9 +35,10 @@ bool FileManagement::loadGraph(QString path, graph_data &data)
     data.size = stream.readLine().toInt();
     if (stream.atEnd()) return false;
     data.isDirected = stream.readLine().toInt();
-    if (stream.atEnd()) return false;
+    if (stream.atEnd() || (data.isDirected != 0 && data.isDirected != 1)) return false;
     data.isWeighted = stream.readLine().toInt();
-    if (stream.atEnd()) return false;
+    if (stream.atEnd() || (data.isWeighted != 0 && data.isWeighted != 1)) return false;
+
     QString tmp;
     for(int i=0; i<data.size; i++) {
         tmp = stream.readLine();
@@ -52,6 +53,15 @@ bool FileManagement::loadGraph(QString path, graph_data &data)
     for(int i=0; i<data.size; i++) {
         if (stream.atEnd()) return false;
         data.graph_representation.append(stream.readLine());
+        QStringList tmp = data.graph_representation.last().split(";");
+        if (data.graph_representation.last() != "") {
+            if (tmp.last() == "") return false;
+            foreach(QString t, tmp) {
+                QStringList tmp2 = t.split(",");
+                if (tmp2.length() != 2) return false;
+                if (tmp2.at(0).length() != 1) return false;
+            }
+        }
     }
     return true;
 }
