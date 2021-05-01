@@ -30,6 +30,7 @@ GraphTextEditor::GraphTextEditor(Graph* graph, QWidget *parent) : QWidget(parent
     buttonLayout = new QHBoxLayout();
     newEdgeButton = new QPushButton(tr("Új él hozzáadása"));
     okButton = new QPushButton(tr("Bezár"));
+    okButton->setStyleSheet("background-color: rgb(245, 98, 69);");
     buttonLayout->addWidget(newEdgeButton);
     buttonLayout->addWidget(okButton);
 
@@ -50,7 +51,6 @@ GraphTextEditor::GraphTextEditor(Graph* graph, QWidget *parent) : QWidget(parent
 void GraphTextEditor::initEditor()
 {
     nodeSpinBox->setValue(graph->getSize());
-    updateNames();
 
     foreach(GraphTextLine* line, edgeLines) {
         delete line;
@@ -60,11 +60,14 @@ void GraphTextEditor::initEditor()
     for(int i=0; i<graph->getSize(); i++) {
         int id = graph->getId(i);
         for(int j=0; j<graph->getAdjNum(i); j++) {
-            if ((!graph->getDirected() && (graph->getName(id) < graph->getAdjName(i,j))) ||  graph->getDirected()) { // itt módosítottam -> getname(id) id helyett i volt
+            if ((!graph->getDirected() && (graph->getName(id) < graph->getAdjName(i,j))) ||  graph->getDirected()) {
                 GraphTextLine* line = addNewLine();
-                updateNames();
-                line->fromComboBox->setCurrentText(graph->getName(id));
-                line->toComboBox->setCurrentText(graph->getAdjName(i,j));
+                QString fromName = graph->getName(id);
+                QString toName = graph->getAdjName(i,j);
+                line->fromComboBox->addItem(fromName);
+                line->toComboBox->addItem(toName);
+                line->fromComboBox->setCurrentText(fromName);
+                line->toComboBox->setCurrentText(toName);
                 line->weightLineEdit->setText(QString::number(graph->getAdjWeight(i,j)));
                 line->setDisabled();
             }
@@ -81,6 +84,7 @@ void GraphTextEditor::addNewEdge()
         availableEdges = graph->getAdjNum(i) < nodes_num - 1;
         i++;
     }
+    updateNames();
     if (availableEdges) {
         if (edgeLines.size() != 0) {
             GraphTextLine* lastLine = edgeLines.at(edgeLines.size()-1);
@@ -104,6 +108,7 @@ void GraphTextEditor::refreshGraphSize()
     } else if (graph->getSize() > newSize){
         graph->deleteNodes(graph->getSize()-newSize);
         emit nodesChanged();
+        initEditor();
     }
 
     updateNames();
@@ -133,7 +138,8 @@ void GraphTextEditor::setEdge()
 
 void GraphTextEditor::fromNodeChanged(QString fromText)
 {
-    QStringList names2 = names;
+    QStringList names2 = graph->getNames();
+    names2.prepend("");
     QComboBox* sender_cb = qobject_cast<QComboBox*>(sender());
     GraphTextLine* line = qobject_cast<GraphTextLine*>(sender_cb->parent());
     if (fromText == "") line->toComboBox->clear();
@@ -187,16 +193,20 @@ void GraphTextEditor::updateNames()
             names.removeAll(graph->getName(graph->getId(i)));
         }
     }
-    foreach(GraphTextLine* line, edgeLines) {                           // ha módosult a gráf mérete miközben egy él még nem lett "leokézva", a neveket is frissíti a legördülőben
-        QString fromText = line->fromComboBox->currentText();
-        QString toText = line->toComboBox->currentText();
-        line->fromComboBox->clear();
-        line->toComboBox->clear();
-        if (names.size() > 1) {
-            line->fromComboBox->addItems(names);
-            line->fromComboBox->setCurrentText(fromText);
-            if (toText != "") {
-                line->toComboBox->setCurrentText(toText);
+
+    if (edgeLines.size() != 0) {                                                // ha módosult a gráf mérete miközben egy él még nem lett "leokézva", a neveket is frissíti a legördülőben
+        GraphTextLine* lastLine = edgeLines.last();
+        if (lastLine->fromComboBox->isEnabled() || lastLine->toComboBox->isEnabled()) {
+            QString fromText = lastLine->fromComboBox->currentText();
+            QString toText = lastLine->toComboBox->currentText();
+            lastLine->fromComboBox->clear();
+            lastLine->toComboBox->clear();
+            if (names.size() > 1) {
+                lastLine->fromComboBox->addItems(names);
+                lastLine->fromComboBox->setCurrentText(fromText);
+                if (toText != "") {
+                    lastLine->toComboBox->setCurrentText(toText);
+                }
             }
         }
     }
