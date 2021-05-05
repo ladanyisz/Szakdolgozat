@@ -19,16 +19,10 @@ public:
 
 
 public slots:
-    void setStep(int);
     void setColorPart(InAlgorithm b);
 
 
 private:
-    QLabel* proceccedNodeLabel;
-    QLabel* unknownNodeLabel;
-    QLabel* examinAdjNodeLabel;
-    QLabel* examinedNodeLabel;
-    QLabel* greyNodeLabel;
 
     // stukik kirajzolásához szükséges értékek
     int width;
@@ -50,7 +44,6 @@ private:
     QString static const neg;
 
     Algorithm::Algorithms algo;
-    int algorithmStep;
 
     void paintColorHelp(int w, int h, QPainter &painter);
     int paintSzelessegi(int w, int h, QPainter &painter);       // a stuki magasságával tér vissza
@@ -61,8 +54,6 @@ private:
     void paintStatement(QPainter &painter, int &w, int &h, int indent, int width, int row_count, QString s);
     void paintLoop(QPainter &painter, int &w, int &h, int indent, int rows_num, QString condition);
     void paintConditional(QPainter &painter, int &w, int &h, int indent, QString condition/*, QStringList trueStatements, QStringList falseStatements, bool paintTrue, bool paintFalse*/);
-
-    int findMaxLengthString(QStringList);
 
     InAlgorithm rowsToColor;
 

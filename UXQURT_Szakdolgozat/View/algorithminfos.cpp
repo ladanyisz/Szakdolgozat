@@ -3,7 +3,6 @@
 #include <QPainter>
 #include <QVBoxLayout>
 
-//QString const AlgorithmInfos::pi = QString::fromUtf8("\u1d6d1");
 QString const AlgorithmInfos::pi = QString::fromUtf8("\u03C0");
 QString const AlgorithmInfos::element_of = QString::fromUtf8("\u2208");
 QString const AlgorithmInfos::for_all = QString::fromUtf8("\u2200");
@@ -42,8 +41,6 @@ void AlgorithmInfos::setAlgorithm(Algorithm::Algorithms a)
     }
 }
 
-void AlgorithmInfos::setStep(int s) { algorithmStep =  s; }
-
 void AlgorithmInfos::setColorPart(AlgorithmInfos::InAlgorithm b)
 {
     rowsToColor = b;
@@ -53,7 +50,6 @@ void AlgorithmInfos::setColorPart(AlgorithmInfos::InAlgorithm b)
 
 void AlgorithmInfos::paintEvent(QPaintEvent *)
 {
-//    if (algo == Algorithm::Algorithms::None) return;
 
     QPainter painter(this);
     QFont font_title;
@@ -67,7 +63,6 @@ void AlgorithmInfos::paintEvent(QPaintEvent *)
 
     painter.setFont(font);
     painter.setBrush(brush);
-//    painter.setPen(Qt::black);
 
     switch (algo) {
     case Algorithm::None:
@@ -573,14 +568,4 @@ void AlgorithmInfos::paintConditional(QPainter &painter, int &w, int &h, int ind
     painter.drawLine(w + indent*colWidth, h , w + indent*colWidth + 10, h + rowHeight);             // feltételt jelző ferde vonalak
     painter.drawLine(w + width, h, w + width-10, h + rowHeight);
     painter.drawText(w + indent*colWidth + (width-indent*colWidth)/2 - fm.horizontalAdvance(condition)/2, textVert * rowHeight + h, condition);     // feltétel szövege
-}
-
-int AlgorithmInfos::findMaxLengthString(QStringList strs)
-{
-    QFontMetrics fm(font);
-    int max = 0;
-    foreach(QString str, strs) {
-        if (fm.horizontalAdvance(str) > max) max = fm.horizontalAdvance(str);
-    }
-    return max;
 }

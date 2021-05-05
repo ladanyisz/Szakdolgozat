@@ -30,7 +30,7 @@ GraphTextEditor::GraphTextEditor(Graph* graph, QWidget *parent) : QWidget(parent
     buttonLayout = new QHBoxLayout();
     newEdgeButton = new QPushButton(tr("Új él hozzáadása"));
     okButton = new QPushButton(tr("Bezár"));
-    okButton->setStyleSheet("background-color: rgb(245, 98, 69);");
+    okButton->setStyleSheet("background-color: rgb(192, 65, 65);");
     buttonLayout->addWidget(newEdgeButton);
     buttonLayout->addWidget(okButton);
 
