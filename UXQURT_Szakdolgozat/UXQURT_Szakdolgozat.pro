@@ -51,4 +51,6 @@ RESOURCES += \
 
 RC_ICONS = circle.ico
 
+
+
 DISTFILES +=

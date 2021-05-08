@@ -1,0 +1,30 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/arrow.png</file>
+        <file>img/circle.png</file>
+        <file>img/next.png</file>
+        <file>img/oval.png</file>
+        <file>img/pause.png</file>
+        <file>img/play-button.png</file>
+        <file>img/previous.png</file>
+        <file>img/up-sign.png</file>
+        <file>img/delete.png</file>
+        <file>img/delete-cursor.png</file>
+        <file>img/red_trash.png</file>
+        <file>img/trash.png</file>
+        <file>img/weight.png</file>
+        <file>img/blue_edit.png</file>
+        <file>img/tick.png</file>
+        <file>img/open.png</file>
+        <file>img/save.png</file>
+        <file>img/stop.png</file>
+        <file>img/empty-set.png</file>
+        <file>img/infinity.png</file>
+        <file>img/pi.png</file>
+        <file>img/dijkstra.png</file>
+        <file>img/melysegi.PNG</file>
+        <file>img/melysegi_visit.PNG</file>
+        <file>img/prim.PNG</file>
+        <file>img/szelessegi.PNG</file>
+    </qresource>
+</RCC>
