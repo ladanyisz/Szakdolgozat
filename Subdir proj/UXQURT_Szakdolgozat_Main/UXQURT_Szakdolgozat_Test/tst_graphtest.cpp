@@ -34,6 +34,14 @@ private slots:
     void testCheckAllEdgesNonnegative();
     void testCheckConnectivity();
 
+    // Algorithm tesztjei
+    void testSelectAlgorithm();
+    void testSelectStartNode();
+    void testReset();
+    void testStepAlgorithm();
+    void stepBackAlgorithm();
+
+
 private:
     Graph* graph;
     Algorithm* algo;
@@ -334,13 +342,38 @@ void GraphTest::testSetEdge()
 
 void GraphTest::testDeleteEdge()
 {
-    graph->addNode();
-    QCOMPARE(1, graph->getSize());
-    graph->deleteNode(graph->getId(0));
+    // rossz bemenet
+    graph->deleteEdge(0,1);
+    graph->deleteEdge('A', 'B');
     QCOMPARE(0, graph->getSize());
-
     graph->addNodes(3);
+    graph->deleteEdge(graph->getId(0), graph->getId(1));
+    QCOMPARE(3, graph->getSize());
 
+    // irányított eset
+    graph->changeDirected(true);
+    graph->setEdge(graph->getId(0), graph->getId(1));
+    graph->deleteEdge(graph->getId(0), graph->getId(1));
+    QCOMPARE(INT32_MAX, graph->getWeight(graph->getId(0), graph->getId(1)));
+    QVERIFY(graph->setEdge(graph->getId(0), graph->getId(1)));
+
+    // irányítatlan eset
+    graph->changeDirected(false);
+    graph->deleteAll();
+    graph->addNodes(2);
+    graph->setEdge(graph->getId(0), graph->getId(1));
+    graph->deleteEdge(graph->getId(0), graph->getId(1));
+    QCOMPARE(INT32_MAX, graph->getWeight(graph->getId(0), graph->getId(1)));
+    QCOMPARE(INT32_MAX, graph->getWeight(graph->getId(1), graph->getId(0)));
+
+    // nevekkel
+    graph->deleteAll();
+    graph->addNodes(2);
+    graph->setEdge(graph->getId(0), graph->getId(1));
+    QChar n1 = graph->getName(graph->getId(0));
+    QChar n2 = graph->getName(graph->getId(1));
+    graph->deleteEdge(n1, n2);
+    QCOMPARE(INT32_MAX, graph->getWeight(graph->getId(0), graph->getId(1)));
 }
 
 void GraphTest::testDeleteAll()
@@ -424,6 +457,34 @@ void GraphTest::testCheckConnectivity()
 
 
 // Algorithm
+
+void GraphTest::testSelectAlgorithm()
+{
+
+}
+
+void GraphTest::testSelectStartNode()
+{
+
+}
+
+void GraphTest::testReset()
+{
+
+}
+
+void GraphTest::testStepAlgorithm()
+{
+
+}
+
+void GraphTest::stepBackAlgorithm()
+{
+
+}
+
+
+
 
 
 

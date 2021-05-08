@@ -400,7 +400,9 @@ bool Graph::setEdge(Node *from, Node *to, int w)
 void Graph::deleteEdge(Node *from, Node *to)
 {
     if (from != nullptr && to != nullptr) {
-        from->deleteEdge(to);
-        if (!isDirected) from->deleteReversed(to);
+        if (from->hasEdge(to)) {
+            from->deleteEdge(to);
+            if (!isDirected) from->deleteReversed(to);
+        }
     }
 }
