@@ -210,12 +210,13 @@ void Algorithm::init()                                  // ( 1 )
         break;
     }
     if (can_start) {
-        init_ready = true;
-        if (start_node_ind != -1) initNode();
-        sig = SignalForStuki::Init;
-        addState();
-
-        emit initReady(start_node_ind);
+        if (start_node_ind > -1 && start_node_ind < graph->getSize()) {
+            initNode();
+            init_ready = true;
+            sig = SignalForStuki::Init;
+            addState();
+            emit initReady(start_node_ind);
+        }
     }
 }
 

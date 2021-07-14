@@ -35,16 +35,15 @@ private slots:
     void testCheckConnectivity();
 
     // Algorithm tesztjei
-    void testSelectAlgorithm();
-    void testSelectStartNode();
-    void testReset();
+    void testSelections();
     void testStepAlgorithm();
-    void stepBackAlgorithm();
 
 
 private:
     Graph* graph;
     Algorithm* algo;
+
+    void buildGraph(bool isDirected, bool isWeighted);
 };
 
 GraphTest::GraphTest()
@@ -458,33 +457,138 @@ void GraphTest::testCheckConnectivity()
 
 // Algorithm
 
-void GraphTest::testSelectAlgorithm()
+void GraphTest::testSelections()
 {
+    buildGraph(true, false);
 
-}
+    // selectAlgorithm
+    QCOMPARE(Algorithm::Algorithms::None, algo->getChosenAlgo());
+    algo->selectAlgorithm(Algorithm::Algorithms::Dijkstra);
+    QCOMPARE(Algorithm::Algorithms::Dijkstra, algo->getChosenAlgo());
+    algo->selectAlgorithm(Algorithm::Algorithms(7));
+    QCOMPARE(Algorithm::Algorithms(7), algo->getChosenAlgo());
+    algo->selectAlgorithm(Algorithm::Algorithms::Szelessegi);
+    QCOMPARE(Algorithm::Algorithms::Szelessegi, algo->getChosenAlgo());
 
-void GraphTest::testSelectStartNode()
-{
+    algo->stepAlgorithm();
+    QVERIFY(!algo->getInitState());
 
-}
-
-void GraphTest::testReset()
-{
+    // selectStartNode
+    algo->selectStartNode(-2);
+    algo->stepAlgorithm();
+    QVERIFY(!algo->getInitState());
+    algo->selectStartNode(0);
+    algo->stepAlgorithm();
+    QVERIFY(algo->getInitState());
 
 }
 
 void GraphTest::testStepAlgorithm()
 {
+    // SZÉLESSÉGI
+    algo->selectAlgorithm(Algorithm::Szelessegi);
+    // súlyozott gráf
+    buildGraph(true, true);
+    algo->selectStartNode(0);
+    algo->stepAlgorithm();
+    QVERIFY(!algo->getInitState());
 
+    // súlyozatlan
+    buildGraph(true, false);
+    algo->stepAlgorithm();
+    QVERIFY(algo->getInitState());
+
+    // irányítatlan
+    algo->reset();
+    algo->selectAlgorithm(Algorithm::Szelessegi);
+    buildGraph(false,false);
+    algo->selectStartNode(0);
+    algo->stepAlgorithm();
+    QVERIFY(algo->getInitState());
+
+
+    // MÉLYSÉGI
+    algo->reset();
+    algo->selectAlgorithm(Algorithm::Melysegi);
+    // sulyozott
+    buildGraph(true, true);
+    algo->selectStartNode(0);
+    algo->stepAlgorithm();
+    QVERIFY(!algo->getInitState());
+
+    // irányítatlan
+    buildGraph(false, false);
+    algo->stepAlgorithm();
+    QVERIFY(!algo->getInitState());
+
+    // irányított, súlyozatlan
+    buildGraph(true, false);
+    algo->stepAlgorithm();
+    QVERIFY(algo->getInitState());
+
+    // DIJKSTRA
+    algo->reset();
+    buildGraph(true, false);
+    algo->selectAlgorithm(Algorithm::Dijkstra);
+    algo->selectStartNode(0);
+    // súlyozatlan
+    algo->stepAlgorithm();
+    QVERIFY(!algo->getInitState());
+
+    // negatív súly
+    buildGraph(true, true);
+    graph->setEdge(graph->getId(0), graph->getId(1), -3);
+    algo->stepAlgorithm();
+    QVERIFY(!algo->getInitState());
+
+
+    // csak nemnegatív súlyok
+    graph->setEdge(graph->getId(0), graph->getId(1), 5);
+    algo->stepAlgorithm();
+    QVERIFY(algo->getInitState());
+
+
+    // PRIM
+    algo->reset();
+    buildGraph(true, false);
+    algo->selectAlgorithm(Algorithm::Prim);
+    algo->selectStartNode(0);
+    // súlyozatlan
+    algo->stepAlgorithm();
+    QVERIFY(!algo->getInitState());
+    // irányított
+    buildGraph(true, true);
+    algo->stepAlgorithm();
+    QVERIFY(!algo->getInitState());
+    // nem összefüggő
+    graph->deleteAll();
+    graph->addNodes(2);
+    graph->changeDirected(false);
+    graph->changeWeighted(true);
+    algo->stepAlgorithm();
+    QVERIFY(!algo->getInitState());
+
+    // súlyozott, irányítatlan, összefüggő
+    buildGraph(false, true);
+    algo->stepAlgorithm();
+    QVERIFY(algo->getInitState());
 }
 
-void GraphTest::stepBackAlgorithm()
+
+// Private functions
+
+void GraphTest::buildGraph(bool isDirected, bool isWeighted)
 {
-
+    graph->deleteAll();
+    graph->addNodes(4);
+    graph->changeDirected(isDirected);
+    graph->changeWeighted(isWeighted);
+    graph->setEdge(graph->getId(0), graph->getId(1), 5);
+    graph->setEdge(graph->getId(0), graph->getId(2), 10);
+    graph->setEdge(graph->getId(1), graph->getId(2));
+    graph->setEdge(graph->getId(1), graph->getId(3), 3);
+    graph->setEdge(graph->getId(3), graph->getId(2));
 }
-
-
-
 
 
 
